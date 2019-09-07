@@ -1,4 +1,4 @@
-package abstracts;
+package model.Proposal;
 
 public abstract class Proposal {
 

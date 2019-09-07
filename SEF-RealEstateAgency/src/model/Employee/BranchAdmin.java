@@ -1,6 +1,6 @@
-package employees;
+package model.Employee;
 
-public class BranchAdmin {
+public class BranchAdmin extends Employee {
 
 	public BranchAdmin() {
 		// TODO Auto-generated constructor stub

@@ -1,10 +1,15 @@
 #ignore bin folder
-.bin/
+bin/
+
+#ignore IDE-specific directories
 .settings/
+.idea/
+out/
 
-#ignore other variables
-.classpath
-.project
+#ignore tests folder (temporarily)
+tests/
 
-#test if abstracts changes is ignored
-.src/abstracts
+#ignore IDE-specific files
+*.classpath
+*.project
+*.iml
