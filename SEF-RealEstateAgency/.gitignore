@@ -7,7 +7,7 @@ bin/
 out/
 
 #ignore test folder
-#test/
+test/
 
 #ignore IDE-specific files
 *.classpath
