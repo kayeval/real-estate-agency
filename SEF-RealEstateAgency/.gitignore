@@ -1,6 +1,10 @@
-bin/
+#ignore bin folder
+.bin/
 .settings/
+
+#ignore other variables
 .classpath
 .project
 
-src/abstracts
+#test if abstracts changes is ignored
+.src/abstracts
