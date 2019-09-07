@@ -6,8 +6,8 @@ bin/
 .idea/
 out/
 
-#ignore tests folder (temporarily)
-src/tests/
+#ignore test folder (temporarily)
+#src/test/
 
 #ignore IDE-specific files
 *.classpath
