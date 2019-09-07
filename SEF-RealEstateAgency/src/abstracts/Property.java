@@ -4,6 +4,9 @@ import java.util.Date;
 
 public abstract class Property {
 	
+	// test
+	
+	
 	private String propertyID;
 	private double price;
 	private Date dateListed;
