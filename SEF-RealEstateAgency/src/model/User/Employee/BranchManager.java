@@ -1,4 +1,6 @@
-package model.Employee;
+package model.User.Employee;
+
+import model.User.Employee;
 
 public class BranchManager extends Employee {
 

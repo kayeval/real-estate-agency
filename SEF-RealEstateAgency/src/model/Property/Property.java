@@ -1,6 +1,6 @@
 package model.Property;
 
-import model.PropertyOwner.PropertyOwner;
+import model.User.PropertyOwner.PropertyOwner;
 import model.Proposal.Proposal;
 
 import java.util.Date;

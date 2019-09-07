@@ -1,4 +1,4 @@
-package model.PropertyOwner;
+package model.User.PropertyOwner;
 
 public abstract class PropertyOwner {
 

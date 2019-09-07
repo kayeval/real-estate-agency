@@ -1,4 +1,4 @@
-package model.Employee.SalesPerson;
+package model.User.Employee.SalesPerson;
 
 public class PropertyManager extends SalesPerson {
 
