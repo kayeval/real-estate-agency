@@ -1,9 +1,11 @@
 package main.model.Property;
 
-public class SaleProperty extends Property {
+import main.model.User.PropertyOwner.PropertyOwner;
 
-    public SaleProperty(double price) {
-        super(price);
+public class SaleProperty extends Property {
+	
+    public SaleProperty(String address, String suburb, Capacity capacity, Type type, double price, PropertyOwner propertyOwner) {
+    	super(address, suburb, capacity, type, price, propertyOwner);
     }
 
 }
