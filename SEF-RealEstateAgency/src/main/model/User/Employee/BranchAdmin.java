@@ -26,13 +26,14 @@ public class BranchAdmin extends Employee {
     }
     public double calculateManagementFee(ArrayList<PropertyOwner> propertyOwners, ArrayList<Property> listings)
     {
+    	//needs logic
     	return (Double) null;
     }
-    public boolean runPayroll()
+    public boolean runPayroll(HashMap<String, Employee> employees, HashMap<String, Property> listings, BankAccount account)
     {
-    	//payEmployees();
-    	//payComission();
-    	//payLandlords();
+    	payEmployees(employees);
+    	payCommission(listings, account);
+    	payLandlords(listings);
     	return false;
     }
     public boolean payEmployees(HashMap<String, Employee> employees)

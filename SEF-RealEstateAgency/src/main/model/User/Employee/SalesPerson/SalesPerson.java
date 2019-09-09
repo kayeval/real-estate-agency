@@ -1,22 +1,26 @@
 package main.model.User.Employee.SalesPerson;
+import java.util.HashMap;
+
+import main.model.Inspection;
+import main.model.Property.Property;
+import main.model.User.Customer.Customer;
 import main.model.User.Employee.Employee;
 
 public abstract class SalesPerson extends Employee {
-	//private HashMap<String, Property> assignedProperties;
-	//private HashMap<String, Inspection> scheduledInspections;
+	private HashMap<String, Property> assignedProperties;
+	private HashMap<String, Inspection> scheduledInspections;
 	
 	public SalesPerson(String name, String email)
 	{
 		super(name, email);
 	}
-	/*
-	public ArrayList<Property> getAssignedProperties()
+	public HashMap<String, Property> getAssignedProperties()
 	{
 		return assignedProperties;
 	}
 	public void addProperty(Property property)
 	{
-		assignedProperties.add(property);
+		assignedProperties.put(property.getPropertyID(),property);
 	}	
 	public boolean scheduleInspection(Property property, Customer person)
 	{
@@ -32,7 +36,6 @@ public abstract class SalesPerson extends Employee {
 	{
 		//no functionality required 
 	}
-	*/
 	public boolean contactUser(String userID)
 	{
 		//contact
