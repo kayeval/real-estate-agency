@@ -1,11 +1,19 @@
 package main.model.Property;
 
+import main.model.Proposal.ContractDuration;
 import main.model.User.PropertyOwner.PropertyOwner;
 
-public class RentalProperty extends Property {
+import java.util.Set;
 
-    public RentalProperty(String address, String suburb, Capacity capacity, Type type, double price, PropertyOwner propertyOwner) {
-    	super(address, suburb, capacity, type, price, propertyOwner);
+public class RentalProperty extends Property {
+    private Set<ContractDuration> acceptedDurations;
+
+    public RentalProperty(String address, String suburb, Capacity capacity, Type type, double price, PropertyOwner propertyOwner, Set<ContractDuration> acceptedDurations) throws DeactivatedPropertyException {
+        super(address, suburb, capacity, type, price, propertyOwner);
+        this.acceptedDurations = acceptedDurations;
     }
 
+    public Set<ContractDuration> getAcceptedDurations() {
+        return acceptedDurations;
+    }
 }

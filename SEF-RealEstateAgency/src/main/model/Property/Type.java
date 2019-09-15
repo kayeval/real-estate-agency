@@ -1,5 +1,5 @@
 package main.model.Property;
 
 public enum Type {
-	HOUSE,UNIT,FLAT,TWONHOUSE,STUDIO
+    HOUSE, UNIT, FLAT, TOWNHOUSE, STUDIO
 }

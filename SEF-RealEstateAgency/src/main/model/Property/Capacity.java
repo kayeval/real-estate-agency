@@ -2,39 +2,39 @@ package main.model.Property;
 
 public class Capacity {
 
-	private int carSpaces;
-	private int bedrooms;
-	private int baths;
-	
-	public Capacity(int carSpaces, int bedrooms, int baths) {
-		super();
-		this.carSpaces = carSpaces;
-		this.bedrooms = bedrooms;
-		this.baths = baths;
-	}
+    private int carSpaces;
+    private int bedrooms;
+    private int baths;
 
-	public int getCarSpaces() {
-		return carSpaces;
-	}
+    public Capacity(int carSpaces, int bedrooms, int baths) {
+        super();
+        this.carSpaces = carSpaces;
+        this.bedrooms = bedrooms;
+        this.baths = baths;
+    }
 
-	public void setCarSpaces(int carSpaces) {
-		this.carSpaces = carSpaces;
-	}
+    public int getCarSpaces() {
+        return carSpaces;
+    }
 
-	public int getBedrooms() {
-		return bedrooms;
-	}
+    public void setCarSpaces(int carSpaces) {
+        this.carSpaces = carSpaces;
+    }
 
-	public void setBedrooms(int bedrooms) {
-		this.bedrooms = bedrooms;
-	}
+    public int getBedrooms() {
+        return bedrooms;
+    }
 
-	public int getBaths() {
-		return baths;
-	}
+    public void setBedrooms(int bedrooms) {
+        this.bedrooms = bedrooms;
+    }
 
-	public void setBaths(int baths) {
-		this.baths = baths;
-	}
-	
+    public int getBaths() {
+        return baths;
+    }
+
+    public void setBaths(int baths) {
+        this.baths = baths;
+    }
+
 }

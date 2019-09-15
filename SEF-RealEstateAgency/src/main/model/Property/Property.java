@@ -23,7 +23,7 @@ public abstract class Property {
     private Type type;
     private PropertyOwner propertyOwner;
 
-    public Property(String address, String suburb, Capacity capacity, Type type, double price, PropertyOwner propertyOwner) {
+    public Property(String address, String suburb, Capacity capacity, Type type, double price, PropertyOwner propertyOwner) throws DeactivatedPropertyException {
         setPrice(price);
         setAddress(address);
         setSuburb(suburb);
@@ -34,6 +34,7 @@ public abstract class Property {
         pendingProposals = new HashMap<>();
         documentsInspected = false;
         isActive = true;
+        propertyOwner.addProperty(this);
     }
 
     public void setAddress(String address) {
@@ -102,8 +103,11 @@ public abstract class Property {
         return this.propertyID;
     }
 
-    public boolean isActive() {
-        return isActive;
+    public boolean isActive() throws DeactivatedPropertyException {
+        if (!isActive)
+            throw new DeactivatedPropertyException();
+
+        return true;
     }
 
     public boolean areDocumentsInspected() {
@@ -116,5 +120,9 @@ public abstract class Property {
 
     public Map<String, Proposal> getPendingProposals() {
         return pendingProposals;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
     }
 }

@@ -1,8 +1,10 @@
 package main.model.User.Employee.SalesPerson;
 
+import main.model.User.InvalidEmailException;
+
 public class SalesConsultant extends SalesPerson {
 
-    public SalesConsultant(String name, String email) {
+    public SalesConsultant(String name, String email) throws InvalidEmailException {
         super(name, email);
     }
     

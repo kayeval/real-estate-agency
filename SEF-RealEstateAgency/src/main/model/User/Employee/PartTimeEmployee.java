@@ -1,5 +1,7 @@
 package main.model.User.Employee;
 
+import main.model.User.InvalidEmailException;
+
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.HashMap;
@@ -8,7 +10,7 @@ import java.util.Map;
 public class PartTimeEmployee extends Employee {
     private Map<LocalDate, Double> workingHours;
 
-    public PartTimeEmployee(String name, String email) {
+    public PartTimeEmployee(String name, String email) throws InvalidEmailException {
         super(name, email);
         workingHours = new HashMap<>();
     }

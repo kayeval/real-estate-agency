@@ -5,6 +5,7 @@ import main.model.Property.Property;
 import main.model.Proposal.ExpiredProposalException;
 import main.model.Proposal.Proposal;
 import main.model.Proposal.ProposalNotFoundException;
+import main.model.User.InvalidEmailException;
 import main.model.User.User;
 
 import java.time.LocalDate;
@@ -17,13 +18,13 @@ import java.util.Map;
 public abstract class PropertyOwner extends User {
     private Map<String, Property> listedProperties;
 
-    public PropertyOwner(String name, String email) {
+    public PropertyOwner(String name, String email) throws InvalidEmailException {
         super(name, email);
         listedProperties = new HashMap<>();
     }
 
-    public void addProperty(Property property) throws NotListedPropertyException, DeactivatedPropertyException {
-        if (isActiveProperty(property) && isListedProperty(property)) {
+    public void addProperty(Property property) throws DeactivatedPropertyException {
+        if (property.isActive()) {
             Property p = listedProperties.putIfAbsent(property.getPropertyID(), property);
 
             if (p != null) {
@@ -33,7 +34,7 @@ public abstract class PropertyOwner extends User {
     }
 
     public boolean editProperty(Property property) throws NotListedPropertyException, DeactivatedPropertyException {
-        if (isActiveProperty(property) && isListedProperty(property)) {
+        if (property.isActive() && isListedProperty(property)) {
             //todo
             return true;
         }
@@ -44,20 +45,17 @@ public abstract class PropertyOwner extends User {
         return new ArrayList<Property>(listedProperties.values());
     }
 
-    public boolean acceptProposal(Proposal proposal) throws ExpiredProposalException, NotListedPropertyException, DeactivatedPropertyException {
-        if (isActiveProperty(proposal.getProperty()) && isListedProperty(proposal.getProperty())) {
+    public void acceptProposal(Proposal proposal) throws ExpiredProposalException, NotListedPropertyException, DeactivatedPropertyException {
+        if (proposal.getProperty().isActive() && isListedProperty(proposal.getProperty())) {
             LocalDate now = LocalDate.now(ZoneId.systemDefault());
-            Period period = Period.between(now, proposal.getSubmissionDate());
-
+            Period period = Period.between(proposal.getSubmissionDate(), now);
             if (period.getDays() > 3) {
                 throw new ExpiredProposalException();
             }
 
             proposal.getProperty().setAcceptedProposal(proposal);
-
-            return true;
+            proposal.getCustomer().addProperty(proposal.getProperty());
         }
-        return false;
     }
 
     public boolean rejectProposal(Proposal proposal) throws NotListedPropertyException, ProposalNotFoundException {
@@ -76,13 +74,6 @@ public abstract class PropertyOwner extends User {
     public boolean isListedProperty(Property property) throws NotListedPropertyException {
         if (findProperty(property) == null)
             throw new NotListedPropertyException();
-
-        return true;
-    }
-
-    public boolean isActiveProperty(Property property) throws DeactivatedPropertyException {
-        if (!property.isActive())
-            throw new DeactivatedPropertyException();
 
         return true;
     }
