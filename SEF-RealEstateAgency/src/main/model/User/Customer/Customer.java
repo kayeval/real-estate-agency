@@ -6,6 +6,7 @@ import main.model.Property.Property;
 import main.model.Property.SoldPropertyException;
 import main.model.Proposal.InvalidContractDurationException;
 import main.model.Proposal.Proposal;
+import main.model.Proposal.ProposalNotFoundException;
 import main.model.User.InvalidEmailException;
 import main.model.User.User;
 
@@ -51,7 +52,7 @@ public abstract class Customer extends User {
         }
     }
 
-    public abstract void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException, SoldPropertyException;
+    public abstract void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException, SoldPropertyException, ProposalNotFoundException;
 
     public Map<String, Proposal> getProposals() {
         return proposals;

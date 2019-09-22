@@ -42,26 +42,27 @@ public abstract class PropertyOwner extends User {
     }
 
     public ArrayList<Property> getProperties() {
-        return new ArrayList<Property>(listedProperties.values());
+        return new ArrayList<>(listedProperties.values());
     }
 
-    public void acceptProposal(Proposal proposal) throws ExpiredProposalException, NotListedPropertyException, DeactivatedPropertyException {
-        if (proposal.getProperty().isActive() && isListedProperty(proposal.getProperty())) {
+    public void acceptProposal(Proposal proposal) throws ProposalNotFoundException, ExpiredProposalException,
+            NotListedPropertyException, DeactivatedPropertyException {
+        if (proposal.getProperty().hasProposal(proposal.getProposalID()) && proposal.getProperty().isActive() && isListedProperty(proposal.getProperty())) {
             LocalDate now = LocalDate.now(ZoneId.systemDefault());
             Period period = Period.between(proposal.getSubmissionDate(), now);
             if (period.getDays() > 3) {
                 throw new ExpiredProposalException();
             }
 
-            proposal.getProperty().setAcceptedProposal(proposal);
+            proposal.setAccepted(true);
             proposal.getCustomer().addProperty(proposal.getProperty());
+            //Q: once a proposal has been accepted, will the property be set as deactivated?
         }
     }
 
     public boolean rejectProposal(Proposal proposal) throws NotListedPropertyException, ProposalNotFoundException {
-        if (isListedProperty(proposal.getProperty())) {
-            Proposal toRemove = proposal.getProperty().findProposal(proposal.getProposalID());
-            proposal.getProperty().getPendingProposals().remove(toRemove.getProposalID());
+        if (proposal.getProperty().hasProposal(proposal.getProposalID()) && isListedProperty(proposal.getProperty())) {
+            proposal.setAccepted(false);
             return true;
         }
         return false;

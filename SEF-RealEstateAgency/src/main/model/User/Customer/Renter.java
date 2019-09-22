@@ -5,6 +5,7 @@ import main.model.Property.SoldPropertyException;
 import main.model.Proposal.Application;
 import main.model.Proposal.InvalidContractDurationException;
 import main.model.Proposal.Proposal;
+import main.model.Proposal.ProposalNotFoundException;
 import main.model.User.InvalidEmailException;
 
 public class Renter extends Customer {
@@ -34,16 +35,11 @@ public class Renter extends Customer {
     }
 
     @Override
-    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, SoldPropertyException, InvalidContractDurationException {
+    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, SoldPropertyException,
+            InvalidContractDurationException, ProposalNotFoundException {
         if (proposal.getProperty().isActive() && ((Application) proposal).hasAcceptableContractDuration()) {
-            if (proposal.getProperty().getAcceptedProposal() != null)
+            if (proposal.getProperty().hasAcceptedProposal(proposal.getProposalID()))
                 throw new SoldPropertyException();
-
-            Proposal p = getProposals().putIfAbsent(proposal.getProposalID(), proposal);
-
-            if (p != null) {
-                getProposals().replace(proposal.getProposalID(), proposal);
-            }
 
             proposal.getProperty().addProposal(proposal);
         }

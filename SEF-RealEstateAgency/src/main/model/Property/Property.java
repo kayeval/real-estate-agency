@@ -6,16 +6,13 @@ import main.model.User.PropertyOwner.PropertyOwner;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class Property {
     private String propertyID;
     private double price;
     private LocalDate dateListed;
     private boolean isActive;
-    private Map<String, Proposal> pendingProposals;
-    private Proposal acceptedProposal;
+    private Proposal proposal;
     private boolean documentsInspected;
     private String address;
     private String suburb;
@@ -31,7 +28,6 @@ public abstract class Property {
         this.type = type;
         this.propertyOwner = propertyOwner;
         this.dateListed = LocalDate.now(ZoneId.systemDefault());
-        pendingProposals = new HashMap<>();
         documentsInspected = false;
         isActive = true;
         propertyOwner.addProperty(this);
@@ -46,25 +42,20 @@ public abstract class Property {
     }
 
     public void addProposal(Proposal proposal) {
-        Proposal p = pendingProposals.putIfAbsent(proposal.getProposalID(), proposal);
-
-        if (p != null) {
-            pendingProposals.replace(proposal.getProposalID(), proposal);
-        }
+        this.proposal = proposal;
     }
 
-    public void setAcceptedProposal(Proposal proposal) {
-        pendingProposals.clear();
-        this.acceptedProposal = proposal;
-    }
-
-    public Proposal findProposal(String proposalID) throws ProposalNotFoundException {
-        Proposal p = pendingProposals.get(proposalID);
-
-        if (p == null)
+    public boolean hasProposal(String proposalID) throws ProposalNotFoundException {
+        if (!proposal.getProposalID().equals(proposalID))
             throw new ProposalNotFoundException();
 
-        return p;
+        return true;
+    }
+
+    public boolean hasAcceptedProposal(String proposalID) throws ProposalNotFoundException {
+        if (proposal != null)
+            return hasProposal(proposalID) && proposal.isAccepted();
+        return false;
     }
 
     public void setPrice(double price) {
@@ -114,12 +105,8 @@ public abstract class Property {
         return documentsInspected;
     }
 
-    public Proposal getAcceptedProposal() {
-        return acceptedProposal;
-    }
-
-    public Map<String, Proposal> getPendingProposals() {
-        return pendingProposals;
+    public Proposal getProposal() {
+        return proposal;
     }
 
     public void deactivate() {

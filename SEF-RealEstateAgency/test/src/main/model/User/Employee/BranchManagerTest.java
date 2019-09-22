@@ -1,14 +1,14 @@
 package main.model.User.Employee;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import main.model.Property.SaleProperty;
+import main.model.User.Employee.SalesPerson.SalesConsultant;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import main.model.Property.SaleProperty;
-import main.model.User.Employee.SalesPerson.SalesConsultant;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BranchManagerTest {
 	
