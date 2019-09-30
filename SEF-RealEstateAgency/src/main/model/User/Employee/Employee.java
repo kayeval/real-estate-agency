@@ -7,8 +7,9 @@ public abstract class Employee extends User {
     private String hireDate;
     private double salary;
 
-    public Employee(String name, String email) throws InvalidEmailException {
+    public Employee(String name, String email, double salary) throws InvalidEmailException {
         super(name, email);
+        this.salary = salary;
     }
 
     public String getHireDuration() {
@@ -18,6 +19,15 @@ public abstract class Employee extends User {
 
     public double getSalary() {
         return salary;
+    }
+    
+    public boolean setSalary(double salary) {
+    	if (salary > 0)
+    	{
+    		this.salary = salary;
+        	return true;
+    	}
+    	return false;
     }
 
 }

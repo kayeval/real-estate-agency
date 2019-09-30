@@ -12,8 +12,8 @@ public abstract class SalesPerson extends Employee {
     private HashMap<String, Property> assignedProperties;
     private HashMap<String, Inspection> scheduledInspections;
 
-    public SalesPerson(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public SalesPerson(String name, String email, double salary) throws InvalidEmailException {
+        super(name, email, salary);
     }
 
     public HashMap<String, Property> getAssignedProperties() {
