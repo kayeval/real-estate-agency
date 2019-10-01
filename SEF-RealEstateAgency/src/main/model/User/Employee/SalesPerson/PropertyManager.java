@@ -4,8 +4,8 @@ import main.model.User.InvalidEmailException;
 
 public class PropertyManager extends SalesPerson {
 
-    public PropertyManager(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public PropertyManager(String name, String email, double salary) throws InvalidEmailException {
+        super(name, email, salary);
     }
     
     /*
