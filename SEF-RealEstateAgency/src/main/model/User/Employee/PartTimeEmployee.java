@@ -50,4 +50,6 @@ public class PartTimeEmployee extends Employee {
 	public void setHoursApproved(boolean hoursApproved) {
 		this.hoursApproved = hoursApproved;
 	}
+	
+	//test message 
 }
