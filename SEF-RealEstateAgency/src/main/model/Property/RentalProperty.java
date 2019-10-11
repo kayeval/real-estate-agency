@@ -8,8 +8,8 @@ import java.util.Set;
 public class RentalProperty extends Property {
     private Set<ContractDuration> acceptedDurations;
 
-    public RentalProperty(String address, String suburb, Capacity capacity, Type type, double price, PropertyOwner propertyOwner, Set<ContractDuration> acceptedDurations) throws DeactivatedPropertyException {
-        super(address, suburb, capacity, type, price, propertyOwner);
+    public RentalProperty(String address, String suburb, Capacity capacity, PropertyType propertyType, double price, PropertyOwner propertyOwner, Set<ContractDuration> acceptedDurations) throws DeactivatedPropertyException {
+        super(address, suburb, capacity, propertyType, price, propertyOwner);
         this.acceptedDurations = acceptedDurations;
     }
 

@@ -1,21 +1,21 @@
 package main.model.User.Employee;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import main.model.Property.SaleProperty;
+import main.model.User.Employee.SalesPerson.SalesConsultant;
+import main.model.User.PropertyOwner.Vendor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import main.model.Property.SaleProperty;
-import main.model.User.Employee.SalesPerson.SalesConsultant;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class BranchManagerTest {
-	
-	BranchManager manager;
-	SalesConsultant partTime;
-	SaleProperty property;
-	
+
+    BranchManager manager;
+    SalesConsultant partTime;
+    SaleProperty property;
+
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
@@ -26,29 +26,15 @@ public class BranchManagerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-    	
-    	manager = new BranchManager("name", "email");
-    	partTime = new SalesConsultant("name", "email");
-    	property = new SaleProperty(null, null, null, null, 0, null);
-    	
+//        manager = new BranchManager("name", "email@email.com");
+//        partTime = new SalesConsultant("name", "email@email.com");
+        property = new SaleProperty(null, null, null, null, 0, new Vendor("Test", "test@test.com"));
+
     }
 
     @Test
     public void test() {
-    	
-    	assertNotNull(manager);
-    	assertNotNull(partTime);
-    	//assertFalse(manager.approveHours(partTime));
-    	//assertFalse(manager.disapproveHours(partTime));
-    	manager.assignProperty(partTime, property);
-    	partTime.addProperty(property);
-    	//need to add this functionality to manager
-    	
-    	assertNotNull(partTime.getAssignedProperties());
-    	assertFalse(manager.inspectDocuments(property));
- 
-    	
-    	
+        fail("Not yet implemented");
     }
-    
+
 }

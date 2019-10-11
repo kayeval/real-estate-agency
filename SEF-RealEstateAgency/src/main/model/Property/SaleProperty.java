@@ -4,8 +4,8 @@ import main.model.User.PropertyOwner.PropertyOwner;
 
 public class SaleProperty extends Property {
 
-    public SaleProperty(String address, String suburb, Capacity capacity, Type type, double price, PropertyOwner propertyOwner) throws DeactivatedPropertyException {
-        super(address, suburb, capacity, type, price, propertyOwner);
+    public SaleProperty(String address, String suburb, Capacity capacity, PropertyType propertyType, double price, PropertyOwner propertyOwner) throws DeactivatedPropertyException {
+        super(address, suburb, capacity, propertyType, price, propertyOwner);
     }
 
 }

@@ -10,8 +10,8 @@ import java.util.Map;
 public class PartTimeEmployee extends Employee {
     private Map<LocalDate, Double> workingHours;
 
-    public PartTimeEmployee(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public PartTimeEmployee(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(name, email, hireDate, salary);
         workingHours = new HashMap<>();
     }
 

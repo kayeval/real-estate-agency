@@ -42,29 +42,7 @@ public abstract class PropertyOwner extends User {
     }
 
     public ArrayList<Property> getProperties() {
-        return new ArrayList<Property>(listedProperties.values());
-    }
-
-    public void acceptProposal(Proposal proposal) throws ExpiredProposalException, NotListedPropertyException, DeactivatedPropertyException {
-        if (proposal.getProperty().isActive() && isListedProperty(proposal.getProperty())) {
-            LocalDate now = LocalDate.now(ZoneId.systemDefault());
-            Period period = Period.between(proposal.getSubmissionDate(), now);
-            if (period.getDays() > 3) {
-                throw new ExpiredProposalException();
-            }
-
-            proposal.getProperty().setAcceptedProposal(proposal);
-            proposal.getCustomer().addProperty(proposal.getProperty());
-        }
-    }
-
-    public boolean rejectProposal(Proposal proposal) throws NotListedPropertyException, ProposalNotFoundException {
-        if (isListedProperty(proposal.getProperty())) {
-            Proposal toRemove = proposal.getProperty().findProposal(proposal.getProposalID());
-            proposal.getProperty().getPendingProposals().remove(toRemove.getProposalID());
-            return true;
-        }
-        return false;
+        return new ArrayList<>(listedProperties.values());
     }
 
     public Property findProperty(Property property) {

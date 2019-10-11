@@ -1,0 +1,8 @@
+/*#registerTxt {*/
+/*  -fx-background-color:transparent;*/
+/*}*/
+
+#registerTxt:hover {
+  /*-fx-background-color: #dae7f3;*/
+  -fx-text-fill: #dae7f3;
+}

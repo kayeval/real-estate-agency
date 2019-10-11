@@ -1,11 +1,10 @@
 package main.model.User.Customer;
 
+import main.model.Property.DeactivatedPropertyException;
 import main.model.Property.Property;
 import main.model.Property.RentalProperty;
-import main.model.Proposal.Application;
-import main.model.Proposal.ContractDuration;
-import main.model.Proposal.InvalidContractDurationException;
-import main.model.Proposal.Proposal;
+import main.model.Property.SoldPropertyException;
+import main.model.Proposal.*;
 import main.model.User.PropertyOwner.Landlord;
 import main.model.User.PropertyOwner.PropertyOwner;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,5 +46,17 @@ public class RenterTest {
         InvalidContractDurationException ex = assertThrows(InvalidContractDurationException.class, () ->
                 renter.submitProposal(proposal));
         assertEquals("This contract duration is not among the choices given by the landlord.", ex.getMessage());
+    }
+
+    @Test
+    public void submitApplicationTest() {
+        proposal = new Application(date, 11000, property, renter, ContractDuration.ONE_YEAR);
+        try {
+            renter.submitProposal(proposal);
+        } catch (DeactivatedPropertyException | InvalidContractDurationException | SoldPropertyException | ProposalNotFoundException | PendingProposalException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(proposal.getProposalID(), proposal.getProperty().getProposal().getProposalID());
     }
 }

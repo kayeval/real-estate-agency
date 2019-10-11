@@ -1,7 +1,6 @@
 package main.model.Property;
 
 public class Capacity {
-
     private int carSpaces;
     private int bedrooms;
     private int baths;

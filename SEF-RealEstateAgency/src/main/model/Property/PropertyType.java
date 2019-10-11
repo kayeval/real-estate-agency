@@ -1,5 +1,5 @@
 package main.model.Property;
 
-public enum Type {
+public enum PropertyType {
     HOUSE, UNIT, FLAT, TOWNHOUSE, STUDIO
 }

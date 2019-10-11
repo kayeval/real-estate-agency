@@ -5,13 +5,14 @@ import main.model.Property.Property;
 import main.model.User.InvalidEmailException;
 import main.model.User.PropertyOwner.PropertyOwner;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class BranchAdmin extends Employee {
 
-    public BranchAdmin(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public BranchAdmin(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(name, email, hireDate, salary);
     }
 
     public boolean receiveDocuments(String document) {

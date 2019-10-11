@@ -2,27 +2,29 @@ package main.model.User.Customer;
 
 import main.model.Inspection;
 import main.model.Property.DeactivatedPropertyException;
-import main.model.Property.Property;
 import main.model.Property.SoldPropertyException;
 import main.model.Proposal.InvalidContractDurationException;
+import main.model.Proposal.PendingProposalException;
 import main.model.Proposal.Proposal;
+import main.model.Proposal.ProposalNotFoundException;
 import main.model.User.InvalidEmailException;
 import main.model.User.User;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Customer extends User {
     private Map<String, Proposal> proposals;
-    private Map<String, Property> properties;
+    private Set<String> preferredSuburbs;
     private Map<String, Inspection> scheduledInspections;
-    private String accountNo;
 
     public Customer(String name, String email) throws InvalidEmailException {
         super(name, email);
         proposals = new HashMap<>();
-        properties = new HashMap<>();
         scheduledInspections = new HashMap<>();
+        preferredSuburbs = new HashSet<>();
     }
 
     public void addProposal(Proposal proposal) throws DeactivatedPropertyException {
@@ -35,14 +37,6 @@ public abstract class Customer extends User {
         }
     }
 
-    public void addProperty(Property property) {
-        Property p = properties.putIfAbsent(property.getPropertyID(), property);
-
-        if (p != null) {
-            properties.replace(property.getPropertyID(), property);
-        }
-    }
-
     public void addInspection(Inspection inspection) {
         Inspection i = scheduledInspections.putIfAbsent(inspection.getInspectionID(), inspection);
 
@@ -51,7 +45,11 @@ public abstract class Customer extends User {
         }
     }
 
-    public abstract void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException, SoldPropertyException;
+    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException,
+            SoldPropertyException, ProposalNotFoundException, PendingProposalException {
+        proposal.getProperty().addProposal(proposal);
+        addProposal(proposal);
+    }
 
     public Map<String, Proposal> getProposals() {
         return proposals;
@@ -61,11 +59,7 @@ public abstract class Customer extends User {
         return scheduledInspections;
     }
 
-    public Map<String, Property> getProperties() {
-        return properties;
-    }
-
-    public String getAccountNo() {
-        return accountNo;
+    public Set<String> getPreferredSuburbs() {
+        return preferredSuburbs;
     }
 }

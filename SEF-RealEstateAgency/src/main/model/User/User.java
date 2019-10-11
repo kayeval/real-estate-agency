@@ -4,18 +4,23 @@ import java.util.regex.Pattern;
 
 public abstract class User {
     private String userID;
-    private String name;
+    private String username;
     private String email;
 
-    public User(String name, String email) throws InvalidEmailException {
-        setName(name);
+    public User(String username, String email) throws InvalidEmailException {
+        setUsername(username);
         setEmail(email);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    //TODO REMOVE INVALID EMAIL EXCEPTION
     public void setEmail(String email) throws InvalidEmailException {
         if (!isValidEmailFormat(email))
             throw new InvalidEmailException();
@@ -26,12 +31,18 @@ public abstract class User {
         return this.userID;
     }
 
-    public String getName() {
-        return this.name;
+    public String getUsername() {
+        return this.username;
     }
 
     public String getEmail() {
         return this.email;
+    }
+
+    public boolean isValidUsernameFormat(String username) {
+        final Pattern USERNAME_REGEX = Pattern.compile("^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$",
+                Pattern.CASE_INSENSITIVE);
+        return USERNAME_REGEX.matcher(username).matches();
     }
 
     public boolean isValidEmailFormat(String email) {
