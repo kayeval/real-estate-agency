@@ -20,8 +20,8 @@ public abstract class SalesPerson extends Employee {
     private HashMap<String, Property> assignedProperties;
     private HashMap<String, Inspection> scheduledInspections;
 
-    public SalesPerson(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
-        super(name, email, hireDate, salary);
+    public SalesPerson(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(username, email, hireDate, salary);
     }
 
     public HashMap<String, Property> getAssignedProperties() {
@@ -53,6 +53,8 @@ public abstract class SalesPerson extends Employee {
 
     public void acceptProposal(Proposal proposal) throws ProposalNotFoundException, ExpiredProposalException,
             NotListedPropertyException, DeactivatedPropertyException {
+        //must check if the property has been assigned to this employee
+
         if (proposal.getProperty().hasProposal(proposal.getProposalID()) && proposal.getProperty().isActive() && assignedProperties.get(proposal.getProperty().getPropertyID()).getPropertyOwner().isListedProperty(proposal.getProperty())) {
             LocalDate now = LocalDate.now(ZoneId.systemDefault());
             Period period = Period.between(proposal.getSubmissionDate(), now);

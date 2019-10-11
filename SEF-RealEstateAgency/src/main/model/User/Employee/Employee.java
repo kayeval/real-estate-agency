@@ -11,8 +11,8 @@ public abstract class Employee extends User {
     private LocalDate hireDate;
     private double salary;
 
-    public Employee(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
-        super(name, email);
+    public Employee(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(username, email);
         this.hireDate = hireDate;
         setSalary(salary);
     }

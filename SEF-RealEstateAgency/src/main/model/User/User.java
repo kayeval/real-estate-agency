@@ -20,7 +20,7 @@ public abstract class User {
         this.username = username;
     }
 
-    //TODO REMOVE INVALID EMAIL EXCEPTION
+    //TODO REMOVE INVALID EMAIL EXCEPTION ? (validated in gui)
     public void setEmail(String email) throws InvalidEmailException {
         if (!isValidEmailFormat(email))
             throw new InvalidEmailException();

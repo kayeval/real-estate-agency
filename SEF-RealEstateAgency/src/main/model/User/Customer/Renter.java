@@ -2,18 +2,15 @@ package main.model.User.Customer;
 
 import main.model.Property.DeactivatedPropertyException;
 import main.model.Property.SoldPropertyException;
-import main.model.Proposal.Application;
-import main.model.Proposal.InvalidContractDurationException;
-import main.model.Proposal.Proposal;
-import main.model.Proposal.ProposalNotFoundException;
+import main.model.Proposal.*;
 import main.model.User.InvalidEmailException;
 
 public class Renter extends Customer {
     private double income;
     private String occupation;
 
-    public Renter(String name, String email, double income, String occupation) throws InvalidEmailException {
-        super(name, email);
+    public Renter(String username, String email, double income, String occupation) throws InvalidEmailException {
+        super(username, email);
         setIncome(income);
         setOccupation(occupation);
     }
@@ -36,12 +33,9 @@ public class Renter extends Customer {
 
     @Override
     public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, SoldPropertyException,
-            InvalidContractDurationException, ProposalNotFoundException {
+            InvalidContractDurationException, ProposalNotFoundException, PendingProposalException {
         if (proposal.getProperty().isActive() && ((Application) proposal).hasAcceptableContractDuration()) {
-            if (proposal.getProperty().hasAcceptedProposal(proposal.getProposalID()))
-                throw new SoldPropertyException();
-
-            proposal.getProperty().addProposal(proposal);
+            super.submitProposal(proposal);
         }
     }
 

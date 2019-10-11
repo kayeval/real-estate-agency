@@ -13,8 +13,8 @@ import java.util.Map.Entry;
 
 public class BranchAdmin extends Employee {
 
-    public BranchAdmin(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
-        super(name, email, hireDate, salary);
+    public BranchAdmin(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(username, email, hireDate, salary);
     }
 
     public boolean receiveDocuments(String document) {

@@ -20,8 +20,8 @@ public abstract class Customer extends User {
     private Set<String> preferredSuburbs;
     private Map<String, Inspection> scheduledInspections;
 
-    public Customer(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public Customer(String username, String email) throws InvalidEmailException {
+        super(username, email);
         proposals = new HashMap<>();
         scheduledInspections = new HashMap<>();
         preferredSuburbs = new HashSet<>();
@@ -45,7 +45,19 @@ public abstract class Customer extends User {
         }
     }
 
-    public abstract void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException, SoldPropertyException, ProposalNotFoundException;
+    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException, SoldPropertyException, ProposalNotFoundException, PendingProposalException {
+        if (proposal.getProperty().hasAcceptedProposal(proposal.getProposalID()))
+            throw new SoldPropertyException();
+
+        if (proposal.getProperty().getProposal() == null) {
+            Proposal p = getProposals().putIfAbsent(proposal.getProposalID(), proposal);
+
+            if (p != null)
+                getProposals().replace(proposal.getProposalID(), proposal);
+
+            proposal.getProperty().addProposal(proposal);
+        } else throw new PendingProposalException();
+    }
 
     public Map<String, Proposal> getProposals() {
         return proposals;

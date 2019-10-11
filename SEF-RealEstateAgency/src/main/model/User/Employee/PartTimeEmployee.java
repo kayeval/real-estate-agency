@@ -11,8 +11,8 @@ public class PartTimeEmployee extends Employee {
     private Map<LocalDate, Double> workingHours;
     private boolean hoursApproved = false;
 
-    public PartTimeEmployee(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
-        super(name, email, hireDate, salary);
+    public PartTimeEmployee(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(username, email, hireDate, salary);
         workingHours = new HashMap<>();
     }
 

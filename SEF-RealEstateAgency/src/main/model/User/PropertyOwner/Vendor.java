@@ -4,8 +4,8 @@ import main.model.User.InvalidEmailException;
 
 public class Vendor extends PropertyOwner {
 
-    public Vendor(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public Vendor(String username, String email) throws InvalidEmailException {
+        super(username, email);
     }
 
 }

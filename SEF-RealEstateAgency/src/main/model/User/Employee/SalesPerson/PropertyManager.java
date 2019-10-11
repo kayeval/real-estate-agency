@@ -6,8 +6,8 @@ import java.time.LocalDate;
 
 public class PropertyManager extends SalesPerson {
 
-    public PropertyManager(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
-        super(name, email, hireDate, salary);
+    public PropertyManager(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(username, email, hireDate, salary);
     }
     
     /*

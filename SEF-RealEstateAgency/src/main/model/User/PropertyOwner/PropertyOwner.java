@@ -18,8 +18,8 @@ import java.util.Map;
 public abstract class PropertyOwner extends User {
     private Map<String, Property> listedProperties;
 
-    public PropertyOwner(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public PropertyOwner(String username, String email) throws InvalidEmailException {
+        super(username, email);
         listedProperties = new HashMap<>();
     }
 
@@ -43,29 +43,6 @@ public abstract class PropertyOwner extends User {
 
     public ArrayList<Property> getProperties() {
         return new ArrayList<>(listedProperties.values());
-    }
-
-    public void acceptProposal(Proposal proposal) throws ProposalNotFoundException, ExpiredProposalException,
-            NotListedPropertyException, DeactivatedPropertyException {
-        if (proposal.getProperty().hasProposal(proposal.getProposalID()) && proposal.getProperty().isActive() && isListedProperty(proposal.getProperty())) {
-            LocalDate now = LocalDate.now(ZoneId.systemDefault());
-            Period period = Period.between(proposal.getSubmissionDate(), now);
-            if (period.getDays() > 3) {
-                throw new ExpiredProposalException();
-            }
-
-            proposal.setAccepted(true);
-//            proposal.getCustomer().addProperty(proposal.getProperty());
-            //Q: once a proposal has been accepted, will the property be set as deactivated?
-        }
-    }
-
-    public boolean rejectProposal(Proposal proposal) throws NotListedPropertyException, ProposalNotFoundException {
-        if (proposal.getProperty().hasProposal(proposal.getProposalID()) && isListedProperty(proposal.getProperty())) {
-            proposal.setAccepted(false);
-            return true;
-        }
-        return false;
     }
 
     public Property findProperty(Property property) {

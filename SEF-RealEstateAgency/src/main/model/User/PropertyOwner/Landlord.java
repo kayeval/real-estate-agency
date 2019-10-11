@@ -4,8 +4,8 @@ import main.model.User.InvalidEmailException;
 
 public class Landlord extends PropertyOwner {
 
-    public Landlord(String name, String email) throws InvalidEmailException {
-        super(name, email);
+    public Landlord(String username, String email) throws InvalidEmailException {
+        super(username, email);
     }
 
 }

@@ -8,8 +8,8 @@ import main.model.User.InvalidEmailException;
 
 public class BranchManager extends Employee {
 
-    public BranchManager(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
-        super(name, email, hireDate, salary);
+    public BranchManager(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
+        super(username, email, hireDate, salary);
     }
 
     public boolean hasHours(PartTimeEmployee partTimeEmployee) throws HoursNotFoundException {
