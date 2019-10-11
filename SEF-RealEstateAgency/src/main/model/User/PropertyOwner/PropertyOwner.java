@@ -43,7 +43,6 @@ public abstract class PropertyOwner extends User {
 
     public ArrayList<Property> getProperties() {
         return new ArrayList<>(listedProperties.values());
-        return new ArrayList<>(listedProperties.values());
     }
 
     public void acceptProposal(Proposal proposal) throws ProposalNotFoundException, ExpiredProposalException,
@@ -56,7 +55,7 @@ public abstract class PropertyOwner extends User {
             }
 
             proposal.setAccepted(true);
-            proposal.getCustomer().addProperty(proposal.getProperty());
+//            proposal.getCustomer().addProperty(proposal.getProperty());
             //Q: once a proposal has been accepted, will the property be set as deactivated?
         }
     }

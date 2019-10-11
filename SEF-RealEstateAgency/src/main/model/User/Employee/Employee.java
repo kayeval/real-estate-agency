@@ -22,10 +22,6 @@ public abstract class Employee extends User {
         return Period.between(hireDate, LocalDate.now(ZoneId.systemDefault()));
     }
 
-    public void setSalary(double salary) {
-        this.salary = salary;
-    }
-
     public double getSalary() {
         return salary;
     }

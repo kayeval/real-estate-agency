@@ -14,9 +14,9 @@ public class Buyer extends Customer {
     }
 
     @Override
-    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, SoldPropertyException {
+    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, SoldPropertyException, ProposalNotFoundException {
         if (proposal.getProperty().isActive()) {
-            if (proposal.getProperty().getAcceptedProposal() != null)
+            if (proposal.getProperty().hasAcceptedProposal(proposal.getProposalID()))
                 throw new SoldPropertyException();
 
             Proposal p = getProposals().putIfAbsent(proposal.getProposalID(), proposal);
