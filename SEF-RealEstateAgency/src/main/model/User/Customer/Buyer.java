@@ -14,16 +14,18 @@ public class Buyer extends Customer {
     }
 
     @Override
-    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, SoldPropertyException,
-            ProposalNotFoundException, InvalidContractDurationException, PendingProposalException {
-//        boolean canSubmit = false;
+    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, SoldPropertyException {
         if (proposal.getProperty().isActive()) {
-            if (proposal.getProperty().getProposal() != null) {
-                if (!proposal.getProperty().getProposal().getProposalID().equals(proposal.getProposalID()))
-                    throw new PendingProposalException();
+            if (proposal.getProperty().getAcceptedProposal() != null)
+                throw new SoldPropertyException();
 
+            Proposal p = getProposals().putIfAbsent(proposal.getProposalID(), proposal);
+
+            if (p != null) {
+                getProposals().replace(proposal.getProposalID(), proposal);
             }
-            super.submitProposal(proposal);
+
+            proposal.getProperty().addProposal(proposal);
         }
     }
 }

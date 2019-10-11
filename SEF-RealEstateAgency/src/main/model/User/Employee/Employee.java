@@ -30,4 +30,13 @@ public abstract class Employee extends User {
         return salary;
     }
 
+    public boolean setSalary(double salary) {
+    	if (salary > 0)
+    	{
+    		this.salary = salary;
+        	return true;
+    	}
+    	return false;
+    }
+
 }

@@ -45,11 +45,7 @@ public abstract class Customer extends User {
         }
     }
 
-    public void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException,
-            SoldPropertyException, ProposalNotFoundException, PendingProposalException {
-        proposal.getProperty().addProposal(proposal);
-        addProposal(proposal);
-    }
+    public abstract void submitProposal(Proposal proposal) throws DeactivatedPropertyException, InvalidContractDurationException, SoldPropertyException, ProposalNotFoundException;
 
     public Map<String, Proposal> getProposals() {
         return proposals;

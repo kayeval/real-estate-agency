@@ -8,6 +8,8 @@ import main.model.User.PropertyOwner.PropertyOwner;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class BranchAdmin extends Employee {
 
@@ -33,14 +35,48 @@ public class BranchAdmin extends Employee {
     }
 
     public boolean runPayroll(HashMap<String, Employee> employees, HashMap<String, Property> listings, BankAccount account) {
-        payEmployees(employees);
+        //payEmployees(employees);
         payCommission(listings, account);
         payLandlords(listings);
         return false;
     }
 
-    public boolean payEmployees(HashMap<String, Employee> employees) {
-        return false;
+    public boolean payAllEmployees(HashMap<String, Employee> employees) {
+
+    	for (Entry<String, Employee> entry :employees.entrySet()) {
+    		payEmployee(entry.getValue());
+    	}
+
+    	return true;
+    }
+
+    public boolean payEmployee(Employee employee) {
+    	double salary = employee.getSalary();
+    	//payroll functionality
+    	return true;
+    }
+
+    public boolean payEmployee(PartTimeEmployee ptEmployee) throws HoursNotFoundException, HoursNotApprovedException {
+    	if (ptEmployee.getHoursForMonth(LocalDate.now()) <= 0.0)
+    	{
+    		throw new HoursNotFoundException();
+    	}
+
+    	if (ptEmployee.isHoursApproved() == false)
+    	{
+    		throw new HoursNotApprovedException();
+    	}
+
+    	double salary = ptEmployee.getSalary();
+    	double fullTimeHours = 152.00;
+
+    	if (ptEmployee.isHoursApproved())
+    	{
+    		salary *= (ptEmployee.getHoursForMonth(LocalDate.now()) / fullTimeHours);
+    		//payroll functionality
+    		return true;
+    	}
+		return false;
     }
 
     public boolean payCommission(HashMap<String, Property> listings, BankAccount account) {

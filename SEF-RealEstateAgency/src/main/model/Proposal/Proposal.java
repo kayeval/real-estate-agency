@@ -19,6 +19,7 @@ public abstract class Proposal {
         this.customer = customer;
         this.property = property;
         this.accepted = false;
+        this.accepted = false;
     }
 
     public void setProposalID(String proposalID) {

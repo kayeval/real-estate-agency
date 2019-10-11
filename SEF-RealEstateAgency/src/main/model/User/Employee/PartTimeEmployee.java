@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class PartTimeEmployee extends Employee {
     private Map<LocalDate, Double> workingHours;
+    private boolean hoursApproved = false;
 
     public PartTimeEmployee(String name, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
         super(name, email, hireDate, salary);
@@ -24,14 +25,14 @@ public class PartTimeEmployee extends Employee {
     }
 
     public double getHoursForMonth(LocalDate date) {
-        double hours = -1.0;
+        double hours = .0;
         Month month = date.getMonth();
         LocalDate dateEntry;
 
         for (Map.Entry<LocalDate, Double> currentEntry : workingHours.entrySet()) {
             dateEntry = (LocalDate) currentEntry.getKey();
             if (dateEntry.getMonth() == month) {
-                hours = (double) currentEntry.getValue();
+                hours += (double) currentEntry.getValue();
             }
         }
 
@@ -41,4 +42,14 @@ public class PartTimeEmployee extends Employee {
     public Map<LocalDate, Double> getWorkingHours() {
         return workingHours;
     }
+
+	public boolean isHoursApproved() {
+		return hoursApproved;
+	}
+
+	public void setHoursApproved(boolean hoursApproved) {
+		this.hoursApproved = hoursApproved;
+	}
+
+	//test message
 }
