@@ -43,13 +43,13 @@ public class PartTimeEmployee extends Employee {
         return workingHours;
     }
 
-	public boolean isHoursApproved() {
-		return hoursApproved;
-	}
+    public boolean isHoursApproved() {
+        return hoursApproved;
+    }
 
-	public void setHoursApproved(boolean hoursApproved) {
-		this.hoursApproved = hoursApproved;
-	}
+    public void setHoursApproved(boolean hoursApproved) {
+        this.hoursApproved = hoursApproved;
+    }
 
-	//test message
+    //test message
 }

@@ -3,6 +3,19 @@
 /*}*/
 
 #registerTxt:hover {
-  /*-fx-background-color: #dae7f3;*/
-  -fx-text-fill: #dae7f3;
+    /*-fx-background-color: #dae7f3;*/
+    -fx-text-fill: #dae7f3;
+}
+
+.text-input:disabled {
+    -fx-opacity: 0.3;
+}
+
+#background {
+    -fx-background-color: skyblue, derive(skyblue, 25%);
+    -fx-background-insets: -20, -10;
+    -fx-background-image: url("wood.jpg");
+    /*-fx-background-position: left top, center;*/
+    -fx-background-repeat: repeat;
+    -fx-background-size: cover, auto;
 }

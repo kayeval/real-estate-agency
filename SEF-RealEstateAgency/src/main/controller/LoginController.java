@@ -34,7 +34,8 @@ public class LoginController {
     @FXML
     private Text registerTxt;
 
-    private UserController userController = new UserController();
+    private UserController userController;
+    private MainController mainController;
 
     @FXML
     void loginAction(ActionEvent event) throws IOException {
@@ -46,7 +47,7 @@ public class LoginController {
         }
 
         if (valid) {
-            if (!userController.canLogin(username.getText(), userController.encryptPassword(password.getText())))
+            if (!userController.canLogin(username.getText(), password.getText()))
                 error.setText("Invalid username or password.");
             else found = true;
         }
@@ -73,6 +74,8 @@ public class LoginController {
         Parent nextPane = loader.load();
         Scene nextScene = new Scene(nextPane);
         nextScene.getStylesheets().add("/main/res/combobox.css");
+        RegisterController controller = loader.getController();
+        controller.setUserController(userController);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
         window.setScene(nextScene);
@@ -81,7 +84,6 @@ public class LoginController {
 
     @FXML
     void initialize() {
-
         username.textProperty().addListener((observable) -> {
             error.setText("");
         });
@@ -104,4 +106,11 @@ public class LoginController {
 
     }
 
+    public void setUserController(UserController userController) {
+        this.userController = userController;
+    }
+
+    public UserController getUserController() {
+        return userController;
+    }
 }

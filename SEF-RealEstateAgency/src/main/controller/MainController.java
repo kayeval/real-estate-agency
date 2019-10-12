@@ -6,11 +6,21 @@ import main.model.DBConnector;
 public class MainController {
     //    private ObservableList<Property> data;
 //    private FilteredList<Property> filteredList;
-    private DBConnector dbConnector = new DBConnector();
 //    private ContextMenu cm;
+
+    private DBConnector dbConnector;
+
+    public void setDbConnector(DBConnector dbConnector) {
+        this.dbConnector = dbConnector;
+    }
+
+    public DBConnector getDbConnector() {
+        return dbConnector;
+    }
 
     @FXML
     void initialize() {
+        //TODO DIFFERENT MAIN VIEW FOR DIFFERENT TYPES OF USERS?
 //        conn = new DBConnector();
 //
 //        try {

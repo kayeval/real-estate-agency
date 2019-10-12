@@ -9,8 +9,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import main.model.User.User;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class RegisterController {
 
@@ -30,16 +32,39 @@ public class RegisterController {
     private ComboBox<?> cmbType;
 
     @FXML
-    private Button registerBtn;
-
-    private UserController userController = new UserController();
+    private TextField occupationField;
 
     @FXML
-    void registerAction(ActionEvent event) throws IOException {
+    private TextField incomeField;
+
+    @FXML
+    private Button registerBtn;
+
+    @FXML
+    private Button btnBack;
+
+    private UserController userController;
+    private boolean isBuyer = true;
+
+    @FXML
+    void goBack(ActionEvent event) throws IOException {
+        //go back to login
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
+        Parent nextPane = loader.load();
+        Scene nextScene = new Scene(nextPane);
+
+        Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        window.setScene(nextScene);
+        window.show();
+    }
+
+    @FXML
+    void registerAction(ActionEvent event) {
         boolean valid = true, canRegister = false;
 
-        if (emailField.getText().equals("") || passwordField.getText().equals("") || usernameField.getText().equals("")
-                || cmbType.getSelectionModel().getSelectedItem().toString().equals("Buying/Renting")) {
+        if (emailField.getText().equals("") || passwordField.getText().equals("") || usernameField.getText().equals("") ||
+                (!isBuyer && (occupationField.getText().equals("") || incomeField.getText().equals("")))) {
             error.setText("Please fill up all fields.");
             valid = false;
         }
@@ -48,34 +73,31 @@ public class RegisterController {
             if (!userController.isUnique(usernameField.getText()))
                 error.setText("That username is already taken.");
             else if (!userController.isValidEmailFormat(emailField.getText())) {
-                error.setText("Invalid username format");
-            } else if (!userController.isValidUsernameFormat(usernameField.getText())) {
                 error.setText("Invalid email format");
+            } else if (!userController.isValidUsernameFormat(usernameField.getText())) {
+                error.setText("Invalid username format");
             } else canRegister = true;
         }
 
         if (canRegister) {
             //add to user db
-            userController.registerUser(usernameField.getText(), emailField.getText(), passwordField.getText());
+            try {
+                userController.registerUser(usernameField.getText(), emailField.getText(), passwordField.getText(), occupationField.getText(), incomeField.getText());
 
-            //add to customer db
-
-
-            //go back to login
-            FXMLLoader loader = new FXMLLoader();
-
-            loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
-            Parent nextPane = loader.load();
-            Scene nextScene = new Scene(nextPane);
-
-            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            window.setScene(nextScene);
-            window.show();
+                System.out.println("REGISTER SUCCESS, USERS=");
+                for (User u : userController.getCustomers().values())
+                    System.out.println(u.getUsername());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            btnBack.fire();
         }
     }
 
     @FXML
     void initialize() {
+        cmbType.getSelectionModel().selectFirst();
+
         usernameField.textProperty().addListener((observable) -> {
             error.setText("");
         });
@@ -105,16 +127,34 @@ public class RegisterController {
                 registerBtn.fire();
             }
         });
+        TextFormatter formatter = new TextFormatter(new DecimalFilter());
+        incomeField.setTextFormatter(formatter);
 
         cmbType.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-            //get occupation and income from Renters
             if (newValue.equals("Renting")) {
-                System.out.println("RENTING!!!");
+                isBuyer = false;
 
+                //enable occupation and income fields
+                occupationField.setDisable(false);
+                incomeField.setDisable(false);
             } else {
-                System.out.println("HIDE?");
+                isBuyer = true;
+
+                //disable occupation and income fields
+                occupationField.setText("");
+                occupationField.setDisable(true);
+
+                incomeField.setText("");
+                incomeField.setDisable(true);
             }
         });
     }
 
+    public void setUserController(UserController userController) {
+        this.userController = userController;
+    }
+
+    public UserController getUserController() {
+        return userController;
+    }
 }

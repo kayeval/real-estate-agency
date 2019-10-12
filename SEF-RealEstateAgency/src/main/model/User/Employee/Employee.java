@@ -27,12 +27,11 @@ public abstract class Employee extends User {
     }
 
     public boolean setSalary(double salary) {
-    	if (salary > 0)
-    	{
-    		this.salary = salary;
-        	return true;
-    	}
-    	return false;
+        if (salary > 0) {
+            this.salary = salary;
+            return true;
+        }
+        return false;
     }
 
 }

@@ -1,5 +1,5 @@
 .combo-box-popup .list-view {
-    -fx-font-size : 13pt;
+    -fx-font-size: 13pt;
     -fx-background-insets: 0, 1;
 }
 
@@ -8,5 +8,5 @@
 }
 
 .combo-box {
-    -fx-font-size : 13pt;
+    -fx-font-size: 13pt;
 }

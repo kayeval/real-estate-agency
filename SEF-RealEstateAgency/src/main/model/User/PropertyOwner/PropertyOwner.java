@@ -2,15 +2,9 @@ package main.model.User.PropertyOwner;
 
 import main.model.Property.DeactivatedPropertyException;
 import main.model.Property.Property;
-import main.model.Proposal.ExpiredProposalException;
-import main.model.Proposal.Proposal;
-import main.model.Proposal.ProposalNotFoundException;
 import main.model.User.InvalidEmailException;
 import main.model.User.User;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

@@ -1,9 +1,9 @@
 package main.controller;
 
-import main.model.DBConnector;
-
 public class ProposalController {
-    private DBConnector dbConnector = new DBConnector();
+    private MainController mainController;
 
-
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
 }

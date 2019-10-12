@@ -1,10 +1,10 @@
 package main.model.User.Employee;
 
-import java.time.LocalDate;
-
 import main.model.Property.Property;
 import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.InvalidEmailException;
+
+import java.time.LocalDate;
 
 public class BranchManager extends Employee {
 
@@ -13,16 +13,15 @@ public class BranchManager extends Employee {
     }
 
     public boolean hasHours(PartTimeEmployee partTimeEmployee) throws HoursNotFoundException {
-    	if (partTimeEmployee.getHoursForMonth(LocalDate.now()) == 0.0)
-    	{
-    		throw new HoursNotFoundException();
-    	}
-    	return false;
+        if (partTimeEmployee.getHoursForMonth(LocalDate.now()) == 0.0) {
+            throw new HoursNotFoundException();
+        }
+        return false;
     }
 
     public boolean reviewHours(PartTimeEmployee partTimeEmployee, boolean approval) {
-    	partTimeEmployee.setHoursApproved(approval);
-    	return true;
+        partTimeEmployee.setHoursApproved(approval);
+        return true;
     }
     
     
