@@ -15,17 +15,21 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
+import java.util.Map;
 
 public abstract class SalesPerson extends Employee {
-    private HashMap<String, Property> assignedProperties;
-    private HashMap<String, Inspection> scheduledInspections;
+    private Map<String, Property> assignedProperties;
+    private Map<String, Inspection> scheduledInspections;
 
     public SalesPerson(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
         super(username, email, hireDate, salary);
     }
 
-    public HashMap<String, Property> getAssignedProperties() {
+    public void setAssignedProperties(Map<String, Property> assignedProperties) {
+        this.assignedProperties = assignedProperties;
+    }
+
+    public Map<String, Property> getAssignedProperties() {
         return assignedProperties;
     }
 
@@ -73,4 +77,9 @@ public abstract class SalesPerson extends Employee {
         }
         return false;
     }
+
+    public int getTotalAssignments() {
+        return assignedProperties.size();
+    }
+
 }

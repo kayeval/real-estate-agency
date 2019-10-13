@@ -17,6 +17,14 @@ public abstract class Employee extends User {
         setSalary(salary);
     }
 
+    public LocalDate getHireDate() {
+        return hireDate;
+    }
+
+    public String getType() {
+        return getUserID().replaceAll("\\d", "");
+    }
+
     public Period getHireDuration() {
         return Period.between(hireDate, LocalDate.now(ZoneId.systemDefault()));
     }

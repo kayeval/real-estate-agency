@@ -9,13 +9,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Arrays;
 
-public class EditUserController {
+public class EditCustomerController {
 
     @FXML
     private Label error;
@@ -27,11 +30,24 @@ public class EditUserController {
     private TextField emailField;
 
     @FXML
+    private TextField suburbsField;
+
+    @FXML
+    private TextField occupationField;
+
+    @FXML
+    private TextField incomeField;
+
+    @FXML
     private Button saveBtn;
 
     private UserController userController;
     private String username;
     private String email;
+    private String suburbs;
+    private String occupation;
+    private double income;
+    private boolean isBuyer;
 
     private final BooleanProperty hasSaved = new SimpleBooleanProperty();
 
@@ -57,6 +73,18 @@ public class EditUserController {
             error.setText("");
         });
 
+        suburbsField.textProperty().addListener((observable) -> {
+            error.setText("");
+        });
+
+        occupationField.textProperty().addListener((observable) -> {
+            error.setText("");
+        });
+
+        incomeField.textProperty().addListener((observable) -> {
+            error.setText("");
+        });
+
         usernameField.setOnKeyPressed(event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 saveBtn.fire();
@@ -68,14 +96,56 @@ public class EditUserController {
                 saveBtn.fire();
             }
         });
+
+        suburbsField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                saveBtn.fire();
+            }
+        });
+
+        incomeField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                saveBtn.fire();
+            }
+        });
+
+        occupationField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                saveBtn.fire();
+            }
+        });
+
+        TextFormatter formatter = new TextFormatter(new DecimalFilter());
+        incomeField.setTextFormatter(formatter);
+    }
+
+    public void start() {
+        usernameField.setText(username);
+        emailField.setText(email);
+        suburbsField.setText(suburbs);
+
+        occupationField.setDisable(false);
+        incomeField.setDisable(false);
+
+        if (isBuyer) {
+            occupationField.setDisable(true);
+            incomeField.setDisable(true);
+        } else {
+            occupationField.setText(occupation);
+            incomeField.setText(income + "");
+        }
     }
 
     @FXML
     void saveAction(ActionEvent event) throws IOException {
         boolean valid = true, canSave = false;
 
-        if (emailField.getText().equals("") || usernameField.getText().equals("")) {
+        if (emailField.getText().equals("") || usernameField.getText().equals("") || suburbsField.getText().equals("") ||
+                (!isBuyer && (occupationField.getText().equals("") || incomeField.getText().equals("")))) {
             error.setText("Please fill up all fields.");
+            valid = false;
+        } else if (!incomeField.getText().equals("") && Double.parseDouble(incomeField.getText()) < 0) {
+            error.setText("Income cannot be negative.");
             valid = false;
         }
 
@@ -104,7 +174,12 @@ public class EditUserController {
                     confirmChangeStage.hide();
                     setSaved(true);
 
-                    userController.updateUserDetails(usernameField.getText(), emailField.getText(), username);
+                    try {
+                        userController.updateCustomerDetails(usernameField.getText(), emailField.getText(),
+                                occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")), username);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 
@@ -115,17 +190,28 @@ public class EditUserController {
         }
     }
 
-    public void start() {
-        usernameField.setText(username);
-        emailField.setText(email);
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setUsername(String username) {
         this.username = username;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setIncome(double income) {
+        this.income = income;
+    }
+
+    public void setOccupation(String occupation) {
+        this.occupation = occupation;
+    }
+
+    public void setSuburbs(String suburbs) {
+        this.suburbs = suburbs;
+    }
+
+    public void setBuyer(boolean buyer) {
+        isBuyer = buyer;
     }
 
     public void setUserController(UserController userController) {

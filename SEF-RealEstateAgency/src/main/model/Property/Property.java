@@ -17,9 +17,6 @@ public abstract class Property {
     private String address;
     private String suburb;
     private Capacity capacity;
-    private int beds;
-    private int baths;
-    private int cars;
     private PropertyType propertyType;
     private PropertyOwner propertyOwner;
 
@@ -28,9 +25,6 @@ public abstract class Property {
         setAddress(address);
         setSuburb(suburb);
         this.capacity = capacity;
-        beds = capacity.getBedrooms();
-        baths = capacity.getBaths();
-        cars = capacity.getCarSpaces();
         this.propertyType = propertyType;
         this.propertyOwner = propertyOwner;
         this.dateListed = LocalDateTime.now(ZoneId.systemDefault());
@@ -74,6 +68,18 @@ public abstract class Property {
 
     public double getPrice() {
         return this.price;
+    }
+
+    public int getBeds() {
+        return capacity.getBedrooms();
+    }
+
+    public int getCars() {
+        return capacity.getCarSpaces();
+    }
+
+    public int getBaths() {
+        return capacity.getBaths();
     }
 
     public LocalDateTime getDateListed() {

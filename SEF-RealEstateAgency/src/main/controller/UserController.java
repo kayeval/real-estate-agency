@@ -6,17 +6,17 @@ import main.model.User.Customer.Customer;
 import main.model.User.Customer.Renter;
 import main.model.User.Employee.BranchAdmin;
 import main.model.User.Employee.BranchManager;
-import main.model.User.Employee.Employee;
 import main.model.User.Employee.PartTimeEmployee;
 import main.model.User.Employee.SalesPerson.PropertyManager;
 import main.model.User.Employee.SalesPerson.SalesConsultant;
-import main.model.User.PropertyOwner.PropertyOwner;
+import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.PropertyOwner.Vendor;
 import main.model.User.User;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -27,20 +27,16 @@ import java.util.regex.Pattern;
 
 public class UserController {
     private DBConnector dbConnector;
-    private MainController mainController;
+    private PropertyController propertyController;
 
     public UserController() {
         dbConnector = new DBConnector();
-    }
-
-    public void setMainController(MainController mainController) {
-        this.mainController = mainController;
+        propertyController = new PropertyController();
     }
 
     public Map<String, User> getCustomers() {
         Map<String, User> users = new HashMap<>();
 
-//        String sql = "SELECT u.userid, username, email, income, occupation, buyer FROM users u JOIN customers c ON u.userid=c.userid";
         String sql = "SELECT u.userid, username, email, income, occupation, buyer, suburb FROM users u JOIN customers c ON u.userid=c.userid JOIN preferredsuburbs p ON c.userid=p.userid";
         try (Connection conn = dbConnector.getConnection();
              Statement stmt = conn.createStatement();
@@ -85,7 +81,7 @@ public class UserController {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                Employee employee = null;
+                User employee = null;
                 switch (rs.getString("etype")) {
                     case "admin":
                         employee = new BranchAdmin(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
@@ -98,9 +94,17 @@ public class UserController {
                         break;
                     case "propertymanager":
                         employee = new PropertyManager(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
+                        //set assigned properties
+                        ((SalesPerson) employee).setAssignedProperties(propertyController.getAssignedProperties(rs.getInt("userid")));
+
+                        //set scheduled inspections
                         break;
                     case "salesconsultant":
                         employee = new SalesConsultant(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
+                        //set assigned properties
+                        ((SalesPerson) employee).setAssignedProperties(propertyController.getAssignedProperties(rs.getInt("userid")));
+
+                        //set scheduled inspections
                         break;
                     default:
                         employee = null;
@@ -127,7 +131,7 @@ public class UserController {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                PropertyOwner propertyOwner = null;
+                User propertyOwner;
                 if (rs.getBoolean("vendor")) {
                     propertyOwner = new Vendor(rs.getString("username"), rs.getString("email"));
                     propertyOwner.setUserID("vendor" + rs.getInt("userid"));
@@ -135,7 +139,7 @@ public class UserController {
                     propertyOwner = new Vendor(rs.getString("username"), rs.getString("email"));
                     propertyOwner.setUserID("landlord" + rs.getInt("userid"));
                 }
-
+//                System.out.println(propertyOwner.getUsername());
                 users.putIfAbsent(propertyOwner.getUserID(), propertyOwner);
             }
         } catch (Exception ex) {
@@ -397,6 +401,22 @@ public class UserController {
         return id;
     }
 
+    public int getUserID(String username) {
+        int id = 0;
+
+        String sql = "SELECT userid FROM users WHERE username='" + username + "'";
+        try (Connection conn = dbConnector.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next())
+                id = rs.getInt("userid");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return id;
+    }
+
     public String getUsername(int id) {
         String username = "";
 
@@ -440,10 +460,6 @@ public class UserController {
 
     }
 
-    public MainController getMainController() {
-        return mainController;
-    }
-
     public void registerPropertyOwner(String username, String email, String password, boolean vendor) throws SQLException {
         int id = 0;
 
@@ -476,4 +492,51 @@ public class UserController {
             }
         }
     }
+
+    public void registerEmployee(String username, String email, String password, double salary, LocalDate hireDate, String etype) throws SQLException {
+        int id = 0;
+
+        String sql = "INSERT INTO users (username, email, password) VALUES(?, ?, ?)";
+        Connection conn = dbConnector.getConnection();
+        PreparedStatement pstmt = null;
+
+        try {
+            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, username);
+            pstmt.setString(2, email);
+            pstmt.setString(3, hash(password));
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (pstmt != null) {
+            ResultSet rs = pstmt.getGeneratedKeys();
+
+            if (rs.next()) {
+                id = rs.getInt(1);
+
+                sql = "INSERT INTO employees (userid, salary, hiredate, etype) VALUES (?, ?, ?, ?)";
+                pstmt = conn.prepareStatement(sql);
+
+                pstmt.setInt(1, id);
+                pstmt.setDouble(2, salary);
+                pstmt.setDate(3, Date.valueOf(hireDate));
+                pstmt.setString(4, etype);
+                pstmt.executeUpdate();
+            }
+        }
+    }
+
+    public Map<String, User> getSalesPersons() {
+        Map<String, User> salespersons = new HashMap<>();
+
+        for (String key : getEmployees().keySet()) {
+            if (key.contains("salesconsultant") || key.contains("propertymanager"))
+                salespersons.putIfAbsent(key, getEmployees().get(key));
+        }
+
+        return salespersons;
+    }
+
 }

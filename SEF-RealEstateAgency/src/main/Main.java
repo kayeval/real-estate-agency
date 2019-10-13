@@ -6,27 +6,23 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import main.controller.LoginController;
-import main.controller.MainController;
 import main.controller.UserController;
-import main.model.DBConnector;
 
 public class Main extends Application {
-    private MainController mainController;
-
     @Override
     public void start(Stage primaryStage) throws Exception {
-        mainController = new MainController();
-
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
         Parent root = loader.load();
 
-        UserController userController = new UserController();
-        userController.setMainController(mainController);
-
         LoginController controller = loader.getController();
+        UserController userController = new UserController();
         controller.setUserController(userController);
 
+//        userController.registerEmployee("admin", "a@a.com", "1234", 55000, LocalDate.now(ZoneId.systemDefault()), "admin");
+//        userController.registerEmployee("manager", "a@a.com", "1234", 55000, LocalDate.now(ZoneId.systemDefault()), "manager");
+//        userController.registerEmployee("sales", "a@a.com", "1234", 55000, LocalDate.now(ZoneId.systemDefault()), "propertymanager");
+//        userController.registerEmployee("sales-r", "a@a.com", "1234", 55000, LocalDate.now(ZoneId.systemDefault()), "salesconsultant");
 //        userController.registerPropertyOwner("p1", "vendor@a.com", "1234", true);
 //        userController.registerPropertyOwner("p2", "buyer@a.com", "1234", false);
 
