@@ -17,7 +17,11 @@ import main.model.User.User;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -31,7 +35,7 @@ public class UserController {
     public Map<String, User> getCustomers() {
         Map<String, User> users = new HashMap<>();
 
-        String sql = "SELECT userid, [name], email, password, (SELECT * FROM customers C WHERE userid=C.userid) FROM users";
+        String sql = "SELECT u.userid, username, email, income, occupation, buyer FROM users u JOIN customers c ON u.userid=c.userid";
 
         try (Connection conn = mainController.getDbConnector().getConnection();
              Statement stmt = conn.createStatement();
@@ -40,16 +44,17 @@ public class UserController {
             while (rs.next()) {
                 Customer customer = null;
                 if (rs.getBoolean("buyer")) {
-                    customer = new Buyer(rs.getString("name"), rs.getString("email"));
+                    customer = new Buyer(rs.getString("username"), rs.getString("email"));
                     customer.setUserID("buyer" + rs.getInt("userid"));
                 } else {
-                    customer = new Renter(rs.getString("name"), rs.getString("email"), rs.getDouble("income"), rs.getString("occupation"));
+                    customer = new Renter(rs.getString("username"), rs.getString("email"), rs.getDouble("income"), rs.getString("occupation"));
                     customer.setUserID("renter" + rs.getInt("userid"));
                 }
 
                 users.putIfAbsent(customer.getUserID(), customer);
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return users;
@@ -58,7 +63,7 @@ public class UserController {
     public Map<String, User> getEmployees() {
         Map<String, User> users = new HashMap<>();
 
-        String sql = "SELECT userid, [name], email, password, (SELECT * FROM employees E WHERE userid=E.userid) FROM users";
+        String sql = "SELECT u.userid, username, email, hiredate, etype, salary FROM users u JOIN employees e ON u.userid=e.userid";
 
         try (Connection conn = new DBConnector().getConnection();
              Statement stmt = conn.createStatement();
@@ -66,29 +71,32 @@ public class UserController {
 
             while (rs.next()) {
                 Employee employee = null;
-                switch (rs.getString("type")) {
+                switch (rs.getString("etype")) {
                     case "admin":
-                        employee = new BranchAdmin(rs.getString("name"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
+                        employee = new BranchAdmin(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         break;
                     case "manager":
-                        employee = new BranchManager(rs.getString("name"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
+                        employee = new BranchManager(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         break;
                     case "parttime":
-                        employee = new PartTimeEmployee(rs.getString("name"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
+                        employee = new PartTimeEmployee(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         break;
                     case "propertymanager":
-                        employee = new PropertyManager(rs.getString("name"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
+                        employee = new PropertyManager(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         break;
                     case "salesconsultant":
-                        employee = new SalesConsultant(rs.getString("name"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
+                        employee = new SalesConsultant(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         break;
                     default:
+                        employee = null;
                 }
-
-                employee.setUserID(rs.getString("type") + rs.getInt("userid"));
-                users.putIfAbsent(employee.getUserID(), employee);
+                if (employee != null) {
+                    employee.setUserID(rs.getString("etype") + rs.getInt("userid"));
+                    users.putIfAbsent(employee.getUserID(), employee);
+                }
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return users;
@@ -97,7 +105,7 @@ public class UserController {
     public Map<String, User> getPropertyOwners() {
         Map<String, User> users = new HashMap<>();
 
-        String sql = "SELECT userid, [name], email, password, (SELECT vendor FROM propertyowners P WHERE userid=P.userid) FROM users";
+        String sql = "SELECT u.userid, username, email, vendor FROM users u JOIN propertyowners p ON u.userid=p.userid";
 
         try (Connection conn = mainController.getDbConnector().getConnection();
              Statement stmt = conn.createStatement();
@@ -106,22 +114,23 @@ public class UserController {
             while (rs.next()) {
                 PropertyOwner propertyOwner = null;
                 if (rs.getBoolean("vendor")) {
-                    propertyOwner = new Vendor(rs.getString("name"), rs.getString("email"));
+                    propertyOwner = new Vendor(rs.getString("username"), rs.getString("email"));
                     propertyOwner.setUserID("vendor" + rs.getInt("userid"));
                 } else {
-                    propertyOwner = new Vendor(rs.getString("name"), rs.getString("email"));
+                    propertyOwner = new Vendor(rs.getString("username"), rs.getString("email"));
                     propertyOwner.setUserID("landlord" + rs.getInt("userid"));
                 }
 
                 users.putIfAbsent(propertyOwner.getUserID(), propertyOwner);
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return users;
     }
 
-    public Boolean isUnique(String username) {
+    public boolean isUniqueUsername(String username) {
         boolean isAvailable = true;
 
         String sql = "SELECT COUNT(*) AS total FROM users WHERE username='" + username + "'";
@@ -142,18 +151,33 @@ public class UserController {
 
     public boolean canLogin(String username, String password) {
         boolean found = false;
+        int id = 0;
 
-        String sql = "SELECT COUNT(*) AS total FROM users WHERE username='" + username.toLowerCase() + "' AND password='" + hash(password) + "'";
-
+        String sql = "SELECT userid FROM users WHERE username='" + username.toLowerCase() + "' AND password='" + hash(password) + "'";
         try (Connection conn = mainController.getDbConnector().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                if (rs.getInt("total") == 1)
+                id = rs.getInt("userid");
+                if (id != 0)
                     found = true;
             }
         } catch (Exception ex) {
+        }
+
+        if (found) {
+//            System.out.println("FOUND userid =" + id);
+
+            sql = "UPDATE users SET lastlogin=? WHERE userid=?";
+            try (Connection conn = mainController.getDbConnector().getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                pstmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now(ZoneId.systemDefault())));
+                pstmt.setInt(2, id);
+                pstmt.executeUpdate();
+            } catch (Exception ex) {
+            }
         }
 
         return found;
@@ -191,7 +215,9 @@ public class UserController {
         return EMAIL_REGEX.matcher(email).matches();
     }
 
-    public void registerUser(String username, String email, String password, String occupation, String income) throws SQLException {
+    public void registerCustomer(String username, String email, String password, String occupation, String income, List<String> preferredSuburbs) throws SQLException {
+        int id = 0;
+
         String sql = "INSERT INTO users (username, email, password) VALUES(?, ?, ?)";
         Connection conn = mainController.getDbConnector().getConnection();
         PreparedStatement pstmt = null;
@@ -201,6 +227,7 @@ public class UserController {
             pstmt.setString(1, username);
             pstmt.setString(2, email);
             pstmt.setString(3, hash(password));
+//            pstmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.MIN));
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -210,10 +237,12 @@ public class UserController {
             ResultSet rs = pstmt.getGeneratedKeys();
 
             if (rs.next()) {
+                id = rs.getInt(1);
+
                 sql = "INSERT INTO customers (userid, buyer, income, occupation) VALUES (?, ?, ?, ?)";
                 pstmt = conn.prepareStatement(sql);
 
-                pstmt.setInt(1, rs.getInt(1));
+                pstmt.setInt(1, id);
                 pstmt.setBoolean(2, occupation.equals("") && income.equals(""));
 
                 Double incomeVal = null;
@@ -222,17 +251,84 @@ public class UserController {
                 pstmt.setObject(3, incomeVal, Types.DOUBLE);
                 pstmt.setString(4, occupation);
                 pstmt.executeUpdate();
+
+                updatePreferredSuburbs(id, preferredSuburbs);
             }
         }
     }
 
-    public void registerCustomer() {
+    private void updatePreferredSuburbs(int id, List<String> preferredSuburbs) throws SQLException {
+        String sql = "INSERT INTO preferredsuburbs values (?, ?)";
+        try (Connection connection = mainController.getDbConnector().getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
+            int i = 0;
+            for (String suburb : preferredSuburbs) {
+                pstmt.setInt(1, id);
+                pstmt.setString(2, suburb);
+                pstmt.addBatch();
+                i++;
+
+                if (i % 1000 == 0 || i == preferredSuburbs.size()) {
+                    pstmt.executeBatch(); // Execute every 1000 items
+                }
+            }
+        }
+    }
+
+    //MUST CALL canLogin() BEFORE
+    public String loginType(String username) {
+        String type = "";
+        boolean isCustomer = false, isPropertyOwner = false, found = false;
+
+        List<String> userKeys = new ArrayList<>(getCustomers().keySet());
+        int i = 0;
+        do {
+            String key = userKeys.get(i);
+            User u = getCustomers().get(key);
+            if (u.getUsername().equals(username)) {
+                isCustomer = true;
+                type = u.getUserID().replaceAll("\\d", "");
+                found = true;
+            }
+            i++;
+        } while (!found);
+
+        if (!isCustomer) {
+            userKeys = new ArrayList<>(getPropertyOwners().keySet());
+            i = 0;
+            do {
+                String key = userKeys.get(i);
+                User u = getPropertyOwners().get(key);
+                if (u.getUsername().equals(username)) {
+                    isPropertyOwner = true;
+                    type = u.getUserID().replaceAll("\\d", "");
+                    found = true;
+                }
+                i++;
+            } while (!found);
+        }
+
+        if (!isCustomer && !isPropertyOwner) {
+            userKeys = new ArrayList<>(getEmployees().keySet());
+            i = 0;
+            do {
+                String key = userKeys.get(i);
+                User u = getEmployees().get(key);
+                if (u.getUsername().equals(username)) {
+                    type = u.getUserID().replaceAll("\\d", "");
+                    found = true;
+                }
+                i++;
+            } while (!found);
+        }
+
+        return type;
     }
 
     //TODO
-    public void updateUserDetails() {
-
+    public void updateUserDetails(String username, String email, String password, String occupation, String income) {
+        String sql = "";
     }
 
     //DELETE USER?

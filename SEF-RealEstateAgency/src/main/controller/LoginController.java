@@ -53,11 +53,35 @@ public class LoginController {
         }
 
         if (found) {
-            //go to main panel
             FXMLLoader loader = new FXMLLoader();
-
             loader.setLocation(getClass().getResource("/main/view/Main.fxml"));
             Parent nextPane = loader.load();
+
+            MainController mainController = loader.getController();
+            switch (userController.loginType(username.getText())) {
+                case "customer":
+                    mainController.setType("customer");
+                    break;
+                case "admin":
+                    mainController.setType("admin");
+                    break;
+                case "manager":
+                    mainController.setType("manager");
+                    break;
+                case "parttime":
+                    mainController.setType("parttime");
+                    break;
+                case "propertymanager":
+                    mainController.setType("propertymanager");
+                    break;
+                case "salesconsultant":
+                    mainController.setType("salesconsultant");
+                case "propertyowner":
+                    mainController.setType("propertyowner");
+                    break;
+                default:
+            }
+
             Scene nextScene = new Scene(nextPane);
 
             Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();

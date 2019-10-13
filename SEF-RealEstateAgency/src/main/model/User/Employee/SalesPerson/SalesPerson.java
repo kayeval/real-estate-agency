@@ -11,8 +11,9 @@ import main.model.User.Employee.Employee;
 import main.model.User.InvalidEmailException;
 import main.model.User.PropertyOwner.NotListedPropertyException;
 
+import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Period;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 
@@ -28,7 +29,7 @@ public abstract class SalesPerson extends Employee {
         return assignedProperties;
     }
 
-    public void addProperty(Property property) {
+    public void assignProperty(Property property) {
         assignedProperties.put(property.getPropertyID(), property);
     }
 
@@ -37,9 +38,8 @@ public abstract class SalesPerson extends Employee {
         return false;
     }
 
-    public boolean deactivateListing(Property property) {
-        //logic if property is null
-        return false;
+    public void deactivateListing(Property property) {
+        property.deactivate();
     }
 
     public void advertiseProperty(Property property) {
@@ -56,20 +56,18 @@ public abstract class SalesPerson extends Employee {
         //must check if the property has been assigned to this employee
 
         if (proposal.getProperty().hasProposal(proposal.getProposalID()) && proposal.getProperty().isActive() && assignedProperties.get(proposal.getProperty().getPropertyID()).getPropertyOwner().isListedProperty(proposal.getProperty())) {
-            LocalDate now = LocalDate.now(ZoneId.systemDefault());
-            Period period = Period.between(proposal.getSubmissionDate(), now);
-            if (period.getDays() > 3) {
+            LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+            if (Duration.between(proposal.getSubmissionDate(), now).toDays() > 3) {
                 throw new ExpiredProposalException();
             }
 
             proposal.setAccepted(true);
-            proposal.getProperty().deactivate(); //once a proposal has been accepted, will the property be set as deactivated?
+            deactivateListing(proposal.getProperty()); //once a proposal has been accepted, will the property be set as deactivated?
         }
     }
 
     public boolean rejectProposal(Proposal proposal) throws NotListedPropertyException, ProposalNotFoundException {
         if (proposal.getProperty().hasProposal(proposal.getProposalID()) && assignedProperties.get(proposal.getProperty().getPropertyID()).getPropertyOwner().isListedProperty(proposal.getProperty())) {
-//            proposal.setAccepted(false);
             proposal.getProperty().setProposal(null);
             return true;
         }

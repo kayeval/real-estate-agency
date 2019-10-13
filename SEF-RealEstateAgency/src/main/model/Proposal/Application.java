@@ -4,13 +4,11 @@ import main.model.Property.Property;
 import main.model.Property.RentalProperty;
 import main.model.User.Customer.Customer;
 
-import java.time.LocalDate;
-
 public class Application extends Proposal {
     private ContractDuration contractDuration;
 
-    public Application(LocalDate submissionDate, double price, Property property, Customer customer, ContractDuration contractDuration) {
-        super(submissionDate, price, property, customer);
+    public Application(double price, Property property, Customer customer, ContractDuration contractDuration) {
+        super(price, property, customer);
         setContractDuration(contractDuration);
     }
 

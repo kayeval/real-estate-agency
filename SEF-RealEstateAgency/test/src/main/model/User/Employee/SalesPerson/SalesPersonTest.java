@@ -14,7 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +27,7 @@ public class SalesPersonTest {
     private PropertyOwner propertyOwner;
     private PropertyOwner propertyOwner2;
     private Proposal proposal;
-    private LocalDate date;
+    private LocalDateTime date;
     private Property property;
 
     @BeforeEach
@@ -34,13 +36,14 @@ public class SalesPersonTest {
         propertyOwner2 = new Vendor("Test1", "test@test.com");
         buyer = new Buyer("Test", "test@a.com");
         property = new SaleProperty("123 A St", "Melbourne", null, null, 10000, propertyOwner);
-        date = LocalDate.now(ZoneId.systemDefault()).minusDays(6);
-        salesPerson = new SalesConsultant("test", "test@test.com", date, 50040);
-        proposal = new Offer(date, 10000, property, buyer);
+        date = LocalDateTime.now(ZoneId.systemDefault()).minus(6, ChronoUnit.DAYS);
+        salesPerson = new SalesConsultant("test", "test@test.com", date.toLocalDate(), 50040);
+        proposal = new Offer( 10000, property, buyer);
     }
 
     @Test
     public void itShouldThrowExpiredProposalExceptionWhenAcceptingExpiredProposal() {
+        proposal.setSubmissionDate(date);
         try {
             buyer.submitProposal(proposal);
         } catch (DeactivatedPropertyException | SoldPropertyException | ProposalNotFoundException | InvalidContractDurationException | PendingProposalException e) {
@@ -53,8 +56,7 @@ public class SalesPersonTest {
 
     @Test
     public void itShouldThrowNotListedPropertyExceptionWhenAcceptingOfferForUnlistedProperty() {
-        date = LocalDate.now(ZoneId.systemDefault());
-        proposal = new Offer(date, 10000, property, buyer);
+        proposal = new Offer( 10000, property, buyer);
 
         try {
             buyer.submitProposal(proposal);

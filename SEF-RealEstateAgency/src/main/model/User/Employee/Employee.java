@@ -18,7 +18,6 @@ public abstract class Employee extends User {
     }
 
     public Period getHireDuration() {
-        //requires logic to work out current date from hireDate
         return Period.between(hireDate, LocalDate.now(ZoneId.systemDefault()));
     }
 

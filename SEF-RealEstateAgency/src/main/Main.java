@@ -26,12 +26,13 @@ public class Main extends Application {
 
         UserController userController = new UserController();
         userController.setMainController(mainController);
+        mainController.setUserController(userController);
 
         LoginController controller = loader.getController();
         controller.setUserController(userController);
 
         primaryStage.setTitle("Real Estate Agency");
-        Scene scene = new Scene(root, 800, 700);
+        Scene scene = new Scene(root, 800, 760);
         primaryStage.setScene(scene);
         scene.getStylesheets().add("/main/res/login.css");
         primaryStage.show();

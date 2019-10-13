@@ -40,7 +40,7 @@ public class BranchManager extends Employee {
     */
 
     public void assignProperty(Employee employee, Property property) {
-        ((SalesPerson) employee).addProperty(property);
+        ((SalesPerson) employee).assignProperty(property);
     }
 
     public boolean inspectDocuments(Property property) {

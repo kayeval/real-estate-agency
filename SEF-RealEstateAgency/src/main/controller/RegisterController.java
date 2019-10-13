@@ -9,10 +9,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
-import main.model.User.User;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 public class RegisterController {
 
@@ -30,6 +30,9 @@ public class RegisterController {
 
     @FXML
     private ComboBox<?> cmbType;
+
+    @FXML
+    private TextField suburbsField;
 
     @FXML
     private TextField occupationField;
@@ -52,6 +55,8 @@ public class RegisterController {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
         Parent nextPane = loader.load();
+        LoginController controller = loader.getController();
+        controller.setUserController(userController);
         Scene nextScene = new Scene(nextPane);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -64,13 +69,13 @@ public class RegisterController {
         boolean valid = true, canRegister = false;
 
         if (emailField.getText().equals("") || passwordField.getText().equals("") || usernameField.getText().equals("") ||
-                (!isBuyer && (occupationField.getText().equals("") || incomeField.getText().equals("")))) {
+                suburbsField.getText().equals("") || (!isBuyer && (occupationField.getText().equals("") || incomeField.getText().equals("")))) {
             error.setText("Please fill up all fields.");
             valid = false;
         }
 
         if (valid) {
-            if (!userController.isUnique(usernameField.getText()))
+            if (!userController.isUniqueUsername(usernameField.getText()))
                 error.setText("That username is already taken.");
             else if (!userController.isValidEmailFormat(emailField.getText())) {
                 error.setText("Invalid email format");
@@ -82,11 +87,11 @@ public class RegisterController {
         if (canRegister) {
             //add to user db
             try {
-                userController.registerUser(usernameField.getText(), emailField.getText(), passwordField.getText(), occupationField.getText(), incomeField.getText());
+                userController.registerCustomer(usernameField.getText(), emailField.getText(), passwordField.getText(),
+                        occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")));
 
-                System.out.println("REGISTER SUCCESS, USERS=");
-                for (User u : userController.getCustomers().values())
-                    System.out.println(u.getUsername());
+                System.out.println("REGISTER SUCCESS, total customers = " + userController.getCustomers().values().size());
+
             } catch (SQLException e) {
                 e.printStackTrace();
             }

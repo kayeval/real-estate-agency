@@ -1,14 +1,17 @@
 package main.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class Inspection {
     private String inspectionID;
     private boolean cancelled;
-    private LocalDate date;
+    private LocalDateTime dueDate;
+    private LocalDateTime dateCreated;
 
-    public Inspection(LocalDate date) {
-        this.date = date;
+    public Inspection(LocalDateTime dueDate) {
+        this.dateCreated = LocalDateTime.now(ZoneId.systemDefault());
+        this.dueDate = dueDate;
         cancelled = false;
     }
 
@@ -20,8 +23,12 @@ public class Inspection {
         return inspectionID;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDateTime getDateCreated() {
+        return dateCreated;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
     }
 
     public boolean isCancelled() {

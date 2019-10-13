@@ -3,18 +3,19 @@ package main.model.Proposal;
 import main.model.Property.Property;
 import main.model.User.Customer.Customer;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public abstract class Proposal {
     private String proposalID;
-    private LocalDate submissionDate;
+    private LocalDateTime submissionDate;
     private double price;
     private Customer customer;
     private Property property;
     private boolean accepted;
 
-    public Proposal(LocalDate submissionDate, double price, Property property, Customer customer) {
-        this.submissionDate = submissionDate;
+    public Proposal(double price, Property property, Customer customer) {
+        this.submissionDate = LocalDateTime.now(ZoneId.systemDefault());
         this.price = price;
         this.customer = customer;
         this.property = property;
@@ -34,7 +35,7 @@ public abstract class Proposal {
         return price;
     }
 
-    public LocalDate getSubmissionDate() {
+    public LocalDateTime getSubmissionDate() {
         return submissionDate;
     }
 
@@ -52,5 +53,10 @@ public abstract class Proposal {
 
     public void setAccepted(boolean accepted) {
         this.accepted = accepted;
+    }
+
+    //FOR TESTING PURPOSES ONLY
+    public void setSubmissionDate(LocalDateTime submissionDate) {
+        this.submissionDate = submissionDate;
     }
 }
