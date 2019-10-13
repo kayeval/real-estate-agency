@@ -26,7 +26,12 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class UserController {
+    private DBConnector dbConnector;
     private MainController mainController;
+
+    public UserController() {
+        dbConnector = new DBConnector();
+    }
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
@@ -35,23 +40,33 @@ public class UserController {
     public Map<String, User> getCustomers() {
         Map<String, User> users = new HashMap<>();
 
-        String sql = "SELECT u.userid, username, email, income, occupation, buyer FROM users u JOIN customers c ON u.userid=c.userid";
-
-        try (Connection conn = mainController.getDbConnector().getConnection();
+//        String sql = "SELECT u.userid, username, email, income, occupation, buyer FROM users u JOIN customers c ON u.userid=c.userid";
+        String sql = "SELECT u.userid, username, email, income, occupation, buyer, suburb FROM users u JOIN customers c ON u.userid=c.userid JOIN preferredsuburbs p ON c.userid=p.userid";
+        try (Connection conn = dbConnector.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+            int id = 0;
 
             while (rs.next()) {
-                Customer customer = null;
-                if (rs.getBoolean("buyer")) {
-                    customer = new Buyer(rs.getString("username"), rs.getString("email"));
-                    customer.setUserID("buyer" + rs.getInt("userid"));
-                } else {
-                    customer = new Renter(rs.getString("username"), rs.getString("email"), rs.getDouble("income"), rs.getString("occupation"));
-                    customer.setUserID("renter" + rs.getInt("userid"));
-                }
+                id = rs.getInt("userid");
 
-                users.putIfAbsent(customer.getUserID(), customer);
+                User user = null;
+                if (rs.getBoolean("buyer")) {
+                    if (users.get("buyer" + id) == null) {
+                        user = new Buyer(rs.getString("username"), rs.getString("email"));
+                        user.setUserID("buyer" + id);
+                    } else user = users.get("buyer" + id);
+
+                } else {
+                    if (users.get("renter" + id) == null) {
+                        user = new Renter(rs.getString("username"), rs.getString("email"), rs.getDouble("income"), rs.getString("occupation"));
+                        user.setUserID("renter" + id);
+                    } else user = users.get("renter" + id);
+                }
+//                System.out.println(user.getUsername());
+                ((Customer) user).getPreferredSuburbs().add(rs.getString("suburb"));
+                users.putIfAbsent(user.getUserID(), user);
+
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -107,7 +122,7 @@ public class UserController {
 
         String sql = "SELECT u.userid, username, email, vendor FROM users u JOIN propertyowners p ON u.userid=p.userid";
 
-        try (Connection conn = mainController.getDbConnector().getConnection();
+        try (Connection conn = dbConnector.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -135,7 +150,7 @@ public class UserController {
 
         String sql = "SELECT COUNT(*) AS total FROM users WHERE username='" + username + "'";
 
-        try (Connection conn = mainController.getDbConnector().getConnection();
+        try (Connection conn = dbConnector.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -149,12 +164,12 @@ public class UserController {
         return isAvailable;
     }
 
-    public boolean canLogin(String username, String password) {
+    public int canLogin(String username, String password) {
         boolean found = false;
         int id = 0;
 
         String sql = "SELECT userid FROM users WHERE username='" + username.toLowerCase() + "' AND password='" + hash(password) + "'";
-        try (Connection conn = mainController.getDbConnector().getConnection();
+        try (Connection conn = dbConnector.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -167,10 +182,8 @@ public class UserController {
         }
 
         if (found) {
-//            System.out.println("FOUND userid =" + id);
-
             sql = "UPDATE users SET lastlogin=? WHERE userid=?";
-            try (Connection conn = mainController.getDbConnector().getConnection();
+            try (Connection conn = dbConnector.getConnection();
                  PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
                 pstmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now(ZoneId.systemDefault())));
@@ -180,7 +193,7 @@ public class UserController {
             }
         }
 
-        return found;
+        return id;
     }
 
     public String hash(String password) {
@@ -219,7 +232,7 @@ public class UserController {
         int id = 0;
 
         String sql = "INSERT INTO users (username, email, password) VALUES(?, ?, ?)";
-        Connection conn = mainController.getDbConnector().getConnection();
+        Connection conn = dbConnector.getConnection();
         PreparedStatement pstmt = null;
 
         try {
@@ -258,8 +271,15 @@ public class UserController {
     }
 
     private void updatePreferredSuburbs(int id, List<String> preferredSuburbs) throws SQLException {
-        String sql = "INSERT INTO preferredsuburbs values (?, ?)";
-        try (Connection connection = mainController.getDbConnector().getConnection();
+        String sql = "DELETE FROM preferredsuburbs WHERE userid=?";
+        try (Connection connection = dbConnector.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+        }
+
+        sql = "INSERT INTO preferredsuburbs values (?, ?)";
+        try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
             int i = 0;
@@ -277,62 +297,183 @@ public class UserController {
     }
 
     //MUST CALL canLogin() BEFORE
-    public String loginType(String username) {
+    public String loginType(int id) {
         String type = "";
-        boolean isCustomer = false, isPropertyOwner = false, found = false;
+        boolean found = false;
 
-        List<String> userKeys = new ArrayList<>(getCustomers().keySet());
-        int i = 0;
-        do {
-            String key = userKeys.get(i);
-            User u = getCustomers().get(key);
-            if (u.getUsername().equals(username)) {
-                isCustomer = true;
-                type = u.getUserID().replaceAll("\\d", "");
-                found = true;
+        if (getCustomers().containsKey("buyer" + id))
+            type = "buyer";
+        else if (getCustomers().containsKey("renter" + id))
+            type = "renter";
+        else if (getPropertyOwners().containsKey("landlord" + id))
+            type = "landlord";
+        else if (getPropertyOwners().containsKey("vendor" + id))
+            type = "vendor";
+        else {
+            if (getEmployees().size() > 0) {
+                List<String> userKeys = new ArrayList<>(getEmployees().keySet());
+                int i = 0;
+                do {
+                    String key = userKeys.get(i);
+                    User u = getEmployees().get(key);
+                    if (u.getUserID().contains(id + "")) {
+                        type = u.getUserID().replaceAll("\\d", "");
+                        found = true;
+                    }
+                    i++;
+                } while (!found);
             }
-            i++;
-        } while (!found);
-
-        if (!isCustomer) {
-            userKeys = new ArrayList<>(getPropertyOwners().keySet());
-            i = 0;
-            do {
-                String key = userKeys.get(i);
-                User u = getPropertyOwners().get(key);
-                if (u.getUsername().equals(username)) {
-                    isPropertyOwner = true;
-                    type = u.getUserID().replaceAll("\\d", "");
-                    found = true;
-                }
-                i++;
-            } while (!found);
         }
-
-        if (!isCustomer && !isPropertyOwner) {
-            userKeys = new ArrayList<>(getEmployees().keySet());
-            i = 0;
-            do {
-                String key = userKeys.get(i);
-                User u = getEmployees().get(key);
-                if (u.getUsername().equals(username)) {
-                    type = u.getUserID().replaceAll("\\d", "");
-                    found = true;
-                }
-                i++;
-            } while (!found);
-        }
+//        List<String> userKeys = new ArrayList<>(getCustomers().keySet());
+//        int i = 0;
+//        do {
+//            String key = userKeys.get(i);
+//            User u = getCustomers().get(key);
+//            if (u.getUsername().equals(username)) {
+//                isCustomer = true;
+//                type = u.getUserID().replaceAll("\\d", "");
+//                found = true;
+//            }
+//            i++;
+//        } while (!found);
+//
+//        if (!isCustomer) {
+//            userKeys = new ArrayList<>(getPropertyOwners().keySet());
+//            i = 0;
+//            do {
+//                String key = userKeys.get(i);
+//                User u = getPropertyOwners().get(key);
+//                if (u.getUsername().equals(username)) {
+//                    isPropertyOwner = true;
+//                    type = u.getUserID().replaceAll("\\d", "");
+//                    found = true;
+//                }
+//                i++;
+//            } while (!found);
+//        }
+//
+//        if (!isCustomer && !isPropertyOwner) {
+//            userKeys = new ArrayList<>(getEmployees().keySet());
+//            i = 0;
+//            do {
+//                String key = userKeys.get(i);
+//                User u = getEmployees().get(key);
+//                if (u.getUsername().equals(username)) {
+//                    type = u.getUserID().replaceAll("\\d", "");
+//                    found = true;
+//                }
+//                i++;
+//            } while (!found);
+//        }
 
         return type;
     }
 
-    //TODO
-    public void updateUserDetails(String username, String email, String password, String occupation, String income) {
-        String sql = "";
+    public int updateUserDetails(String username, String email, String oldUsername) {
+        int id = 0;
+        String sql = "UPDATE users SET username=?, email=? WHERE username=?";
+
+        try (Connection connection = dbConnector.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, email);
+            pstmt.setString(3, oldUsername);
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        sql = "SELECT userid FROM users WHERE username='" + username + "'";
+        try (Connection conn = dbConnector.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next())
+                id = rs.getInt("userid");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return id;
     }
 
-    //DELETE USER?
+    public String getUsername(int id) {
+        String username = "";
+
+        String sql = "SELECT username FROM users WHERE userid=" + id;
+        try (Connection conn = dbConnector.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next())
+                username = rs.getString("username");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return username;
+    }
+
+    public void updateCustomerDetails(String username, String email, String occupation, String income, List<String> preferredSuburbs, String oldUsername) throws SQLException {
+        int id = updateUserDetails(username, email, oldUsername);
+
+        String sql = "UPDATE customers SET occupation=?, income=? WHERE userid=?";
+        try (Connection connection = dbConnector.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, occupation);
+            Double incomeVal = null;
+            if (!income.equals("")) incomeVal = Double.parseDouble(income);
+
+            pstmt.setObject(2, incomeVal, Types.DOUBLE);
+            pstmt.setInt(3, id);
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        updatePreferredSuburbs(id, preferredSuburbs);
+    }
+
+    //needed?
     public void deleteUser(String username) {
 
+
+    }
+
+    public MainController getMainController() {
+        return mainController;
+    }
+
+    public void registerPropertyOwner(String username, String email, String password, boolean vendor) throws SQLException {
+        int id = 0;
+
+        String sql = "INSERT INTO users (username, email, password) VALUES(?, ?, ?)";
+        Connection conn = dbConnector.getConnection();
+        PreparedStatement pstmt = null;
+
+        try {
+            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, username);
+            pstmt.setString(2, email);
+            pstmt.setString(3, hash(password));
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (pstmt != null) {
+            ResultSet rs = pstmt.getGeneratedKeys();
+
+            if (rs.next()) {
+                id = rs.getInt(1);
+
+                sql = "INSERT INTO propertyowners (userid, vendor) VALUES (?, ?)";
+                pstmt = conn.prepareStatement(sql);
+
+                pstmt.setInt(1, id);
+                pstmt.setBoolean(2, vendor);
+                pstmt.executeUpdate();
+            }
+        }
     }
 }

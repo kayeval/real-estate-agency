@@ -72,6 +72,9 @@ public class RegisterController {
                 suburbsField.getText().equals("") || (!isBuyer && (occupationField.getText().equals("") || incomeField.getText().equals("")))) {
             error.setText("Please fill up all fields.");
             valid = false;
+        } else if (!incomeField.getText().equals("") && Double.parseDouble(incomeField.getText()) < 0) {
+            error.setText("Income cannot be negative.");
+            valid = false;
         }
 
         if (valid) {
@@ -89,8 +92,6 @@ public class RegisterController {
             try {
                 userController.registerCustomer(usernameField.getText(), emailField.getText(), passwordField.getText(),
                         occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")));
-
-                System.out.println("REGISTER SUCCESS, total customers = " + userController.getCustomers().values().size());
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -115,6 +116,18 @@ public class RegisterController {
             error.setText("");
         });
 
+        suburbsField.textProperty().addListener((observable) -> {
+            error.setText("");
+        });
+
+        occupationField.textProperty().addListener((observable) -> {
+            error.setText("");
+        });
+
+        incomeField.textProperty().addListener((observable) -> {
+            error.setText("");
+        });
+
         usernameField.setOnKeyPressed(event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 registerBtn.fire();
@@ -132,6 +145,25 @@ public class RegisterController {
                 registerBtn.fire();
             }
         });
+
+        suburbsField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                registerBtn.fire();
+            }
+        });
+
+        occupationField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                registerBtn.fire();
+            }
+        });
+
+        incomeField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                registerBtn.fire();
+            }
+        });
+
         TextFormatter formatter = new TextFormatter(new DecimalFilter());
         incomeField.setTextFormatter(formatter);
 

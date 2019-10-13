@@ -11,14 +11,11 @@ import main.controller.UserController;
 import main.model.DBConnector;
 
 public class Main extends Application {
-    private DBConnector conn;
     private MainController mainController;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        conn = new DBConnector();
         mainController = new MainController();
-        mainController.setDbConnector(conn);
 
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
@@ -26,10 +23,12 @@ public class Main extends Application {
 
         UserController userController = new UserController();
         userController.setMainController(mainController);
-        mainController.setUserController(userController);
 
         LoginController controller = loader.getController();
         controller.setUserController(userController);
+
+//        userController.registerPropertyOwner("p1", "vendor@a.com", "1234", true);
+//        userController.registerPropertyOwner("p2", "buyer@a.com", "1234", false);
 
         primaryStage.setTitle("Real Estate Agency");
         Scene scene = new Scene(root, 800, 760);

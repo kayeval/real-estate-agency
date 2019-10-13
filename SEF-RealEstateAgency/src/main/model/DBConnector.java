@@ -14,7 +14,7 @@ public class DBConnector {
         try {
             Class.forName(DRIVER_NAME);
             Connection connection = DriverManager.getConnection(URL + DATABASE + "?autoReconnect=true&useSSL=false", USERNAME, PASSWORD);
-            System.out.println("[MYSQL] Connection successful!");
+//            System.out.println("[MYSQL] Connection successful!");
             return connection;
         } catch (Exception e) {
             System.out.println("[MYSQL] Unable to connect to database");

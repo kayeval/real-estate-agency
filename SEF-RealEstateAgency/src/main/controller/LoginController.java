@@ -40,6 +40,7 @@ public class LoginController {
     @FXML
     void loginAction(ActionEvent event) throws IOException {
         boolean valid = true, found = false;
+        int id = 0;
 
         if (username.getText().equals("") || password.getText().equals("")) {
             error.setText("Please fill up all fields.");
@@ -47,7 +48,8 @@ public class LoginController {
         }
 
         if (valid) {
-            if (!userController.canLogin(username.getText(), password.getText()))
+            id = userController.canLogin(username.getText(), password.getText());
+            if (id == 0)
                 error.setText("Invalid username or password.");
             else found = true;
         }
@@ -58,9 +60,13 @@ public class LoginController {
             Parent nextPane = loader.load();
 
             MainController mainController = loader.getController();
-            switch (userController.loginType(username.getText())) {
-                case "customer":
-                    mainController.setType("customer");
+            mainController.setUserID(id);
+            switch (userController.loginType(id)) {
+                case "buyer":
+                    mainController.setType("buyer");
+                    break;
+                case "renter":
+                    mainController.setType("renter");
                     break;
                 case "admin":
                     mainController.setType("admin");
@@ -76,8 +82,11 @@ public class LoginController {
                     break;
                 case "salesconsultant":
                     mainController.setType("salesconsultant");
-                case "propertyowner":
-                    mainController.setType("propertyowner");
+                case "vendor":
+                    mainController.setType("vendor");
+                    break;
+                case "landlord":
+                    mainController.setType("landlord");
                     break;
                 default:
             }
@@ -132,9 +141,5 @@ public class LoginController {
 
     public void setUserController(UserController userController) {
         this.userController = userController;
-    }
-
-    public UserController getUserController() {
-        return userController;
     }
 }
