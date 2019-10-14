@@ -44,10 +44,11 @@ public class BranchManager extends Employee {
     }
 
     public boolean inspectDocuments(Property property) {
-        return false;
-
+        if (!property.areDocumentsInspected())
+        {
+            property.setDocumentsInspected(true);
+        }
+        return true;
     }
-
-
 }
  

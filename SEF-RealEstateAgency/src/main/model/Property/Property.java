@@ -121,6 +121,8 @@ public abstract class Property {
         return documentsInspected;
     }
 
+    public void setDocumentsInspected(boolean inspected) { this.documentsInspected = inspected;}
+
     public Proposal getProposal() {
         return proposal;
     }

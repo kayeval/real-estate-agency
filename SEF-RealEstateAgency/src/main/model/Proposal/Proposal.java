@@ -20,7 +20,6 @@ public abstract class Proposal {
         this.customer = customer;
         this.property = property;
         this.accepted = false;
-        this.accepted = false;
     }
 
     public void setProposalID(String proposalID) {
@@ -55,7 +54,6 @@ public abstract class Proposal {
         this.accepted = accepted;
     }
 
-    //FOR TESTING PURPOSES ONLY
     public void setSubmissionDate(LocalDateTime submissionDate) {
         this.submissionDate = submissionDate;
     }
