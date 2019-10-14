@@ -7,6 +7,9 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import main.controller.LoginController;
 import main.controller.UserController;
+import main.model.Property.Property;
+import main.model.User.Employee.SalesPerson.SalesPerson;
+import main.model.User.User;
 
 public class Main extends Application {
     @Override
@@ -18,6 +21,10 @@ public class Main extends Application {
         LoginController controller = loader.getController();
         UserController userController = new UserController();
         controller.setUserController(userController);
+
+//        for (User s : userController.getSalesPersons().values())
+//            for (Property p : ((SalesPerson) s).getAssignedProperties().values())
+//                System.out.println(s.getUsername() + "assigned to \t" + p.getPropertyID());
 
 //        userController.registerEmployee("admin", "a@a.com", "1234", 55000, LocalDate.now(ZoneId.systemDefault()), "admin");
 //        userController.registerEmployee("manager", "a@a.com", "1234", 55000, LocalDate.now(ZoneId.systemDefault()), "manager");

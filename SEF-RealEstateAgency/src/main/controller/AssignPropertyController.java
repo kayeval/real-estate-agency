@@ -7,10 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import main.model.User.Employee.Employee;
 import main.model.User.Employee.SalesPerson.SalesPerson;
@@ -40,6 +37,9 @@ public class AssignPropertyController {
 
     @FXML
     private TableColumn<Employee, String> typeField;
+
+    @FXML
+    private Label lblCurrentAssign;
 
     private ObservableList<User> data;
 
@@ -71,6 +71,7 @@ public class AssignPropertyController {
 
         userTableView.focusedProperty().addListener(listener);
         userTableView.getSelectionModel().selectedItemProperty().addListener(listener);
+//        lblCurrentAssign.setVisible(false);
     }
 
     public void refreshTable() {
@@ -104,5 +105,9 @@ public class AssignPropertyController {
 
     public User getSelectedUser() {
         return selectedUser;
+    }
+
+    public Label getLblCurrentAssign() {
+        return lblCurrentAssign;
     }
 }

@@ -29,7 +29,6 @@ public class PropertyController {
 
             while (rs.next()) {
                 id = rs.getInt("propertyid");
-
                 String address = rs.getString("address");
                 int baths = rs.getInt("baths");
                 int cars = rs.getInt("carspaces");
@@ -58,7 +57,6 @@ public class PropertyController {
                     p.setPropertyID("rental" + id);
                     properties.putIfAbsent(p.getPropertyID(), p);
                 } else {
-                    System.out.println(userController.getPropertyOwners().size());
                     Property p = new SaleProperty(address, suburb, capacity, PropertyType.valueOf(propertyType.toUpperCase()), price,
                             (PropertyOwner) userController.getPropertyOwners().get("vendor" + propertyOwnerID));
                     p.setPropertyID("sale" + id);
@@ -152,10 +150,6 @@ public class PropertyController {
         return rentals;
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
-    }
-
     public Map<String, Property> getProperties(String type, int userID) {
         //if type is vendor or landlord check property owner
         Map<String, Property> properties = new HashMap<>();
@@ -206,5 +200,9 @@ public class PropertyController {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setUserController(UserController userController) {
+        this.userController = userController;
     }
 }

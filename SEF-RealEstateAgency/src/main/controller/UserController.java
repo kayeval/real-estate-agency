@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.model.DBConnector;
+import main.model.Property.Property;
 import main.model.User.Customer.Buyer;
 import main.model.User.Customer.Customer;
 import main.model.User.Customer.Renter;
@@ -15,14 +16,12 @@ import main.model.User.User;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class UserController {
@@ -32,6 +31,7 @@ public class UserController {
     public UserController() {
         dbConnector = new DBConnector();
         propertyController = new PropertyController();
+        propertyController.setUserController(this);
     }
 
     public Map<String, User> getCustomers() {
@@ -539,4 +539,28 @@ public class UserController {
         return salespersons;
     }
 
+    public User currentlyAssignedToProperty(Property p) {
+        boolean found = false;
+        User user = null;
+        Map<String, User> map = getSalesPersons();
+
+        Iterator iter = map.entrySet().iterator();
+        while (!found && iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+
+            SalesPerson salesPerson = (SalesPerson) entry.getValue();
+            for (Property assigned : salesPerson.getAssignedProperties().values()) {
+                found = true;
+                user = salesPerson;
+//                System.out.println("Salesperson " + salesPerson.getUsername() + " is assigned to property " + assigned.getPropertyID());
+//                System.out.println(assigned.getPropertyID().equals(p.getPropertyID()));
+            }
+//            if (salesPerson.getAssignedProperties().containsValue(p)) {
+//                found = true;
+//                user = salesPerson;
+//            }
+        }
+
+        return user;
+    }
 }

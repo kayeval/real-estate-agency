@@ -34,6 +34,9 @@ public class LoginController {
     @FXML
     private Text registerTxt;
 
+    @FXML
+    private Text guestLoginTxt;
+
     private UserController userController;
     private MainController mainController;
 
@@ -97,6 +100,23 @@ public class LoginController {
             window.setScene(nextScene);
             window.show();
         }
+    }
+
+    @FXML
+    void guestLoginAction(MouseEvent event) throws IOException {
+        //todo
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("/main/view/Main.fxml"));
+        Parent nextPane = loader.load();
+
+        MainController mainController = loader.getController();
+//        mainController.setUserID(id);
+        mainController.setType("guest");
+        Scene nextScene = new Scene(nextPane);
+
+        Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        window.setScene(nextScene);
+        window.show();
     }
 
     @FXML

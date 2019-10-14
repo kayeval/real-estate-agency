@@ -269,6 +269,12 @@ public class MainController {
 
     public void hideComponents(String type) {
         switch (type) {
+            case "guest": {
+                updateDetailsItem.setVisible(false);
+                logoutItem.setText("Login");
+                btnAddListing.setVisible(false);
+                break;
+            }
             case "buyer": {
                 priceField.setText("Listed Price");
                 btnAddListing.setVisible(false);
@@ -340,7 +346,7 @@ public class MainController {
 
     private void assignProperty(ActionEvent event) {
         Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
-
+        System.out.println(property.getPropertyID());
         Stage assignPropertyStage = new Stage();
         assignPropertyStage.setTitle("Assign Property");
         FXMLLoader loader = new FXMLLoader();
@@ -354,6 +360,14 @@ public class MainController {
 
         AssignPropertyController assignPropertyController = loader.getController();
         assignPropertyController.setUserController(userController);
+
+        User currentAssignment = userController.currentlyAssignedToProperty(property);
+
+        if (currentAssignment == null)
+            assignPropertyController.getLblCurrentAssign().setText("Currently assigned: NONE");
+        else
+            assignPropertyController.getLblCurrentAssign().setText("Currently assigned: " + currentAssignment.getUsername());
+
         assignPropertyController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
             if (isConfirmed) {
                 assignPropertyStage.hide();
