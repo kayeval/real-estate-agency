@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
@@ -38,5 +39,6 @@
             </items>
         </MenuButton>
         <Button fx:id="btnAddListing" layoutX="766.0" layoutY="6.0" mnemonicParsing="false" onAction="#addListing" text="Add Listing" />
+      <ComboBox fx:id="stateFilter" layoutX="661.0" layoutY="6.0" prefHeight="25.0" prefWidth="96.0" promptText="Status " />
     </children>
 </AnchorPane>

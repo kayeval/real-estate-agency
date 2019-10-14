@@ -57,6 +57,9 @@ public class MainController {
     private TextField searchField;
 
     @FXML
+    private ComboBox<String> stateFilter;
+
+    @FXML
     private MenuButton userActions;
 
     @FXML
@@ -87,6 +90,13 @@ public class MainController {
         dbConnector = new DBConnector();
         cm = new ContextMenu();
         cm.setAutoHide(true);
+
+        stateFilter.getItems().addAll("All", "Active", "Pending", "Inactive");
+        stateFilter.getSelectionModel().selectFirst();
+        stateFilter.getSelectionModel().selectedIndexProperty().addListener( (options, oldValue, newValue) ->
+        {  // something changes
+
+             });
 
 //        ChangeListener<Object> listener = (obs, oldValue, newValue) -> {
 //            if (newValue instanceof Property) {
@@ -475,4 +485,6 @@ public class MainController {
     public void setUserID(int userID) {
         this.userID = userID;
     }
+
+
 }

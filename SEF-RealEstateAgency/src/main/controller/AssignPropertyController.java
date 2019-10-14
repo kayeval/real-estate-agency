@@ -75,6 +75,7 @@ public class AssignPropertyController {
     }
 
     public void refreshTable() {
+        //data is filtered according to property passed in
         data = FXCollections.observableArrayList(userController.getSalesPersons().values());
         typeField.setCellValueFactory(new PropertyValueFactory<Employee, String>("type"));
         usernameField.setCellValueFactory(new PropertyValueFactory<User, String>("username"));
@@ -86,11 +87,13 @@ public class AssignPropertyController {
 
     @FXML
     void searchUsers(ActionEvent event) {
+
         //TODO
     }
 
     @FXML
     void assignProperty(ActionEvent event) {
+
         if (userTableView.getSelectionModel().getSelectedItem() != null) {
             selectedUser = userTableView.getSelectionModel().getSelectedItem();
             setConfirmed(true);
