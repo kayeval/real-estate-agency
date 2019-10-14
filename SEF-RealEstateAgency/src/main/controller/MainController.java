@@ -30,6 +30,9 @@ public class MainController {
     private TableView<Property> propertyTableView;
 
     @FXML
+    private TableColumn<Property, String> boolSR;
+
+    @FXML
     private TableColumn<Property, PropertyType> typeField;
 
     @FXML
@@ -119,6 +122,8 @@ public class MainController {
         }
 
 //        idField.setCellValueFactory(new PropertyValueFactory<Property, String>("propertyID"));
+
+        boolSR.setCellValueFactory(new PropertyValueFactory<Property, String>("strippedPropertyID"));
         typeField.setCellValueFactory(new PropertyValueFactory<Property, PropertyType>("propertyType"));
         addressField.setCellValueFactory(new PropertyValueFactory<Property, String>("address"));
         suburbField.setCellValueFactory(new PropertyValueFactory<Property, String>("suburb"));

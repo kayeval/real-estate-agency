@@ -117,6 +117,10 @@ public abstract class Property {
         return true;
     }
 
+    public String getStrippedPropertyID() {
+        return propertyID.replaceAll("\\d", "");
+    }
+
     public boolean areDocumentsInspected() {
         return documentsInspected;
     }
