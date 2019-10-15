@@ -3,7 +3,7 @@ package main.model.User;
 import java.time.LocalDate;
 
 public class WorkingHour {
-    private int id;
+    private String id;
     private LocalDate date;
     private double hours;
     private boolean approved;
@@ -13,11 +13,11 @@ public class WorkingHour {
         this.hours = hours;
     }
 
-    public void setID(int id) {
+    public void setID(String id) {
         this.id = id;
     }
 
-    public int getID() {
+    public String getID() {
         return id;
     }
 

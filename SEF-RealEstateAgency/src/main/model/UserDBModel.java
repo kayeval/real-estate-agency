@@ -59,7 +59,6 @@ public class UserDBModel {
                         user.setUserID("renter" + id);
                     } else user = users.get("renter" + id);
                 }
-//                System.out.println(user.getUsername());
                 ((Customer) user).getPreferredSuburbs().add(rs.getString("suburb"));
                 users.putIfAbsent(user.getUserID(), user);
 
@@ -138,7 +137,7 @@ public class UserDBModel {
                     propertyOwner = new Vendor(rs.getString("username"), rs.getString("email"));
                     propertyOwner.setUserID("landlord" + rs.getInt("userid"));
                 }
-//                System.out.println(propertyOwner.getUsername());
+
                 users.putIfAbsent(propertyOwner.getUserID(), propertyOwner);
             }
         } catch (Exception ex) {
@@ -243,7 +242,6 @@ public class UserDBModel {
             pstmt.setString(1, username);
             pstmt.setString(2, email);
             pstmt.setString(3, hash(password));
-//            pstmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.MIN));
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -300,17 +298,17 @@ public class UserDBModel {
     }
 
     //MUST CALL canLogin() BEFORE
-    public String loginType(int id) {
+    public String getRegisteredUserType(int userID) {
         String type = "";
         boolean found = false;
 
-        if (getCustomers().containsKey("buyer" + id))
+        if (getCustomers().containsKey("buyer" + userID))
             type = "buyer";
-        else if (getCustomers().containsKey("renter" + id))
+        else if (getCustomers().containsKey("renter" + userID))
             type = "renter";
-        else if (getPropertyOwners().containsKey("landlord" + id))
+        else if (getPropertyOwners().containsKey("landlord" + userID))
             type = "landlord";
-        else if (getPropertyOwners().containsKey("vendor" + id))
+        else if (getPropertyOwners().containsKey("vendor" + userID))
             type = "vendor";
         else {
             if (getEmployees().size() > 0) {
@@ -319,7 +317,7 @@ public class UserDBModel {
                 do {
                     String key = userKeys.get(i);
                     User u = getEmployees().get(key);
-                    if (u.getUserID().contains(id + "")) {
+                    if (u.getUserID().contains(userID + "")) {
                         type = u.getUserID().replaceAll("\\d", "");
                         found = true;
                     }
@@ -327,47 +325,6 @@ public class UserDBModel {
                 } while (!found);
             }
         }
-//        List<String> userKeys = new ArrayList<>(getCustomers().keySet());
-//        int i = 0;
-//        do {
-//            String key = userKeys.get(i);
-//            User u = getCustomers().get(key);
-//            if (u.getUsername().equals(username)) {
-//                isCustomer = true;
-//                type = u.getUserID().replaceAll("\\d", "");
-//                found = true;
-//            }
-//            i++;
-//        } while (!found);
-//
-//        if (!isCustomer) {
-//            userKeys = new ArrayList<>(getPropertyOwners().keySet());
-//            i = 0;
-//            do {
-//                String key = userKeys.get(i);
-//                User u = getPropertyOwners().get(key);
-//                if (u.getUsername().equals(username)) {
-//                    isPropertyOwner = true;
-//                    type = u.getUserID().replaceAll("\\d", "");
-//                    found = true;
-//                }
-//                i++;
-//            } while (!found);
-//        }
-//
-//        if (!isCustomer && !isPropertyOwner) {
-//            userKeys = new ArrayList<>(getEmployees().keySet());
-//            i = 0;
-//            do {
-//                String key = userKeys.get(i);
-//                User u = getEmployees().get(key);
-//                if (u.getUsername().equals(username)) {
-//                    type = u.getUserID().replaceAll("\\d", "");
-//                    found = true;
-//                }
-//                i++;
-//            } while (!found);
-//        }
 
         return type;
     }
@@ -398,6 +355,54 @@ public class UserDBModel {
         }
 
         return id;
+    }
+
+    public User getUser(int userID) {
+        User user = null;
+        boolean found = false;
+
+        Iterator iter = getCustomers().entrySet().iterator();
+
+        while (!found && iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+
+            User u = (User) entry.getValue();
+            if (u.getUserID().contains(userID + "")) {
+                found = true;
+            }
+        }
+
+        iter = getEmployees().entrySet().iterator();
+        while (!found && iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+
+            User u = (User) entry.getValue();
+            if (u.getUserID().contains(userID + "")) {
+                found = true;
+            }
+        }
+
+        iter = getPropertyOwners().entrySet().iterator();
+        while (!found && iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+
+            User u = (User) entry.getValue();
+            if (u.getUserID().contains(userID + "")) {
+                found = true;
+            }
+        }
+
+        iter = getSalesPersons().entrySet().iterator();
+        while (!found && iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+
+            User u = (User) entry.getValue();
+            if (u.getUserID().contains(userID + "")) {
+                found = true;
+            }
+        }
+
+        return user;
     }
 
     public int getUserID(String username) {
@@ -455,8 +460,6 @@ public class UserDBModel {
 
     //needed?
     public void deleteUser(String username) {
-
-
     }
 
     public void registerPropertyOwner(String username, String email, String password, boolean vendor) throws SQLException {
@@ -464,31 +467,24 @@ public class UserDBModel {
 
         String sql = "INSERT INTO users (username, email, password) VALUES(?, ?, ?)";
         Connection conn = dbConnector.getConnection();
-        PreparedStatement pstmt = null;
+        PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-        try {
-            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, username);
-            pstmt.setString(2, email);
-            pstmt.setString(3, hash(password));
+        pstmt.setString(1, username);
+        pstmt.setString(2, email);
+        pstmt.setString(3, hash(password));
+        pstmt.executeUpdate();
+
+        ResultSet rs = pstmt.getGeneratedKeys();
+
+        if (rs.next()) {
+            id = rs.getInt(1);
+
+            sql = "INSERT INTO propertyowners (userid, vendor) VALUES (?, ?)";
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.setInt(1, id);
+            pstmt.setBoolean(2, vendor);
             pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        if (pstmt != null) {
-            ResultSet rs = pstmt.getGeneratedKeys();
-
-            if (rs.next()) {
-                id = rs.getInt(1);
-
-                sql = "INSERT INTO propertyowners (userid, vendor) VALUES (?, ?)";
-                pstmt = conn.prepareStatement(sql);
-
-                pstmt.setInt(1, id);
-                pstmt.setBoolean(2, vendor);
-                pstmt.executeUpdate();
-            }
         }
     }
 
@@ -617,5 +613,25 @@ public class UserDBModel {
         }
 
         return isParttime;
+    }
+
+    public Map<String, User> getParttimers() {
+        Map<String, User> users = new HashMap<>();
+
+        for (User u : getEmployees().values())
+            if (((Employee) u).getPartTimeEmployee() != null)
+                users.putIfAbsent(u.getUserID(), u);
+
+        return users;
+    }
+
+    public Map<String, User> getFulltimers() {
+        Map<String, User> users = new HashMap<>();
+
+        for (User u : getEmployees().values())
+            if (((Employee) u).getPartTimeEmployee() == null)
+                users.putIfAbsent(u.getUserID(), u);
+
+        return users;
     }
 }

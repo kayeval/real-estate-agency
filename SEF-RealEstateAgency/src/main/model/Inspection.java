@@ -1,13 +1,16 @@
 package main.model;
 
+import main.model.Property.Property;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public class Inspection {
-    private String inspectionID;
+    private int inspectionID;
     private boolean cancelled;
     private LocalDateTime dueDate;
     private LocalDateTime dateCreated;
+    private Property property;
 
     public Inspection(LocalDateTime dueDate) {
         this.dateCreated = LocalDateTime.now(ZoneId.systemDefault());
@@ -15,12 +18,20 @@ public class Inspection {
         cancelled = false;
     }
 
-    public void setInspectionID(String inspectionID) {
+    public void setInspectionID(int inspectionID) {
         this.inspectionID = inspectionID;
     }
 
-    public String getInspectionID() {
+    public int getInspectionID() {
         return inspectionID;
+    }
+
+    public void setProperty(Property property) {
+        this.property = property;
+    }
+
+    public String getPropertyAddress() {
+        return property.getAddress();
     }
 
     public LocalDateTime getDateCreated() {

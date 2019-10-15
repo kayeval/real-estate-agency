@@ -65,7 +65,7 @@ public class LoginController {
 
             MainController mainController = loader.getController();
             mainController.setUserID(id);
-            switch (userDBModel.loginType(id)) {
+            switch (userDBModel.getRegisteredUserType(id)) {
                 case "buyer":
                     mainController.setRegisteredUserType("buyer");
                     break;
@@ -106,13 +106,11 @@ public class LoginController {
 
     @FXML
     void guestLoginAction(MouseEvent event) throws IOException {
-        //todo
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/main/view/Main.fxml"));
         Parent nextPane = loader.load();
 
         MainController mainController = loader.getController();
-//        mainController.setUserID(id);
         mainController.setRegisteredUserType("guest");
         Scene nextScene = new Scene(nextPane);
 
@@ -123,6 +121,8 @@ public class LoginController {
 
     @FXML
     void registerAction(MouseEvent event) throws IOException {
+        //TODO register property owner
+
         FXMLLoader loader = new FXMLLoader();
 
         loader.setLocation(getClass().getResource("/main/view/RegisterCustomer.fxml"));

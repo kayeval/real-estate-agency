@@ -127,7 +127,7 @@ public class MainController {
     private TableView<Proposal> proposalTableView;
 
     @FXML
-    private TableView<Employee> employeeTableView;
+    private TableView<User> employeeTableView;
 
     @FXML
     private TableColumn<Inspection, LocalDate> inspectionDateField;
@@ -324,30 +324,20 @@ public class MainController {
     public void refreshEmployeeTable(String state) {
         switch (state) {
             case "part-time": {
-
+                employees = FXCollections.observableArrayList(userDBModel.getParttimers().values());
                 break;
             }
             case "full-time": {
-
+                employees = FXCollections.observableArrayList(userDBModel.getFulltimers().values());
                 break;
             }
             default:
                 employees = FXCollections.observableArrayList(userDBModel.getEmployees().values());
         }
-        properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties().values());
 
-        boolSR.setCellValueFactory(new PropertyValueFactory<Property, String>("strippedPropertyID"));
-        typeField.setCellValueFactory(new PropertyValueFactory<Property, PropertyType>("propertyType"));
-        addressField.setCellValueFactory(new PropertyValueFactory<Property, String>("address"));
-        suburbField.setCellValueFactory(new PropertyValueFactory<Property, String>("suburb"));
-        bedsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("beds"));
-        bathsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("baths"));
-        carsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("cars"));
-        minPriceField.setCellValueFactory(new PropertyValueFactory<Property, Double>("price"));
-        propertyStatusField.setCellValueFactory(new PropertyValueFactory<Property, String>("status"));
 
-        propertyTableView.setItems(properties);
-        propertyTableView.setContextMenu(propertyContextMenu);
+        employeeTableView.setItems(employees);
+        employeeTableView.setContextMenu(employeeContextMenu);
     }
 
     public void refreshProposalTable(String state) {
@@ -370,16 +360,16 @@ public class MainController {
             case "landlord":
                 switch (state) {
                     case "all":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getProperties(registeredUserType, userID).values());
                         break;
                     case "inactive":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnInactiveProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getInactiveProperties(registeredUserType, userID).values());
                         break;
                     case "pending":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnPendingProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getPendingProperties(registeredUserType, userID).values());
                         break;
                     case "active":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnActiveProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties(registeredUserType, userID).values());
                         break;
                 }
                 break;
@@ -390,13 +380,13 @@ public class MainController {
                         properties = FXCollections.observableArrayList(propertyDBModel.getAssignedProperties(userID).values());
                         break;
                     case "inactive":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedInactiveProperties(userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getInactiveProperties(registeredUserType, userID).values());
                         break;
                     case "pending":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedPendingProperties(userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getPendingProperties(registeredUserType, userID).values());
                         break;
                     case "active":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedActiveProperties(userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties(registeredUserType, userID).values());
                         break;
                 }
                 break;
@@ -890,7 +880,7 @@ public class MainController {
     }
 
     private void viewAssignedProperties(ActionEvent actionEvent) {
-        Employee employee = employeeTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+        User employee = employeeTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (employee != null) {
 

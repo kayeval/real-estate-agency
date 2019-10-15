@@ -11,7 +11,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
-import main.controller.*;
+import main.controller.PasswordPromptController;
 import main.model.DecimalFilter;
 import main.model.IntegerFilter;
 import main.model.Property.PropertyType;

@@ -52,6 +52,10 @@ public abstract class Proposal {
         return property;
     }
 
+    public String getPropertyAddress() {
+        return property.getAddress();
+    }
+
     public String getProposalID() {
         return proposalID;
     }
