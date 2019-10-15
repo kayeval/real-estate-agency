@@ -11,12 +11,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
+import main.model.DBModel.PropertyDBModel;
+import main.model.DBModel.UserDBModel;
 import main.model.DecimalFilter;
 import main.model.IntegerFilter;
 import main.model.Property.PropertyType;
-import main.model.PropertyDBModel;
 import main.model.Proposal.ContractDuration;
-import main.model.UserDBModel;
 
 import java.io.IOException;
 import java.util.HashSet;

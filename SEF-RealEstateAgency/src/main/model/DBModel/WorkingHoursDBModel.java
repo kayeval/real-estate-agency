@@ -1,13 +1,23 @@
-package main.model;
+package main.model.DBModel;
+
+import main.model.User.WorkingHour;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WorkingHoursDBModel {
     private DBConnector dbConnector;
+    private UserDBModel userDBModel;
 
     public WorkingHoursDBModel() {
         dbConnector = new DBConnector();
+    }
+
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 
     public void inputHours(LocalDate date, double hours, int userID) {
@@ -39,5 +49,27 @@ public class WorkingHoursDBModel {
         }
     }
 
+    public Map<String, List<WorkingHour>> getWorkingHours() {
+        Map<String, List<WorkingHour>> allWorkingHours = new HashMap<>();
 
+        return allWorkingHours;
+    }
+
+    public Map<String, List<WorkingHour>> getApprovedWorkingHours() {
+        Map<String, List<WorkingHour>> allWorkingHours = new HashMap<>();
+
+        return allWorkingHours;
+    }
+
+    public Map<String, WorkingHour> getWorkingHours(int userID) {
+        Map<String, WorkingHour> workingHours = new HashMap<>();
+
+        return workingHours;
+    }
+
+    public Map<String, WorkingHour> getApprovedWorkingHours(int userID) {
+        Map<String, WorkingHour> workingHours = new HashMap<>();
+
+        return workingHours;
+    }
 }

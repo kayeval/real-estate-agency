@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public class Inspection {
-    private int inspectionID;
+    private String inspectionID;
     private boolean cancelled;
     private LocalDateTime dueDate;
     private LocalDateTime dateCreated;
@@ -18,11 +18,11 @@ public class Inspection {
         cancelled = false;
     }
 
-    public void setInspectionID(int inspectionID) {
+    public void setInspectionID(String inspectionID) {
         this.inspectionID = inspectionID;
     }
 
-    public int getInspectionID() {
+    public String getInspectionID() {
         return inspectionID;
     }
 

@@ -12,11 +12,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import main.controller.PasswordPromptController;
+import main.model.DBModel.PropertyDBModel;
+import main.model.DBModel.UserDBModel;
 import main.model.DecimalFilter;
 import main.model.IntegerFilter;
 import main.model.Property.PropertyType;
-import main.model.PropertyDBModel;
-import main.model.UserDBModel;
 
 import java.io.IOException;
 

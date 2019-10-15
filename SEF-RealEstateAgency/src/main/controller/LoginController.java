@@ -12,9 +12,10 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import main.model.UserDBModel;
+import main.model.DBModel.UserDBModel;
 
 import java.io.IOException;
 
@@ -121,20 +122,63 @@ public class LoginController {
 
     @FXML
     void registerAction(MouseEvent event) throws IOException {
-        //TODO register property owner
-
+        Stage promptRegistrationStage = new Stage();
         FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("/main/view/RegisterPrompt.fxml"));
+        AnchorPane rootLayout = loader.load();
 
-        loader.setLocation(getClass().getResource("/main/view/RegisterCustomer.fxml"));
-        Parent nextPane = loader.load();
-        Scene nextScene = new Scene(nextPane);
-        nextScene.getStylesheets().add("/main/res/combobox.css");
-        RegisterController controller = loader.getController();
-        controller.setUserDBModel(userDBModel);
+        RegisterPromptController registerPromptController = loader.getController();
 
-        Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        window.setScene(nextScene);
-        window.show();
+        registerPromptController.hasSelectedCustomerProperty().addListener((observableValue, wasSelected, isSelected) -> {
+            if (isSelected) {
+                promptRegistrationStage.hide();
+
+                FXMLLoader newLoader = new FXMLLoader();
+                newLoader.setLocation(getClass().getResource("/main/view/RegisterCustomer.fxml"));
+                Parent nextPane = null;
+                try {
+                    nextPane = newLoader.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Scene nextScene = new Scene(nextPane);
+                nextScene.getStylesheets().add("/main/res/combobox.css");
+                RegisterCustomerController controller = newLoader.getController();
+                controller.setUserDBModel(userDBModel);
+
+                Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                window.setScene(nextScene);
+                window.show();
+            }
+        });
+
+        registerPromptController.hasSelectedPropertyOwnerProperty().addListener((observableValue, wasSelected, isSelected) -> {
+            if (isSelected) {
+                promptRegistrationStage.hide();
+
+                FXMLLoader newLoader = new FXMLLoader();
+                newLoader.setLocation(getClass().getResource("/main/view/RegisterPropertyOwner.fxml"));
+                Parent nextPane = null;
+                try {
+                    nextPane = newLoader.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Scene nextScene = new Scene(nextPane);
+                nextScene.getStylesheets().add("/main/res/combobox.css");
+                RegisterPropertyOwnerController controller = newLoader.getController();
+                controller.setUserDBModel(userDBModel);
+
+                Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                window.setScene(nextScene);
+                window.show();
+            }
+        });
+
+        // Show the scene containing the root layout
+        Scene scene = new Scene(rootLayout);
+        promptRegistrationStage.setScene(scene);
+        promptRegistrationStage.show();
     }
 
     @FXML

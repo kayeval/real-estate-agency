@@ -1,4 +1,4 @@
-package main.model;
+package main.model.DBModel;
 
 import main.model.Proposal.ContractDuration;
 import main.model.Proposal.Proposal;
@@ -111,18 +111,18 @@ public class ProposalDBModel {
         }
     }
 
-    public void rejectProposal(String proposalID) {
-        String sql = "UPDATE proposals SET accepted=? WHERE proposalid=?";
-        try (Connection connection = dbConnector.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setBoolean(1, false);
-            pstmt.setInt(2, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
-
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void rejectProposal(String proposalID) {
+//        String sql = "UPDATE proposals SET accepted=? WHERE proposalid=?";
+//        try (Connection connection = dbConnector.getConnection();
+//             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+//            pstmt.setBoolean(1, false);
+//            pstmt.setInt(2, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
+//
+//            pstmt.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public void updateProposal(double price, int userID, String
             propertyID, Set<ContractDuration> contractDurations, String proposalID) {
@@ -146,6 +146,7 @@ public class ProposalDBModel {
         }
     }
 
+    //also for reject
     public void withdrawProposal(String proposalID) {
         String sql = "UPDATE proposals SET withdrawn=?, waitingforpay=? WHERE proposalid=?";
         try (Connection connection = dbConnector.getConnection();
@@ -189,11 +190,14 @@ public class ProposalDBModel {
     }
 
     public Map<String, Proposal> getProposals(String type, int userID) {
+        Map<String, Proposal> proposals = new HashMap<>();
         //customer
 
         //propertyowner
 
         //salesperson
+
+        return proposals;
     }
 
     public Map<String, Proposal> getActiveProposals(String type, int userID) {

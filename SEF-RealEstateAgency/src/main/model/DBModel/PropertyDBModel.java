@@ -1,4 +1,4 @@
-package main.model;
+package main.model.DBModel;
 
 import main.model.Property.*;
 import main.model.Proposal.ContractDuration;
@@ -177,7 +177,11 @@ public class PropertyDBModel {
         return properties;
     }
 
-    public void documentsInspected(String propertyID) {
+    public void documentsInspected(Property property) {
+
+    }
+
+    public void deactivateListing(Property property) {
 
     }
 

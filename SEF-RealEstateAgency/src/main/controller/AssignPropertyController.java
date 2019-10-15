@@ -9,10 +9,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import main.model.DBModel.UserDBModel;
 import main.model.User.Employee.Employee;
 import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.User;
-import main.model.UserDBModel;
 
 import java.time.LocalDate;
 

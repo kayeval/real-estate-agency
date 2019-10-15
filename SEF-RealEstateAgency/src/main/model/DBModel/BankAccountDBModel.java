@@ -1,4 +1,4 @@
-package main.model;
+package main.model.DBModel;
 
 import main.controller.MainController;
 

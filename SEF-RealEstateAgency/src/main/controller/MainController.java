@@ -17,19 +17,20 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import main.EditSalePropertyController;
-import main.model.DBConnector;
+import main.model.DBModel.*;
 import main.model.Inspection;
+import main.model.Property.DeactivatedPropertyException;
 import main.model.Property.Property;
 import main.model.Property.PropertyType;
 import main.model.Property.RentalProperty;
-import main.model.PropertyDBModel;
 import main.model.Proposal.Proposal;
+import main.model.User.Customer.Buyer;
 import main.model.User.Customer.Customer;
 import main.model.User.Customer.Renter;
 import main.model.User.Employee.Employee;
 import main.model.User.Employee.PartTimeEmployee;
+import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.User;
-import main.model.UserDBModel;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -195,27 +196,46 @@ public class MainController {
     @FXML
     private TabPane tabPane;
 
+    @FXML
+    private TableColumn<PartTimeEmployee, String> parttimeUsernameField;
+
     private int userID;
+    private User user;
     private String registeredUserType;
 
     private DBConnector dbConnector = new DBConnector();
 
     private UserDBModel userDBModel;
     private PropertyDBModel propertyDBModel;
+    private WorkingHoursDBModel workingHoursDBModel;
+    private InspectionDBModel inspectionDBModel;
+    private ProposalDBModel proposalDBModel;
+    private BankAccountDBModel bankAccountDBModel;
 
     private ObservableList<Property> properties;
     private ObservableList<Inspection> inspections;
     private ObservableList<User> employees;
     private ObservableList<Proposal> proposals;
 
+    //TODO for search by suburb
     private FilteredList<Property> filteredList;
 
-    private ContextMenu propertyContextMenu, inspectionContextMenu, proposalContextMenu, employeeContextMenu;
+    private ContextMenu propertyContextMenu, inspectionContextMenu, proposalContextMenu, employeeContextMenu, workingHoursContextMenu;
 
     private Property selectedProperty;
     private Inspection selectedInspection;
     private Proposal selectedProposal;
     private User selectedEmployee;
+
+    private MenuItem cancelInspectionMenuItem, rescheduleInspectionMenuItem,
+            contactCustomerMenuItem, viewPropertyManagementFeeOrCommissionMenuItem,
+            contactPropertyOwnerMenuItem, organizeLegalDocumentsMenuItem,
+            advertisePropertyMenuItem, deactivateListingMenuItem, editPropertyMenuItem,
+            viewProposalMenuItem, withdrawProposalMenuItem, submitProposalMenuItem,
+            viewMaintenanceReportMenuItem,
+            viewAssignedPropertiesMenuItem,
+            assignPropertyToEmployeeMenuItem,
+            inspectPropertyDocumentsMenuItem;
 
     @FXML
     void initialize() {
@@ -230,6 +250,16 @@ public class MainController {
         userDBModel = new UserDBModel();
         propertyDBModel = new PropertyDBModel();
         propertyDBModel.setUserDBModel(userDBModel);
+
+        proposalDBModel = new ProposalDBModel();
+        proposalDBModel.setUserDBModel(userDBModel);
+
+        workingHoursDBModel = new WorkingHoursDBModel();
+        workingHoursDBModel.setUserDBModel(userDBModel);
+
+        inspectionDBModel = new InspectionDBModel();
+
+        bankAccountDBModel = new BankAccountDBModel();
 
         dbConnector = new DBConnector();
 
@@ -246,88 +276,48 @@ public class MainController {
         proposalContextMenu = new ContextMenu();
         proposalContextMenu.setAutoHide(true);
 
+        workingHoursContextMenu = new ContextMenu();
+        workingHoursContextMenu.setAutoHide(true);
+
         //setup state combo boxes
         propertyStateCmb.getItems().addAll("All", "Active", "Pending", "Inactive");
         propertyStateCmb.getSelectionModel().selectFirst();
         propertyStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
-            switch (propertyStateCmb.getValue()) {
-                case "Active":
-                    refreshPropertyTable("active");
-                    break;
-                case "Pending":
-                    refreshPropertyTable("pending");
-                    break;
-                case "Inactive":
-                    refreshPropertyTable("inactive");
-                    break;
-                default:
-                    refreshPropertyTable("all");
-                    break;
-            }
+            refreshPropertyTable();
         });
 
         employeeStateCmb.getItems().addAll("All", "Part-time", "Full-time");
         employeeStateCmb.getSelectionModel().selectFirst();
         employeeStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
-            switch (employeeStateCmb.getValue()) {
-                case "Part-time":
-                    refreshEmployeeTable("part-time");
-                    break;
-                case "Full-time":
-                    refreshEmployeeTable("full-time");
-                    break;
-                default:
-                    refreshEmployeeTable("all");
-                    break;
-            }
+            refreshEmployeeTable();
         });
 
         proposalStateCmb.getItems().addAll("All", "Accepted", "Pending", "Rejected");
         proposalStateCmb.getSelectionModel().selectFirst();
         proposalStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
-            switch (proposalStateCmb.getValue()) {
-                case "Accepted":
-                    refreshProposalTable("accepted");
-                    break;
-                case "Pending":
-                    refreshProposalTable("pending");
-                    break;
-                case "Rejected":
-                    refreshProposalTable("rejected");
-                    break;
-                default:
-                    refreshProposalTable("all");
-                    break;
-            }
+            refreshProposalTable();
         });
 
         inspectionStateCmb.getItems().addAll("All", "Scheduled", "Completed", "Cancelled");
         inspectionStateCmb.getSelectionModel().selectFirst();
         inspectionStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
-            switch (inspectionStateCmb.getValue()) {
-                case "Scheduled":
-                    refreshInspectionTable("scheduled");
-                    break;
-                case "Completed":
-                    refreshInspectionTable("completed");
-                    break;
-                case "Cancelled":
-                    refreshInspectionTable("cancelled");
-                    break;
-                default:
-                    refreshInspectionTable("all");
-                    break;
-            }
+            refreshInspectionTable();
+        });
+
+        workingHoursStateCmb.getItems().addAll("All", "Approved", "Pending");
+        workingHoursStateCmb.getSelectionModel().selectFirst();
+        workingHoursStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
+            refreshWorkingHoursTable();
         });
     }
 
-    public void refreshEmployeeTable(String state) {
-        switch (state) {
-            case "part-time": {
+    public void refreshEmployeeTable() {
+        switch (employeeStateCmb.getValue()) {
+            case "Part-time": {
                 employees = FXCollections.observableArrayList(userDBModel.getParttimers().values());
                 break;
             }
-            case "full-time": {
+            case "Full-time": {
                 employees = FXCollections.observableArrayList(userDBModel.getFulltimers().values());
                 break;
             }
@@ -335,20 +325,58 @@ public class MainController {
                 employees = FXCollections.observableArrayList(userDBModel.getEmployees().values());
         }
 
+        //set cell value factory
 
         employeeTableView.setItems(employees);
         employeeTableView.setContextMenu(employeeContextMenu);
     }
 
-    public void refreshProposalTable(String state) {
+    public void refreshProposalTable() {
+        switch (proposalStateCmb.getValue()) {
+            case "Accepted": {
+                break;
+            }
+            case "Pending": {
+                break;
+            }
+            case "Rejected": {
+                break;
+            }
+            default:
 
+        }
     }
 
-    public void refreshInspectionTable(String state) {
+    public void refreshInspectionTable() {
+        switch (inspectionStateCmb.getValue()) {
+            case "Scheduled": {
+                break;
+            }
+            case "Completed": {
+                break;
+            }
+            case "Cancelled": {
+                break;
+            }
+            default:
 
+        }
     }
 
-    public void refreshPropertyTable(String state) {
+    public void refreshWorkingHoursTable() {
+        switch (workingHoursStateCmb.getValue()) {
+            case "Approved": {
+                break;
+            }
+            case "Pending": {
+                break;
+            }
+            default:
+
+        }
+    }
+
+    public void refreshPropertyTable() {
         switch (registeredUserType) {
             case "buyer":
                 properties = FXCollections.observableArrayList(propertyDBModel.getActiveSales().values());
@@ -358,52 +386,49 @@ public class MainController {
                 break;
             case "vendor":
             case "landlord":
-                switch (state) {
-                    case "all":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getProperties(registeredUserType, userID).values());
-                        break;
-                    case "inactive":
+                switch (proposalStateCmb.getValue()) {
+                    case "Inactive":
                         properties = FXCollections.observableArrayList(propertyDBModel.getInactiveProperties(registeredUserType, userID).values());
                         break;
-                    case "pending":
+                    case "Pending":
                         properties = FXCollections.observableArrayList(propertyDBModel.getPendingProperties(registeredUserType, userID).values());
                         break;
-                    case "active":
+                    case "Active":
                         properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties(registeredUserType, userID).values());
                         break;
+                    default:
+                        properties = FXCollections.observableArrayList(propertyDBModel.getProperties(registeredUserType, userID).values());
                 }
                 break;
             case "propertymanager":
             case "salesconsultant":
-                switch (state) {
-                    case "all":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedProperties(userID).values());
-                        break;
-                    case "inactive":
+                switch (proposalStateCmb.getValue()) {
+                    case "Inactive":
                         properties = FXCollections.observableArrayList(propertyDBModel.getInactiveProperties(registeredUserType, userID).values());
                         break;
-                    case "pending":
+                    case "Pending":
                         properties = FXCollections.observableArrayList(propertyDBModel.getPendingProperties(registeredUserType, userID).values());
                         break;
-                    case "active":
+                    case "Active":
                         properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties(registeredUserType, userID).values());
                         break;
+                    default:
+                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedProperties(userID).values());
                 }
                 break;
             default:
-                switch (state) {
-                    case "all":
-                        properties = FXCollections.observableArrayList(propertyDBModel.getProperties().values());
-                        break;
-                    case "inactive":
+                switch (proposalStateCmb.getValue()) {
+                    case "Inactive":
                         properties = FXCollections.observableArrayList(propertyDBModel.getInactiveProperties().values());
                         break;
-                    case "pending":
+                    case "Pending":
                         properties = FXCollections.observableArrayList(propertyDBModel.getPendingProperties().values());
                         break;
-                    case "active":
+                    case "Active":
                         properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties().values());
                         break;
+                    default:
+                        properties = FXCollections.observableArrayList(propertyDBModel.getProperties().values());
                 }
                 break;
         }
@@ -422,15 +447,51 @@ public class MainController {
         propertyTableView.setContextMenu(propertyContextMenu);
     }
 
+//    public void refreshPropertyContextMenu() {
+//        switch (registeredUserType) {
+//            case "": {
+//                switch (proposalStateCmb.getValue()) {
+//                    case "Inactive": break;
+//                    case "Pending": break;
+//                    case "Active": break;
+//                    default:
+//                }
+//                break;
+//            }
+//
+//            case "" : {
+//
+//            }
+//            default:
+//        }
+//    }
+//
+//    public void refreshInspectionContextMenu() {
+//
+//    }
+//
+//    public void refreshWorkingHoursContextMenu() {
+//
+//    }
+//
+//    public void refreshEmployeeContextMenu() {
+//
+//    }
+//
+//    public void refreshProposalContextMenu() {
+//
+//    }
+
     @FXML
     void addListing(ActionEvent event) throws IOException {
 
         Stage addListingStage = new Stage();
-        // Load root layout from fxml file
         FXMLLoader loader = new FXMLLoader();
+
         if (registeredUserType.equals("vendor"))
             loader.setLocation(getClass().getResource("/main/view/AddSaleProperty.fxml"));
         else loader.setLocation(getClass().getResource("/main/view/AddRentalProperty.fxml"));
+
         AnchorPane rootLayout = loader.load();
         if (registeredUserType.equals("vendor")) {
             AddSalePropertyController addSalePropertyController = loader.getController();
@@ -440,7 +501,7 @@ public class MainController {
                     propertyDBModel.addProperty(addSalePropertyController.getAddress(), addSalePropertyController.getSuburb(), addSalePropertyController.getPropertyType(),
                             addSalePropertyController.getBaths(), addSalePropertyController.getCars(), addSalePropertyController.getBeds(), addSalePropertyController.getPrice(),
                             null, userID);
-                    refreshPropertyTable(propertyStateCmb.getValue().toLowerCase());
+                    refreshPropertyTable();
                     addListingStage.hide();
                 }
             });
@@ -452,7 +513,7 @@ public class MainController {
                     propertyDBModel.addProperty(addRentalPropertyController.getAddress(), addRentalPropertyController.getSuburb(), addRentalPropertyController.getPropertyType(),
                             addRentalPropertyController.getBaths(), addRentalPropertyController.getCars(), addRentalPropertyController.getBeds(), addRentalPropertyController.getPrice(),
                             addRentalPropertyController.getContractDurations(), userID);
-                    refreshPropertyTable(propertyStateCmb.getValue().toLowerCase());
+                    refreshPropertyTable();
                     addListingStage.hide();
                 }
             });
@@ -568,25 +629,25 @@ public class MainController {
 
                 propertyStateCmb.setVisible(false);
 
-                MenuItem item1 = new MenuItem("Send offer");
-                item1.setOnAction(this::submitProposal);
+                submitProposalMenuItem = new MenuItem("Send offer");
+                submitProposalMenuItem.setOnAction(this::submitProposal);
 
-                propertyContextMenu.getItems().add(item1);
+                propertyContextMenu.getItems().add(submitProposalMenuItem);
 
-                MenuItem viewProposal = new MenuItem("View offer");
-                viewProposal.setOnAction(this::viewProposal);
+                viewProposalMenuItem = new MenuItem("View offer");
+                viewProposalMenuItem.setOnAction(this::viewProposal);
 
-                proposalContextMenu.getItems().add(viewProposal);
+                proposalContextMenu.getItems().add(viewProposalMenuItem);
 
-                MenuItem item2 = new MenuItem("Withdraw offer");
-                item2.setOnAction(this::withdrawProposal);
+                withdrawProposalMenuItem = new MenuItem("Withdraw offer");
+                withdrawProposalMenuItem.setOnAction(this::withdrawProposal);
 
-                proposalContextMenu.getItems().add(item2);
+                proposalContextMenu.getItems().add(withdrawProposalMenuItem);
 
-                MenuItem item3 = new MenuItem("Cancel inspection");
-                item3.setOnAction(this::cancelInspection);
+                cancelInspectionMenuItem = new MenuItem("Cancel inspection");
+                cancelInspectionMenuItem.setOnAction(this::cancelInspection);
 
-                inspectionContextMenu.getItems().add(item3);
+                inspectionContextMenu.getItems().add(cancelInspectionMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
                 btnScheduleInspection.setVisible(false);
@@ -606,21 +667,21 @@ public class MainController {
 
                 propertyStateCmb.setVisible(false);
 
-                MenuItem item1 = new MenuItem("Send application");
-                item1.setOnAction(this::submitProposal);
-                propertyContextMenu.getItems().add(item1);
+                submitProposalMenuItem = new MenuItem("Send application");
+                submitProposalMenuItem.setOnAction(this::submitProposal);
+                propertyContextMenu.getItems().add(submitProposalMenuItem);
 
-                MenuItem viewProposal = new MenuItem("View application");
-                viewProposal.setOnAction(this::viewProposal);
-                proposalContextMenu.getItems().add(viewProposal);
+                viewProposalMenuItem = new MenuItem("View application");
+                viewProposalMenuItem.setOnAction(this::viewProposal);
+                proposalContextMenu.getItems().add(viewProposalMenuItem);
 
-                MenuItem item2 = new MenuItem("Withdraw application");
-                item2.setOnAction(this::withdrawProposal);
-                proposalContextMenu.getItems().add(item2);
+                withdrawProposalMenuItem = new MenuItem("Withdraw application");
+                withdrawProposalMenuItem.setOnAction(this::withdrawProposal);
+                proposalContextMenu.getItems().add(withdrawProposalMenuItem);
 
-                MenuItem item3 = new MenuItem("Cancel inspection");
-                item3.setOnAction(this::cancelInspection);
-                inspectionContextMenu.getItems().add(item3);
+                cancelInspectionMenuItem = new MenuItem("Cancel inspection");
+                cancelInspectionMenuItem.setOnAction(this::cancelInspection);
+                inspectionContextMenu.getItems().add(cancelInspectionMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
                 btnScheduleInspection.setVisible(false);
@@ -628,25 +689,24 @@ public class MainController {
             } //renter
 
             case "vendor": {
-                //set placeholder text
                 propertyTableView.setPlaceholder(new Label("You have not added any property listings."));
                 proposalTableView.setPlaceholder(new Label("You have not received any offers yet."));
                 inspectionTableView.setPlaceholder(new Label("You have no scheduled inspections."));
 
                 btnScheduleInspection.setVisible(false);
 
-                MenuItem item1 = new MenuItem("Edit");
-                item1.setOnAction(this::updateProperty);
+                editPropertyMenuItem = new MenuItem("Edit");
+                editPropertyMenuItem.setOnAction(this::updateProperty);
 
-                MenuItem item2 = new MenuItem("Deactivate");
-                item2.setOnAction(this::deactivateProperty);
+//                MenuItem item2 = new MenuItem("Deactivate");
+//                item2.setOnAction(this::deactivateProperty);
 
-                MenuItem item3 = new MenuItem("View offer");
-                item3.setOnAction(this::viewProposal);
+                viewProposalMenuItem = new MenuItem("View offer");
+                viewProposalMenuItem.setOnAction(this::viewProposal);
 
-                propertyContextMenu.getItems().add(item1);
-                propertyContextMenu.getItems().add(item2);
-                proposalContextMenu.getItems().add(item3);
+                propertyContextMenu.getItems().add(editPropertyMenuItem);
+//                propertyContextMenu.getItems().add(item2);
+                proposalContextMenu.getItems().add(viewProposalMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
                 break;
@@ -658,18 +718,18 @@ public class MainController {
 
                 btnScheduleInspection.setVisible(false);
 
-                MenuItem item1 = new MenuItem("Edit");
-                item1.setOnAction(this::updateProperty);
+                editPropertyMenuItem = new MenuItem("Edit");
+                editPropertyMenuItem.setOnAction(this::updateProperty);
 
-                MenuItem item2 = new MenuItem("Deactivate");
-                item2.setOnAction(this::deactivateProperty);
+//                MenuItem item2 = new MenuItem("Deactivate");
+//                item2.setOnAction(this::deactivateProperty);
 
-                MenuItem item3 = new MenuItem("View application");
-                item3.setOnAction(this::viewProposal);
+                viewProposalMenuItem = new MenuItem("View application");
+                viewProposalMenuItem.setOnAction(this::viewProposal);
 
-                propertyContextMenu.getItems().add(item1);
-                propertyContextMenu.getItems().add(item2);
-                proposalContextMenu.getItems().add(item3);
+                propertyContextMenu.getItems().add(editPropertyMenuItem);
+//                propertyContextMenu.getItems().add(item2);
+                proposalContextMenu.getItems().add(viewProposalMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
                 break;
@@ -683,35 +743,39 @@ public class MainController {
                 btnAddListing.setVisible(false);
                 minPriceField.setText("Weekly Rental");
 
-                MenuItem item1 = new MenuItem("Advertise property");
+                deactivateListingMenuItem = new MenuItem("Deactivate");
+                deactivateListingMenuItem.setOnAction(this::deactivateProperty);
+
+                advertisePropertyMenuItem = new MenuItem("Advertise property");
 //                item1.setOnAction(this::advertiseListing);
 
-                MenuItem item2 = new MenuItem("Organize legal documents");
+                organizeLegalDocumentsMenuItem = new MenuItem("Organize legal documents");
 //                item2.setOnAction(this::organizeDocuments);
 
-                MenuItem item3 = new MenuItem("Contact property owner");
-                item3.setOnAction(this::contactPropertyOwner);
+                contactPropertyOwnerMenuItem = new MenuItem("Contact property owner");
+                contactPropertyOwnerMenuItem.setOnAction(this::contactPropertyOwner);
 
-                MenuItem item4 = new MenuItem("View commission");
-                item4.setOnAction(this::viewCommissionManagementFee);
+                viewPropertyManagementFeeOrCommissionMenuItem = new MenuItem("View commission");
+                viewPropertyManagementFeeOrCommissionMenuItem.setOnAction(this::viewCommissionManagementFee);
 
-                propertyContextMenu.getItems().add(item1);
-                propertyContextMenu.getItems().add(item2);
-                propertyContextMenu.getItems().add(item3);
-                propertyContextMenu.getItems().add(item4);
+                propertyContextMenu.getItems().add(deactivateListingMenuItem);
+                propertyContextMenu.getItems().add(advertisePropertyMenuItem);
+                propertyContextMenu.getItems().add(organizeLegalDocumentsMenuItem);
+                propertyContextMenu.getItems().add(contactPropertyOwnerMenuItem);
+                propertyContextMenu.getItems().add(viewPropertyManagementFeeOrCommissionMenuItem);
 
-                MenuItem contact = new MenuItem("Contact renter");
-                contact.setOnAction(this::contactCustomer);
-                proposalContextMenu.getItems().add(contact);
+                contactCustomerMenuItem = new MenuItem("Contact renter");
+                contactCustomerMenuItem.setOnAction(this::contactCustomer);
+                proposalContextMenu.getItems().add(contactCustomerMenuItem);
 
-                MenuItem resched = new MenuItem("Reschedule");
-                resched.setOnAction(this::rescheduleInspection);
+                rescheduleInspectionMenuItem = new MenuItem("Reschedule");
+                rescheduleInspectionMenuItem.setOnAction(this::rescheduleInspection);
 
-                MenuItem sched = new MenuItem("Cancel");
-                sched.setOnAction(this::cancelInspection);
+                cancelInspectionMenuItem = new MenuItem("Cancel");
+                cancelInspectionMenuItem.setOnAction(this::cancelInspection);
 
-                inspectionContextMenu.getItems().add(resched);
-                inspectionContextMenu.getItems().add(sched);
+                inspectionContextMenu.getItems().add(rescheduleInspectionMenuItem);
+                inspectionContextMenu.getItems().add(cancelInspectionMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
                 break;
@@ -724,31 +788,35 @@ public class MainController {
 
                 btnAddListing.setVisible(false);
 
-                MenuItem item1 = new MenuItem("View maintenance report");
-                item1.setOnAction(this::viewMaintenanceReport);
+                deactivateListingMenuItem = new MenuItem("Deactivate");
+                deactivateListingMenuItem.setOnAction(this::deactivateProperty);
 
-                MenuItem item2 = new MenuItem("Contact property owner");
-                item2.setOnAction(this::contactPropertyOwner);
+                viewMaintenanceReportMenuItem = new MenuItem("View maintenance report");
+                viewMaintenanceReportMenuItem.setOnAction(this::viewMaintenanceReport);
 
-                MenuItem item3 = new MenuItem("View management fee");
-                item3.setOnAction(this::viewCommissionManagementFee);
+                contactPropertyOwnerMenuItem = new MenuItem("Contact property owner");
+                contactPropertyOwnerMenuItem.setOnAction(this::contactPropertyOwner);
 
-                propertyContextMenu.getItems().add(item1);
-                propertyContextMenu.getItems().add(item2);
-                propertyContextMenu.getItems().add(item3);
+                viewPropertyManagementFeeOrCommissionMenuItem = new MenuItem("View management fee");
+                viewPropertyManagementFeeOrCommissionMenuItem.setOnAction(this::viewCommissionManagementFee);
 
-                MenuItem contact = new MenuItem("Contact buyer");
-                contact.setOnAction(this::contactCustomer);
-                proposalContextMenu.getItems().add(contact);
+                propertyContextMenu.getItems().add(deactivateListingMenuItem);
+                propertyContextMenu.getItems().add(viewMaintenanceReportMenuItem);
+                propertyContextMenu.getItems().add(contactPropertyOwnerMenuItem);
+                propertyContextMenu.getItems().add(viewPropertyManagementFeeOrCommissionMenuItem);
 
-                MenuItem resched = new MenuItem("Reschedule");
-                resched.setOnAction(this::rescheduleInspection);
+                contactCustomerMenuItem = new MenuItem("Contact buyer");
+                contactCustomerMenuItem.setOnAction(this::contactCustomer);
+                proposalContextMenu.getItems().add(contactCustomerMenuItem);
 
-                MenuItem sched = new MenuItem("Cancel");
-                sched.setOnAction(this::cancelInspection);
+                rescheduleInspectionMenuItem = new MenuItem("Reschedule");
+                rescheduleInspectionMenuItem.setOnAction(this::rescheduleInspection);
 
-                inspectionContextMenu.getItems().add(resched);
-                inspectionContextMenu.getItems().add(sched);
+                cancelInspectionMenuItem = new MenuItem("Cancel");
+                cancelInspectionMenuItem.setOnAction(this::cancelInspection);
+
+                inspectionContextMenu.getItems().add(rescheduleInspectionMenuItem);
+                inspectionContextMenu.getItems().add(cancelInspectionMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
                 break;
@@ -759,10 +827,10 @@ public class MainController {
 
                 btnAddListing.setVisible(false);
 
-                MenuItem item = new MenuItem("View assigned properties");
-                item.setOnAction(this::viewAssignedProperties);
+                viewAssignedPropertiesMenuItem = new MenuItem("View assigned properties");
+                viewAssignedPropertiesMenuItem.setOnAction(this::viewAssignedProperties);
 
-                employeeContextMenu.getItems().add(item);
+                employeeContextMenu.getItems().add(viewAssignedPropertiesMenuItem);
 
                 //remove all tabs except employees
                 tabPane.getTabs().remove(proposalTab);
@@ -778,14 +846,14 @@ public class MainController {
 
                 btnAddListing.setVisible(false);
 
-                MenuItem item1 = new MenuItem("Assign to employee");
-                item1.setOnAction(this::assignProperty);
+                assignPropertyToEmployeeMenuItem = new MenuItem("Assign to employee");
+                assignPropertyToEmployeeMenuItem.setOnAction(this::assignProperty);
 
-                MenuItem item2 = new MenuItem("Inspect documents");
-                item2.setOnAction(this::inspectDocuments);
+                inspectPropertyDocumentsMenuItem = new MenuItem("Inspect documents");
+                inspectPropertyDocumentsMenuItem.setOnAction(this::inspectDocuments);
 
-                propertyContextMenu.getItems().add(item1);
-                propertyContextMenu.getItems().add(item2);
+                propertyContextMenu.getItems().add(assignPropertyToEmployeeMenuItem);
+                propertyContextMenu.getItems().add(inspectPropertyDocumentsMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
                 break;
@@ -811,27 +879,96 @@ public class MainController {
         if (userDBModel.isParttimer(userID)) {
             if (!tabPane.getTabs().contains(workingHoursTab))
                 tabPane.getTabs().add(workingHoursTab);
+            workingHoursTableView.setPlaceholder(new Label("You have not added any working hours yet."));
         }
 
-        refreshPropertyTable("all");
-        refreshProposalTable("all");
-        refreshInspectionTable("all");
-        refreshEmployeeTable("all");
+        if (userDBModel.getUser(userID).getUserID().startsWith("manager")) {
+            addWorkingHoursBtn.setVisible(false);
+
+            if (!tabPane.getTabs().contains(workingHoursTab))
+                tabPane.getTabs().add(workingHoursTab);
+
+            workingHoursTableView.setPlaceholder(new Label("No part-timers have added any working hours yet."));
+
+            MenuItem item = new MenuItem("Approve");
+            workingHoursContextMenu.getItems().add(item);
+        }
+
+        refreshPropertyTable();
+        refreshProposalTable();
+        refreshInspectionTable();
+        refreshEmployeeTable();
     }
 
     private void withdrawProposal(ActionEvent actionEvent) {
         Proposal proposal = proposalTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+        String proposaltype = "proposal";
+
+        if (user instanceof Buyer)
+            proposaltype = "offer";
+        else proposaltype = "application";
 
         if (proposal != null) {
+            if (proposal.isWithdrawn()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Not allowed to withdraw this " + proposaltype);
+                alert.setContentText("This " + proposaltype + " has already been withdrawn or rejected");
 
+                alert.showAndWait();
+            } else {
+                //todo
+
+            }
         }
     }
 
+    public void showCancelledInspectionDialog() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("Not allowed to cancel this inspection");
+        alert.setContentText("This inspection has already been cancelled.");
+
+        alert.showAndWait();
+    }
+
+    public void showInactivePropertyDialog() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("No maintenance report");
+        alert.setHeaderText(null);
+        alert.setContentText("This property has already been deactivated.");
+
+        alert.showAndWait();
+    }
+
     private void submitProposal(ActionEvent actionEvent) {
-        Proposal proposal = proposalTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+        Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
-        if (proposal != null) {
+        String proposaltype = "proposal";
 
+        if (user instanceof Buyer)
+            proposaltype = "offer";
+        else proposaltype = "application";
+
+        if (property != null) {
+            try {
+                if (property.isActive()) {
+                    if (user instanceof Customer) {
+                        if (((Customer) user).getProposals().containsValue(property)) {
+                            //todo
+                        } else {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Error");
+                            alert.setHeaderText("Not allowed to submit this " + proposaltype);
+                            alert.setContentText("You have already submitted a " + proposaltype + " for this property.");
+
+                            alert.showAndWait();
+                        }
+                    }
+                }
+            } catch (DeactivatedPropertyException e) {
+                showInactivePropertyDialog();
+            }
         }
     }
 
@@ -859,7 +996,11 @@ public class MainController {
         Inspection inspection = inspectionTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (inspection != null) {
-
+            if (inspection.isCancelled()) {
+                showCancelledInspectionDialog();
+            } else {
+                //todo
+            }
         }
     }
 
@@ -867,7 +1008,11 @@ public class MainController {
         Inspection inspection = inspectionTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (inspection != null) {
-
+            if (inspection.isCancelled()) {
+                showCancelledInspectionDialog();
+            } else {
+                //todo
+            }
         }
     }
 
@@ -875,7 +1020,11 @@ public class MainController {
         Inspection inspection = inspectionTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (inspection != null) {
-
+            if (inspection.isCancelled()) {
+                showCancelledInspectionDialog();
+            } else {
+                //todo
+            }
         }
     }
 
@@ -883,7 +1032,16 @@ public class MainController {
         User employee = employeeTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (employee != null) {
+            if (((SalesPerson) employee).getAssignedProperties().size() == 0) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("No properties to show");
+                alert.setHeaderText(null);
+                alert.setContentText("This employee has no assigned properties.");
 
+                alert.showAndWait();
+            } else {
+                //todo
+            }
         }
     }
 
@@ -904,7 +1062,14 @@ public class MainController {
         Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (property != null) {
+            try {
+                if (property.isActive()) {
+                    //todo
 
+                }
+            } catch (DeactivatedPropertyException e) {
+                showInactivePropertyDialog();
+            }
         }
     }
 
@@ -912,7 +1077,14 @@ public class MainController {
         Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (property != null) {
+            try {
+                if (property.isActive()) {
+                    //todo
 
+                }
+            } catch (DeactivatedPropertyException e) {
+                showInactivePropertyDialog();
+            }
         }
     }
 
@@ -920,7 +1092,16 @@ public class MainController {
         Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (property != null) {
+            if (property.areDocumentsInspected()) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Property already inspected");
+                alert.setHeaderText(null);
+                alert.setContentText("This property has already been inspected.");
 
+                alert.showAndWait();
+            } else {
+                //todo
+            }
         }
     }
 
@@ -928,136 +1109,153 @@ public class MainController {
         Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
         if (property != null) {
-            Stage assignPropertyStage = new Stage();
-            assignPropertyStage.setTitle("Assign Property");
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/main/view/AssignProperty.fxml"));
-            AnchorPane rootLayout = null;
-            try {
-                rootLayout = loader.load();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            if (!property.areDocumentsInspected()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Not allowed to assign this property");
+                alert.setContentText("You have not inspected the documents for this property yet.");
 
-            AssignPropertyController assignPropertyController = loader.getController();
-            assignPropertyController.setUserDBModel(userDBModel);
-            assignPropertyController.isRentalProperty(property.getPropertyID().startsWith("rental"));
-
-            User currentAssignment = userDBModel.currentlyAssignedToProperty(property);
-
-            if (currentAssignment == null)
-                assignPropertyController.getLblCurrentAssign().setText("Currently assigned: NONE");
-            else
-                assignPropertyController.getLblCurrentAssign().setText("Currently assigned: " + currentAssignment.getUsername());
-
-            assignPropertyController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
-                if (isConfirmed) {
-                    assignPropertyStage.hide();
-                    propertyDBModel.assignProperty(property.getPropertyID(), assignPropertyController.getSelectedUser().getUserID());
+                alert.showAndWait();
+            } else {
+                Stage assignPropertyStage = new Stage();
+                assignPropertyStage.setTitle("Assign Property");
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(getClass().getResource("/main/view/AssignProperty.fxml"));
+                AnchorPane rootLayout = null;
+                try {
+                    rootLayout = loader.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            });
-            Scene scene = new Scene(rootLayout);
-            assignPropertyStage.setScene(scene);
-            assignPropertyStage.show();
+
+                AssignPropertyController assignPropertyController = loader.getController();
+                assignPropertyController.setUserDBModel(userDBModel);
+                assignPropertyController.isRentalProperty(property.getPropertyID().startsWith("rental"));
+
+                User currentAssignment = userDBModel.currentlyAssignedToProperty(property);
+
+                if (currentAssignment == null)
+                    assignPropertyController.getLblCurrentAssign().setText("Currently assigned: NONE");
+                else
+                    assignPropertyController.getLblCurrentAssign().setText("Currently assigned: " + currentAssignment.getUsername());
+
+                assignPropertyController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
+                    if (isConfirmed) {
+                        assignPropertyStage.hide();
+                        propertyDBModel.assignProperty(property.getPropertyID(), assignPropertyController.getSelectedUser().getUserID());
+                    }
+                });
+                Scene scene = new Scene(rootLayout);
+                assignPropertyStage.setScene(scene);
+                assignPropertyStage.show();
+            }
         }
     }
 
     private void updateProperty(ActionEvent event) {
-        Stage editPropertyStage = new Stage();
-        editPropertyStage.setTitle("Edit Property Details");
-        FXMLLoader loader = new FXMLLoader();
-        if (registeredUserType.equals("landlord")) {
-            loader.setLocation(getClass().getResource("/main/view/EditRentalProperty.fxml"));
-            AnchorPane rootLayout = null;
-            try {
-                rootLayout = loader.load();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        Property p = propertyDBModel.getProperties().get(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
+        try {
+            if (p.isActive()) {
+                Stage editPropertyStage = new Stage();
+                editPropertyStage.setTitle("Edit Property Details");
+                FXMLLoader loader = new FXMLLoader();
+                if (registeredUserType.equals("landlord")) {
+                    loader.setLocation(getClass().getResource("/main/view/EditRentalProperty.fxml"));
+                    AnchorPane rootLayout = null;
+                    try {
+                        rootLayout = loader.load();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-            EditRentalPropertyController controller = loader.getController();
-            controller.hasSavedProperty().addListener((obs, wasSaved, isSaved) -> {
-                if (isSaved) {
-                    editPropertyStage.hide();
+                    EditRentalPropertyController controller = loader.getController();
+                    controller.hasSavedProperty().addListener((obs, wasSaved, isSaved) -> {
+                        if (isSaved) {
+                            editPropertyStage.hide();
+                        }
+                    });
+                    controller.setUserDBModel(userDBModel);
+                    controller.setPropertyDBModel(propertyDBModel);
+
+                    controller.setPropertyID(Integer.parseInt(p.getPropertyID().replaceAll("[^\\d.]", "")));
+                    controller.setAddress(p.getAddress());
+                    controller.setSuburb(p.getSuburb());
+                    controller.setBaths(p.getBaths());
+                    controller.setBeds(p.getBeds());
+                    controller.setCars(p.getCars());
+                    controller.setPrice(p.getPrice());
+                    controller.setPropertyType(p.getPropertyType());
+                    controller.setUserID(userID);
+                    controller.setContractDurations(((RentalProperty) p).getAcceptedDurations());
+                    controller.setUsername(userDBModel.getUsername(userID));
+
+                    controller.start();
+
+                    Scene scene = new Scene(rootLayout);
+                    editPropertyStage.setScene(scene);
+                    editPropertyStage.show();
+
+                } else {
+                    loader.setLocation(getClass().getResource("/main/view/EditSaleProperty.fxml"));
+                    AnchorPane rootLayout = null;
+                    try {
+                        rootLayout = loader.load();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    EditSalePropertyController controller = loader.getController();
+                    controller.hasSavedProperty().addListener((obs, wasSaved, isSaved) -> {
+                        if (isSaved) {
+                            editPropertyStage.hide();
+                        }
+                    });
+                    controller.setUserDBModel(userDBModel);
+                    controller.setPropertyDBModel(propertyDBModel);
+
+                    controller.setPropertyID(Integer.parseInt(p.getPropertyID().replaceAll("[^\\d.]", "")));
+                    controller.setAddress(p.getAddress());
+                    controller.setSuburb(p.getSuburb());
+                    controller.setBaths(p.getBaths());
+                    controller.setBeds(p.getBeds());
+                    controller.setCars(p.getCars());
+                    controller.setPrice(p.getPrice());
+                    controller.setPropertyType(p.getPropertyType());
+                    controller.setUserID(userID);
+                    controller.setUsername(userDBModel.getUsername(userID));
+                    controller.start();
+
+                    Scene scene = new Scene(rootLayout);
+                    editPropertyStage.setScene(scene);
+                    editPropertyStage.show();
                 }
-            });
-            controller.setUserDBModel(userDBModel);
-            controller.setPropertyDBModel(propertyDBModel);
-
-            Property p = propertyDBModel.getProperties().get(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
-            controller.setPropertyID(Integer.parseInt(p.getPropertyID().replaceAll("[^\\d.]", "")));
-            controller.setAddress(p.getAddress());
-            controller.setSuburb(p.getSuburb());
-            controller.setBaths(p.getBaths());
-            controller.setBeds(p.getBeds());
-            controller.setCars(p.getCars());
-            controller.setPrice(p.getPrice());
-            controller.setPropertyType(p.getPropertyType());
-            controller.setUserID(userID);
-            controller.setContractDurations(((RentalProperty) p).getAcceptedDurations());
-            controller.setUsername(userDBModel.getUsername(userID));
-
-            controller.start();
-
-            Scene scene = new Scene(rootLayout);
-            editPropertyStage.setScene(scene);
-            editPropertyStage.show();
-
-        } else {
-            loader.setLocation(getClass().getResource("/main/view/EditSaleProperty.fxml"));
-            AnchorPane rootLayout = null;
-            try {
-                rootLayout = loader.load();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-
-            EditSalePropertyController controller = loader.getController();
-            controller.hasSavedProperty().addListener((obs, wasSaved, isSaved) -> {
-                if (isSaved) {
-                    editPropertyStage.hide();
-                }
-            });
-            controller.setUserDBModel(userDBModel);
-            controller.setPropertyDBModel(propertyDBModel);
-
-            Property p = propertyDBModel.getProperties().get(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
-            controller.setPropertyID(Integer.parseInt(p.getPropertyID().replaceAll("[^\\d.]", "")));
-            controller.setAddress(p.getAddress());
-            controller.setSuburb(p.getSuburb());
-            controller.setBaths(p.getBaths());
-            controller.setBeds(p.getBeds());
-            controller.setCars(p.getCars());
-            controller.setPrice(p.getPrice());
-            controller.setPropertyType(p.getPropertyType());
-            controller.setUserID(userID);
-            controller.setUsername(userDBModel.getUsername(userID));
-            controller.start();
-
-            Scene scene = new Scene(rootLayout);
-            editPropertyStage.setScene(scene);
-            editPropertyStage.show();
+        } catch (DeactivatedPropertyException e) {
+            showInactivePropertyDialog();
         }
     }
 
 
     @FXML
     void addWorkingHours(ActionEvent event) {
-
+        //TODO
     }
 
     @FXML
     void runPayroll(ActionEvent event) {
-
+        //TODO
     }
 
     @FXML
     void showNotifications(ActionEvent event) {
-        System.out.println("NOTIFICATION POPUP HERE");
+        //TODO
+
     }
 
     public void setUserID(int userID) {
         this.userID = userID;
+
+        this.user = userDBModel.getUser(userID);
     }
 
     private void initClock() {

@@ -8,7 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.input.KeyCode;
-import main.model.UserDBModel;
+import main.model.DBModel.UserDBModel;
 
 public class PasswordPromptController {
 

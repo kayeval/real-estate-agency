@@ -1,4 +1,4 @@
-package main.model;
+package main.model.DBModel;
 
 import main.model.Property.Property;
 import main.model.User.Customer.Buyer;
@@ -367,8 +367,9 @@ public class UserDBModel {
             Map.Entry entry = (Map.Entry) iter.next();
 
             User u = (User) entry.getValue();
-            if (u.getUserID().contains(userID + "")) {
+            if (Integer.parseInt(u.getUserID().replaceAll("[^\\d.]", "")) == userID) {
                 found = true;
+                user = u;
             }
         }
 
@@ -377,8 +378,9 @@ public class UserDBModel {
             Map.Entry entry = (Map.Entry) iter.next();
 
             User u = (User) entry.getValue();
-            if (u.getUserID().contains(userID + "")) {
+            if (Integer.parseInt(u.getUserID().replaceAll("[^\\d.]", "")) == userID) {
                 found = true;
+                user = u;
             }
         }
 
@@ -387,8 +389,9 @@ public class UserDBModel {
             Map.Entry entry = (Map.Entry) iter.next();
 
             User u = (User) entry.getValue();
-            if (u.getUserID().contains(userID + "")) {
+            if (Integer.parseInt(u.getUserID().replaceAll("[^\\d.]", "")) == userID) {
                 found = true;
+                user = u;
             }
         }
 
@@ -397,8 +400,9 @@ public class UserDBModel {
             Map.Entry entry = (Map.Entry) iter.next();
 
             User u = (User) entry.getValue();
-            if (u.getUserID().contains(userID + "")) {
+            if (Integer.parseInt(u.getUserID().replaceAll("[^\\d.]", "")) == userID) {
                 found = true;
+                user = u;
             }
         }
 

@@ -9,14 +9,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import main.model.DBModel.UserDBModel;
 import main.model.DecimalFilter;
-import main.model.UserDBModel;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-public class RegisterController {
+public class RegisterCustomerController {
 
     @FXML
     private Label error;
@@ -52,8 +52,7 @@ public class RegisterController {
     private boolean isBuyer = true;
 
     @FXML
-    void goBack(ActionEvent event) throws IOException {
-        //go back to login
+    void goToLogin(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
         Parent nextPane = loader.load();

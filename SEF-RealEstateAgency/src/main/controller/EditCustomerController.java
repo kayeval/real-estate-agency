@@ -13,8 +13,8 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import main.model.DBModel.UserDBModel;
 import main.model.DecimalFilter;
-import main.model.UserDBModel;
 
 import java.io.IOException;
 import java.sql.SQLException;

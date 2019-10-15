@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PartTimeEmployee {
-    private Map<Integer, WorkingHour> workingHours;
+    private Map<String, WorkingHour> workingHours;
     private boolean hoursApproved = false;
 
     public PartTimeEmployee() {
@@ -26,9 +26,9 @@ public class PartTimeEmployee {
     public double getHoursForMonth(LocalDate date) {
         double hours = .0;
         Month month = date.getMonth();
-        Integer id;
+        String id;
 
-        for (Map.Entry<Integer, WorkingHour> currentEntry : workingHours.entrySet()) {
+        for (Map.Entry<String, WorkingHour> currentEntry : workingHours.entrySet()) {
             id = currentEntry.getKey();
             if (workingHours.get(id).getDate().getMonth() == month) {
                 hours += currentEntry.getValue().getHours();
@@ -38,7 +38,7 @@ public class PartTimeEmployee {
         return hours;
     }
 
-    public Map<Integer, WorkingHour> getWorkingHours() {
+    public Map<String, WorkingHour> getWorkingHours() {
         return workingHours;
     }
 

@@ -1,9 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.AnchorPane?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="main.view.RegisterPropertyOwner"
-            prefHeight="400.0" prefWidth="600.0">
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.*?>
+<?import java.lang.String?>
 
+<AnchorPane id="background" prefHeight="567.0" prefWidth="800.0" stylesheets="@../res/login.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controller.RegisterPropertyOwnerController">
+    <children>
+        <Text fontSmoothingType="LCD" layoutX="141.0" layoutY="83.0" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="2.0" text="Real Estate Agency" textAlignment="CENTER">
+            <font>
+                <Font size="64.0" />
+            </font>
+        </Text>
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0c2940f2" height="442.0" layoutX="241.0" layoutY="107.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="332.0" />
+        <Label fx:id="error" layoutX="273.0" layoutY="112.0" textFill="#ff4e2beb">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </Label>
+        <Text fill="WHITE" layoutX="271.0" layoutY="161.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Username">
+            <font>
+                <Font name="Courier" size="20.0" />
+            </font>
+        </Text>
+        <TextField fx:id="usernameField" layoutX="269.0" layoutY="169.0" opacity="0.8" prefHeight="29.0" prefWidth="272.0" style="-fx-background-radius: 5; -fx-background-color: white;">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </TextField>
+        <Text fill="WHITE" layoutX="273.0" layoutY="239.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Email">
+            <font>
+                <Font name="Courier" size="20.0" />
+            </font>
+        </Text>
+        <TextField fx:id="emailField" layoutX="269.0" layoutY="246.0" opacity="0.8" prefHeight="29.0" prefWidth="272.0" style="-fx-background-radius: 5; -fx-background-color: white;">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </TextField>
+        <Text fill="WHITE" layoutX="273.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Password">
+            <font>
+                <Font name="Courier" size="20.0" />
+            </font>
+        </Text>
+        <PasswordField fx:id="passwordField" layoutX="271.0" layoutY="326.0" opacity="0.8" prefHeight="37.0" prefWidth="272.0" style="-fx-background-radius: 5;">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </PasswordField>
+        <Text fill="WHITE" layoutX="273.0" layoutY="393.0" strokeType="OUTSIDE" strokeWidth="0.0" text="I am interested in...">
+            <font>
+                <Font name="Courier" size="20.0" />
+            </font>
+        </Text>
+        <ComboBox fx:id="cmbType" layoutX="273.0" layoutY="401.0" opacity="0.8" prefHeight="37.0" prefWidth="272.0" promptText="Selling/Leasing" style="-fx-background-color: white; -fx-background-radius: 5;">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Buying" />
+                    <String fx:value="Renting" />
+                </FXCollections>
+            </items>
+        </ComboBox>
+        <Button fx:id="registerBtn" layoutX="342.0" layoutY="474.0" mnemonicParsing="false" onAction="#registerAction" prefHeight="39.0" prefWidth="116.0" style="-fx-background-color: white; -fx-background-radius: 5;" text="Register">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+            <cursor>
+                <Cursor fx:constant="HAND" />
+            </cursor>
+        </Button>
+        <Button fx:id="btnBack" layoutX="24.0" layoutY="14.0" mnemonicParsing="false" onAction="#goToLogin" opacity="0.85" style="-fx-background-color: white; -fx-background-radius: 5;" text="Cancel" />
+    </children>
 </AnchorPane>

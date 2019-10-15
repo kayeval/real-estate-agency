@@ -14,6 +14,7 @@ public abstract class Proposal {
     private Property property;
     private boolean accepted;
     private boolean waitingForPayment;
+    private boolean withdrawn;
 
     public Proposal(double price, Property property, Customer customer) {
         this.submissionDate = LocalDateTime.now(ZoneId.systemDefault());
@@ -22,6 +23,14 @@ public abstract class Proposal {
         this.property = property;
         this.accepted = false;
         this.waitingForPayment = false;
+    }
+
+    public void setWithdrawn(boolean withdrawn) {
+        this.withdrawn = withdrawn;
+    }
+
+    public boolean isWithdrawn() {
+        return withdrawn;
     }
 
     public void setWaitingForPayment(boolean waitingForPayment) {

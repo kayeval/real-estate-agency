@@ -6,7 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import main.controller.LoginController;
-import main.model.UserDBModel;
+import main.model.DBModel.UserDBModel;
 
 public class Main extends Application {
     @Override
