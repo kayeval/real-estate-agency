@@ -319,7 +319,6 @@ public class MainController {
                     break;
             }
         });
-
     }
 
     public void refreshEmployeeTable(String state) {
@@ -567,6 +566,11 @@ public class MainController {
     public void hideComponents(String type) {
         switch (type) {
             case "buyer": {
+                //set placeholder text
+                propertyTableView.setPlaceholder(new Label("There are no active property listings."));
+                proposalTableView.setPlaceholder(new Label("You have not submitted any offers yet."));
+                inspectionTableView.setPlaceholder(new Label("You have no scheduled inspections."));
+
                 minPriceField.setText("Listed Price");
 
                 btnAddListing.setVisible(false);
@@ -600,6 +604,11 @@ public class MainController {
             } //buyer
 
             case "renter": {
+                //set placeholder text
+                propertyTableView.setPlaceholder(new Label("There are no active property listings."));
+                proposalTableView.setPlaceholder(new Label("You have not submitted any applications yet."));
+                inspectionTableView.setPlaceholder(new Label("You have no scheduled inspections."));
+
                 minPriceField.setText("Weekly Rental");
 
                 btnAddListing.setVisible(false);
@@ -628,28 +637,48 @@ public class MainController {
                 break;
             } //renter
 
-            case "vendor":
+            case "vendor": {
+                //set placeholder text
+                propertyTableView.setPlaceholder(new Label("You have not added any property listings."));
+                proposalTableView.setPlaceholder(new Label("You have not received any offers yet."));
+                inspectionTableView.setPlaceholder(new Label("You have no scheduled inspections."));
+
                 btnScheduleInspection.setVisible(false);
 
-                MenuItem viewApplication = new MenuItem("View offer");
-                viewApplication.setOnAction(this::viewProposal);
-
-                proposalContextMenu.getItems().add(viewApplication);
-
-            case "landlord": {
                 MenuItem item1 = new MenuItem("Edit");
                 item1.setOnAction(this::updateProperty);
 
                 MenuItem item2 = new MenuItem("Deactivate");
                 item2.setOnAction(this::deactivateProperty);
 
+                MenuItem item3 = new MenuItem("View offer");
+                item3.setOnAction(this::viewProposal);
+
                 propertyContextMenu.getItems().add(item1);
                 propertyContextMenu.getItems().add(item2);
+                proposalContextMenu.getItems().add(item3);
+
+                tabPane.getTabs().remove(employeeTab);
+                break;
+            }
+            case "landlord": {
+                propertyTableView.setPlaceholder(new Label("You have not added any property listings."));
+                proposalTableView.setPlaceholder(new Label("You have not received any applications yet."));
+                inspectionTableView.setPlaceholder(new Label("You have no scheduled inspections."));
+
+                btnScheduleInspection.setVisible(false);
+
+                MenuItem item1 = new MenuItem("Edit");
+                item1.setOnAction(this::updateProperty);
+
+                MenuItem item2 = new MenuItem("Deactivate");
+                item2.setOnAction(this::deactivateProperty);
 
                 MenuItem item3 = new MenuItem("View application");
                 item3.setOnAction(this::viewProposal);
 
-                proposalContextMenu.getItems().clear();
+                propertyContextMenu.getItems().add(item1);
+                propertyContextMenu.getItems().add(item2);
                 proposalContextMenu.getItems().add(item3);
 
                 tabPane.getTabs().remove(employeeTab);
@@ -657,6 +686,10 @@ public class MainController {
             } //vendor
 
             case "salesconsultant": {
+                propertyTableView.setPlaceholder(new Label("You have not been assigned any properties."));
+                proposalTableView.setPlaceholder(new Label("There are no applications for any of your assigned properties."));
+                inspectionTableView.setPlaceholder(new Label("You have not scheduled any inspections yet."));
+
                 btnAddListing.setVisible(false);
                 minPriceField.setText("Weekly Rental");
 
@@ -695,6 +728,10 @@ public class MainController {
             } //salesconsultant
 
             case "propertymanager": {
+                propertyTableView.setPlaceholder(new Label("You have not been assigned any properties."));
+                proposalTableView.setPlaceholder(new Label("There are no offers for any of your assigned properties."));
+                inspectionTableView.setPlaceholder(new Label("You have not scheduled any inspections yet."));
+
                 btnAddListing.setVisible(false);
 
                 MenuItem item1 = new MenuItem("View maintenance report");
@@ -728,6 +765,8 @@ public class MainController {
             } //propertymanager
 
             case "admin": {
+                employeeTableView.setPlaceholder(new Label("There are no registered employees in the system."));
+
                 btnAddListing.setVisible(false);
 
                 MenuItem item = new MenuItem("View assigned properties");
@@ -743,6 +782,10 @@ public class MainController {
             } //admin
 
             case "manager": {
+                propertyTableView.setPlaceholder(new Label("There are no listings sent to the system."));
+                proposalTableView.setPlaceholder(new Label("There are no offers or applications sent to the system."));
+                inspectionTableView.setPlaceholder(new Label("Nobody has scheduled any inspections."));
+
                 btnAddListing.setVisible(false);
 
                 MenuItem item1 = new MenuItem("Assign to employee");
@@ -761,6 +804,8 @@ public class MainController {
             case "guest":
 
             default: {
+                propertyTableView.setPlaceholder(new Label("There are no active property listings."));
+
                 updateDetailsItem.setVisible(false);
                 logoutItem.setText("Login");
                 btnAddListing.setVisible(false);
