@@ -1,6 +1,8 @@
-package main.controller;
+package main.model;
 
-public class BankAccountController {
+import main.controller.MainController;
+
+public class BankAccountDBModel {
     private MainController mainController;
 
     public void setMainController(MainController mainController) {

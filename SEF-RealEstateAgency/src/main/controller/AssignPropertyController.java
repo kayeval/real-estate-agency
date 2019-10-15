@@ -12,6 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import main.model.User.Employee.Employee;
 import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.User;
+import main.model.UserDBModel;
 
 import java.time.LocalDate;
 
@@ -61,7 +62,7 @@ public class AssignPropertyController {
 
     private int userID;
     private User selectedUser;
-    private UserController userController;
+    private UserDBModel userDBModel;
 
     @FXML
     void initialize() {
@@ -79,8 +80,8 @@ public class AssignPropertyController {
     public void refreshTable() {
         //data is filtered according to property passed in
         if (isRentalProperty)
-            data = FXCollections.observableArrayList(userController.getPropertyManagers().values());
-        else data = FXCollections.observableArrayList(userController.getSalesConsultants().values());
+            data = FXCollections.observableArrayList(userDBModel.getPropertyManagers().values());
+        else data = FXCollections.observableArrayList(userDBModel.getSalesConsultants().values());
 
         typeField.setCellValueFactory(new PropertyValueFactory<Employee, String>("type"));
         usernameField.setCellValueFactory(new PropertyValueFactory<User, String>("username"));
@@ -105,8 +106,8 @@ public class AssignPropertyController {
         }
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 
     public User getSelectedUser() {

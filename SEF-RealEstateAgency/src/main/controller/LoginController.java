@@ -14,6 +14,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import main.model.UserDBModel;
 
 import java.io.IOException;
 
@@ -37,7 +38,7 @@ public class LoginController {
     @FXML
     private Text guestLoginTxt;
 
-    private UserController userController;
+    private UserDBModel userDBModel;
     private MainController mainController;
 
     @FXML
@@ -51,7 +52,7 @@ public class LoginController {
         }
 
         if (valid) {
-            id = userController.canLogin(username.getText(), password.getText());
+            id = userDBModel.canLogin(username.getText(), password.getText());
             if (id == 0)
                 error.setText("Invalid username or password.");
             else found = true;
@@ -64,7 +65,7 @@ public class LoginController {
 
             MainController mainController = loader.getController();
             mainController.setUserID(id);
-            switch (userController.loginType(id)) {
+            switch (userDBModel.loginType(id)) {
                 case "buyer":
                     mainController.setRegisteredUserType("buyer");
                     break;
@@ -129,7 +130,7 @@ public class LoginController {
         Scene nextScene = new Scene(nextPane);
         nextScene.getStylesheets().add("/main/res/combobox.css");
         RegisterController controller = loader.getController();
-        controller.setUserController(userController);
+        controller.setUserDBModel(userDBModel);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
         window.setScene(nextScene);
@@ -160,7 +161,7 @@ public class LoginController {
 
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 }

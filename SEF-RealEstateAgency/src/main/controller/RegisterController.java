@@ -9,6 +9,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import main.model.DecimalFilter;
+import main.model.UserDBModel;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -46,7 +48,7 @@ public class RegisterController {
     @FXML
     private Button btnBack;
 
-    private UserController userController;
+    private UserDBModel userDBModel;
     private boolean isBuyer = true;
 
     @FXML
@@ -56,7 +58,7 @@ public class RegisterController {
         loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
         Parent nextPane = loader.load();
         LoginController controller = loader.getController();
-        controller.setUserController(userController);
+        controller.setUserDBModel(userDBModel);
         Scene nextScene = new Scene(nextPane);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -78,11 +80,11 @@ public class RegisterController {
         }
 
         if (valid) {
-            if (!userController.isUniqueUsername(usernameField.getText()))
+            if (!userDBModel.isUniqueUsername(usernameField.getText()))
                 error.setText("That username is already taken.");
-            else if (!userController.isValidEmailFormat(emailField.getText())) {
+            else if (!userDBModel.isValidEmailFormat(emailField.getText())) {
                 error.setText("Invalid email format");
-            } else if (!userController.isValidUsernameFormat(usernameField.getText())) {
+            } else if (!userDBModel.isValidUsernameFormat(usernameField.getText())) {
                 error.setText("Invalid username format");
             } else canRegister = true;
         }
@@ -90,7 +92,7 @@ public class RegisterController {
         if (canRegister) {
             //add to user db
             try {
-                userController.registerCustomer(usernameField.getText(), emailField.getText(), passwordField.getText(),
+                userDBModel.registerCustomer(usernameField.getText(), emailField.getText(), passwordField.getText(),
                         occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")));
 
             } catch (SQLException e) {
@@ -187,11 +189,11 @@ public class RegisterController {
         });
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 
-    public UserController getUserController() {
-        return userController;
+    public UserDBModel getUserDBModel() {
+        return userDBModel;
     }
 }

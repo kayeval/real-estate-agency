@@ -13,6 +13,8 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import main.model.DecimalFilter;
+import main.model.UserDBModel;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -41,7 +43,7 @@ public class EditCustomerController {
     @FXML
     private Button saveBtn;
 
-    private UserController userController;
+    private UserDBModel userDBModel;
     private String username;
     private String email;
     private String suburbs;
@@ -150,11 +152,11 @@ public class EditCustomerController {
         }
 
         if (valid) {
-            if (!usernameField.getText().equals(username) && !userController.isUniqueUsername(usernameField.getText()))
+            if (!usernameField.getText().equals(username) && !userDBModel.isUniqueUsername(usernameField.getText()))
                 error.setText("That username is already taken.");
-            else if (!userController.isValidEmailFormat(emailField.getText())) {
+            else if (!userDBModel.isValidEmailFormat(emailField.getText())) {
                 error.setText("Invalid email format");
-            } else if (!userController.isValidUsernameFormat(usernameField.getText())) {
+            } else if (!userDBModel.isValidUsernameFormat(usernameField.getText())) {
                 error.setText("Invalid username format");
             } else canSave = true;
         }
@@ -168,14 +170,14 @@ public class EditCustomerController {
 
             PasswordPromptController passwordPromptController = loader.getController();
             passwordPromptController.setUsername(username);
-            passwordPromptController.setUserController(userController);
+            passwordPromptController.setUserDBModel(userDBModel);
             passwordPromptController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                 if (isConfirmed) {
                     confirmChangeStage.hide();
                     setSaved(true);
 
                     try {
-                        userController.updateCustomerDetails(usernameField.getText(), emailField.getText(),
+                        userDBModel.updateCustomerDetails(usernameField.getText(), emailField.getText(),
                                 occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")), username);
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -214,7 +216,7 @@ public class EditCustomerController {
         isBuyer = buyer;
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 }

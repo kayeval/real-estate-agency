@@ -12,7 +12,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import main.controller.*;
+import main.model.DecimalFilter;
+import main.model.IntegerFilter;
 import main.model.Property.PropertyType;
+import main.model.PropertyDBModel;
+import main.model.UserDBModel;
 
 import java.io.IOException;
 
@@ -45,8 +49,8 @@ public class EditSalePropertyController {
     @FXML
     private Button saveBtn;
 
-    private PropertyController propertyController;
-    private UserController userController;
+    private PropertyDBModel propertyDBModel;
+    private UserDBModel userDBModel;
     private String address, suburb, username;
     private int baths, beds, cars, propertyID, userID;
     private PropertyType propertyType;
@@ -184,12 +188,12 @@ public class EditSalePropertyController {
 
             PasswordPromptController passwordPromptController = loader.getController();
             passwordPromptController.setUsername(username);
-            passwordPromptController.setUserController(userController);
+            passwordPromptController.setUserDBModel(userDBModel);
             passwordPromptController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                 if (isConfirmed) {
                     confirmChangeStage.hide();
 
-                    propertyController.updatePropertyDetails(address, suburb, propertyType, baths, cars, beds, price, null, userID, propertyID);
+                    propertyDBModel.updatePropertyDetails(address, suburb, propertyType, baths, cars, beds, price, null, userID, propertyID);
 
                     setSaved(true);
                 }
@@ -233,12 +237,12 @@ public class EditSalePropertyController {
         this.username = username;
     }
 
-    public void setPropertyController(PropertyController propertyController) {
-        this.propertyController = propertyController;
+    public void setPropertyDBModel(PropertyDBModel propertyDBModel) {
+        this.propertyDBModel = propertyDBModel;
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 
     public void setPropertyID(int propertyID) {

@@ -6,7 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import main.controller.LoginController;
-import main.controller.UserController;
+import main.model.UserDBModel;
 
 public class Main extends Application {
     @Override
@@ -16,8 +16,8 @@ public class Main extends Application {
         Parent root = loader.load();
 
         LoginController controller = loader.getController();
-        UserController userController = new UserController();
-        controller.setUserController(userController);
+        UserDBModel userDBModel = new UserDBModel();
+        controller.setUserDBModel(userDBModel);
 
 //        for (User s : userController.getSalesPersons().values())
 //            for (Property p : ((SalesPerson) s).getAssignedProperties().values())

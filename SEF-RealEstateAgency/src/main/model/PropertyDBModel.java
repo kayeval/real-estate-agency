@@ -1,6 +1,5 @@
-package main.controller;
+package main.model;
 
-import main.model.DBConnector;
 import main.model.Property.*;
 import main.model.Proposal.ContractDuration;
 import main.model.User.PropertyOwner.PropertyOwner;
@@ -10,11 +9,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-public class PropertyController {
+public class PropertyDBModel {
     private DBConnector dbConnector;
-    private UserController userController;
+    private UserDBModel userDBModel;
 
-    public PropertyController() {
+    public PropertyDBModel() {
         dbConnector = new DBConnector();
     }
 
@@ -55,14 +54,14 @@ public class PropertyController {
                         else contractDurationSet.add(ContractDuration.SIX_MONTHS);
                     }
                     Property p = new RentalProperty(address, suburb, capacity, PropertyType.valueOf(propertyType.toUpperCase()),
-                            price, (PropertyOwner) userController.getPropertyOwners().get("landlord" + propertyOwnerID), contractDurationSet);
+                            price, (PropertyOwner) userDBModel.getPropertyOwners().get("landlord" + propertyOwnerID), contractDurationSet);
                     p.setPropertyID("rental" + id);
                     p.setDocumentsInspected(inspected);
                     p.setActive(active);
                     properties.putIfAbsent(p.getPropertyID(), p);
                 } else {
                     Property p = new SaleProperty(address, suburb, capacity, PropertyType.valueOf(propertyType.toUpperCase()), price,
-                            (PropertyOwner) userController.getPropertyOwners().get("vendor" + propertyOwnerID));
+                            (PropertyOwner) userDBModel.getPropertyOwners().get("vendor" + propertyOwnerID));
                     p.setPropertyID("sale" + id);
                     properties.putIfAbsent(p.getPropertyID(), p);
                 }
@@ -208,8 +207,8 @@ public class PropertyController {
         }
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 
     public Map<String, Property> getPendingProperties() {

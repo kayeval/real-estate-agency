@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.util.converter.IntegerStringConverter;
+import main.model.DecimalFilter;
+import main.model.IntegerFilter;
 import main.model.Property.PropertyType;
 
 public class AddSalePropertyController {

@@ -22,12 +22,14 @@ import main.model.Inspection;
 import main.model.Property.Property;
 import main.model.Property.PropertyType;
 import main.model.Property.RentalProperty;
+import main.model.PropertyDBModel;
 import main.model.Proposal.Proposal;
 import main.model.User.Customer.Customer;
 import main.model.User.Customer.Renter;
 import main.model.User.Employee.Employee;
 import main.model.User.Employee.PartTimeEmployee;
 import main.model.User.User;
+import main.model.UserDBModel;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -198,8 +200,8 @@ public class MainController {
 
     private DBConnector dbConnector = new DBConnector();
 
-    private UserController userController;
-    private PropertyController propertyController;
+    private UserDBModel userDBModel;
+    private PropertyDBModel propertyDBModel;
 
     private ObservableList<Property> properties;
     private ObservableList<Inspection> inspections;
@@ -225,9 +227,9 @@ public class MainController {
 
 
         //setup controllers
-        userController = new UserController();
-        propertyController = new PropertyController();
-        propertyController.setUserController(userController);
+        userDBModel = new UserDBModel();
+        propertyDBModel = new PropertyDBModel();
+        propertyDBModel.setUserDBModel(userDBModel);
 
         dbConnector = new DBConnector();
 
@@ -331,9 +333,9 @@ public class MainController {
                 break;
             }
             default:
-                employees = FXCollections.observableArrayList(userController.getEmployees().values());
+                employees = FXCollections.observableArrayList(userDBModel.getEmployees().values());
         }
-        properties = FXCollections.observableArrayList(propertyController.getActiveProperties().values());
+        properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties().values());
 
         boolSR.setCellValueFactory(new PropertyValueFactory<Property, String>("strippedPropertyID"));
         typeField.setCellValueFactory(new PropertyValueFactory<Property, PropertyType>("propertyType"));
@@ -360,25 +362,25 @@ public class MainController {
     public void refreshPropertyTable(String state) {
         switch (registeredUserType) {
             case "buyer":
-                properties = FXCollections.observableArrayList(propertyController.getActiveSales().values());
+                properties = FXCollections.observableArrayList(propertyDBModel.getActiveSales().values());
                 break;
             case "renter":
-                properties = FXCollections.observableArrayList(propertyController.getActiveRentals().values());
+                properties = FXCollections.observableArrayList(propertyDBModel.getActiveRentals().values());
                 break;
             case "vendor":
             case "landlord":
                 switch (state) {
                     case "all":
-                        properties = FXCollections.observableArrayList(propertyController.getOwnProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnProperties(registeredUserType, userID).values());
                         break;
                     case "inactive":
-                        properties = FXCollections.observableArrayList(propertyController.getOwnInactiveProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnInactiveProperties(registeredUserType, userID).values());
                         break;
                     case "pending":
-                        properties = FXCollections.observableArrayList(propertyController.getOwnPendingProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnPendingProperties(registeredUserType, userID).values());
                         break;
                     case "active":
-                        properties = FXCollections.observableArrayList(propertyController.getOwnActiveProperties(registeredUserType, userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getOwnActiveProperties(registeredUserType, userID).values());
                         break;
                 }
                 break;
@@ -386,32 +388,32 @@ public class MainController {
             case "salesconsultant":
                 switch (state) {
                     case "all":
-                        properties = FXCollections.observableArrayList(propertyController.getAssignedProperties(userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedProperties(userID).values());
                         break;
                     case "inactive":
-                        properties = FXCollections.observableArrayList(propertyController.getAssignedInactiveProperties(userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedInactiveProperties(userID).values());
                         break;
                     case "pending":
-                        properties = FXCollections.observableArrayList(propertyController.getAssignedPendingProperties(userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedPendingProperties(userID).values());
                         break;
                     case "active":
-                        properties = FXCollections.observableArrayList(propertyController.getAssignedActiveProperties(userID).values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getAssignedActiveProperties(userID).values());
                         break;
                 }
                 break;
             default:
                 switch (state) {
                     case "all":
-                        properties = FXCollections.observableArrayList(propertyController.getProperties().values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getProperties().values());
                         break;
                     case "inactive":
-                        properties = FXCollections.observableArrayList(propertyController.getInactiveProperties().values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getInactiveProperties().values());
                         break;
                     case "pending":
-                        properties = FXCollections.observableArrayList(propertyController.getPendingProperties().values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getPendingProperties().values());
                         break;
                     case "active":
-                        properties = FXCollections.observableArrayList(propertyController.getActiveProperties().values());
+                        properties = FXCollections.observableArrayList(propertyDBModel.getActiveProperties().values());
                         break;
                 }
                 break;
@@ -446,7 +448,7 @@ public class MainController {
 
             addSalePropertyController.hasSavedProperty().addListener((obs, wasSaved, isSaved) -> {
                 if (isSaved) {
-                    propertyController.addProperty(addSalePropertyController.getAddress(), addSalePropertyController.getSuburb(), addSalePropertyController.getPropertyType(),
+                    propertyDBModel.addProperty(addSalePropertyController.getAddress(), addSalePropertyController.getSuburb(), addSalePropertyController.getPropertyType(),
                             addSalePropertyController.getBaths(), addSalePropertyController.getCars(), addSalePropertyController.getBeds(), addSalePropertyController.getPrice(),
                             null, userID);
                     refreshPropertyTable(propertyStateCmb.getValue().toLowerCase());
@@ -458,7 +460,7 @@ public class MainController {
 
             addRentalPropertyController.hasSavedProperty().addListener((obs, wasSaved, isSaved) -> {
                 if (isSaved) {
-                    propertyController.addProperty(addRentalPropertyController.getAddress(), addRentalPropertyController.getSuburb(), addRentalPropertyController.getPropertyType(),
+                    propertyDBModel.addProperty(addRentalPropertyController.getAddress(), addRentalPropertyController.getSuburb(), addRentalPropertyController.getPropertyType(),
                             addRentalPropertyController.getBaths(), addRentalPropertyController.getCars(), addRentalPropertyController.getBeds(), addRentalPropertyController.getPrice(),
                             addRentalPropertyController.getContractDurations(), userID);
                     refreshPropertyTable(propertyStateCmb.getValue().toLowerCase());
@@ -478,7 +480,7 @@ public class MainController {
         loader.setLocation(getClass().getResource("/main/view/Login.fxml"));
         Parent nextPane = loader.load();
         LoginController controller = loader.getController();
-        controller.setUserController(new UserController());
+        controller.setUserDBModel(new UserDBModel());
         Scene nextScene = new Scene(nextPane);
 
         Stage window = (Stage) userActions.getScene().getWindow();
@@ -506,16 +508,16 @@ public class MainController {
                     editUserStage.hide();
                 }
             });
-            editCustomerController.setUserController(userController);
+            editCustomerController.setUserDBModel(userDBModel);
             User u = null;
 
             if (registeredUserType.equals("renter")) {
-                u = userController.getCustomers().get("renter" + userID);
+                u = userDBModel.getCustomers().get("renter" + userID);
                 editCustomerController.setBuyer(false);
                 editCustomerController.setIncome(((Renter) u).getIncome());
                 editCustomerController.setOccupation(((Renter) u).getOccupation());
             } else {
-                u = userController.getCustomers().get("buyer" + userID);
+                u = userDBModel.getCustomers().get("buyer" + userID);
                 editCustomerController.setBuyer(true);
             }
             editCustomerController.setUsername(u.getUsername());
@@ -540,12 +542,12 @@ public class MainController {
                     editUserStage.hide();
                 }
             });
-            editUserController.setUserController(userController);
+            editUserController.setUserDBModel(userDBModel);
             User u = null;
 
-            if (userController.getEmployees().containsKey(registeredUserType + userID))
-                u = userController.getEmployees().get(registeredUserType + userID);
-            else u = userController.getPropertyOwners().get(registeredUserType + userID);
+            if (userDBModel.getEmployees().containsKey(registeredUserType + userID))
+                u = userDBModel.getEmployees().get(registeredUserType + userID);
+            else u = userDBModel.getPropertyOwners().get(registeredUserType + userID);
             editUserController.setUsername(u.getUsername());
             editUserController.setEmail(u.getEmail());
 
@@ -558,7 +560,7 @@ public class MainController {
 
     public void setRegisteredUserType(String registeredUserType) {
         this.registeredUserType = registeredUserType;
-        System.out.println(registeredUserType);
+
         hideComponents(registeredUserType);
     }
 
@@ -771,7 +773,7 @@ public class MainController {
             }
         }
 
-        if (userController.isParttimer(userID)) {
+        if (userDBModel.isParttimer(userID)) {
             if (!tabPane.getTabs().contains(workingHoursTab))
                 tabPane.getTabs().add(workingHoursTab);
         }
@@ -903,10 +905,10 @@ public class MainController {
             }
 
             AssignPropertyController assignPropertyController = loader.getController();
-            assignPropertyController.setUserController(userController);
+            assignPropertyController.setUserDBModel(userDBModel);
             assignPropertyController.isRentalProperty(property.getPropertyID().startsWith("rental"));
 
-            User currentAssignment = userController.currentlyAssignedToProperty(property);
+            User currentAssignment = userDBModel.currentlyAssignedToProperty(property);
 
             if (currentAssignment == null)
                 assignPropertyController.getLblCurrentAssign().setText("Currently assigned: NONE");
@@ -916,7 +918,7 @@ public class MainController {
             assignPropertyController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                 if (isConfirmed) {
                     assignPropertyStage.hide();
-                    propertyController.assignProperty(property.getPropertyID(), assignPropertyController.getSelectedUser().getUserID());
+                    propertyDBModel.assignProperty(property.getPropertyID(), assignPropertyController.getSelectedUser().getUserID());
                 }
             });
             Scene scene = new Scene(rootLayout);
@@ -944,10 +946,10 @@ public class MainController {
                     editPropertyStage.hide();
                 }
             });
-            controller.setUserController(userController);
-            controller.setPropertyController(propertyController);
+            controller.setUserDBModel(userDBModel);
+            controller.setPropertyDBModel(propertyDBModel);
 
-            Property p = propertyController.getProperties().get(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
+            Property p = propertyDBModel.getProperties().get(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
             controller.setPropertyID(Integer.parseInt(p.getPropertyID().replaceAll("[^\\d.]", "")));
             controller.setAddress(p.getAddress());
             controller.setSuburb(p.getSuburb());
@@ -958,7 +960,7 @@ public class MainController {
             controller.setPropertyType(p.getPropertyType());
             controller.setUserID(userID);
             controller.setContractDurations(((RentalProperty) p).getAcceptedDurations());
-            controller.setUsername(userController.getUsername(userID));
+            controller.setUsername(userDBModel.getUsername(userID));
 
             controller.start();
 
@@ -981,10 +983,10 @@ public class MainController {
                     editPropertyStage.hide();
                 }
             });
-            controller.setUserController(userController);
-            controller.setPropertyController(propertyController);
+            controller.setUserDBModel(userDBModel);
+            controller.setPropertyDBModel(propertyDBModel);
 
-            Property p = propertyController.getProperties().get(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
+            Property p = propertyDBModel.getProperties().get(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
             controller.setPropertyID(Integer.parseInt(p.getPropertyID().replaceAll("[^\\d.]", "")));
             controller.setAddress(p.getAddress());
             controller.setSuburb(p.getSuburb());
@@ -994,7 +996,7 @@ public class MainController {
             controller.setPrice(p.getPrice());
             controller.setPropertyType(p.getPropertyType());
             controller.setUserID(userID);
-            controller.setUsername(userController.getUsername(userID));
+            controller.setUsername(userDBModel.getUsername(userID));
             controller.start();
 
             Scene scene = new Scene(rootLayout);

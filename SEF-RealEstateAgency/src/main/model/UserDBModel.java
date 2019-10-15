@@ -1,6 +1,5 @@
-package main.controller;
+package main.model;
 
-import main.model.DBConnector;
 import main.model.Property.Property;
 import main.model.User.Customer.Buyer;
 import main.model.User.Customer.Customer;
@@ -25,14 +24,14 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class UserController {
+public class UserDBModel {
     private DBConnector dbConnector;
-    private PropertyController propertyController;
+    private PropertyDBModel propertyDBModel;
 
-    public UserController() {
+    public UserDBModel() {
         dbConnector = new DBConnector();
-        propertyController = new PropertyController();
-        propertyController.setUserController(this);
+        propertyDBModel = new PropertyDBModel();
+        propertyDBModel.setUserDBModel(this);
     }
 
     public Map<String, User> getCustomers() {
@@ -93,14 +92,14 @@ public class UserController {
                     case "propertymanager":
                         employee = new PropertyManager(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         //set assigned properties
-                        ((SalesPerson) employee).setAssignedProperties(propertyController.getAssignedProperties(rs.getInt("userid")));
+                        ((SalesPerson) employee).setAssignedProperties(propertyDBModel.getAssignedProperties(rs.getInt("userid")));
 
                         //set scheduled inspections
                         break;
                     case "salesconsultant":
                         employee = new SalesConsultant(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         //set assigned properties
-                        ((SalesPerson) employee).setAssignedProperties(propertyController.getAssignedProperties(rs.getInt("userid")));
+                        ((SalesPerson) employee).setAssignedProperties(propertyDBModel.getAssignedProperties(rs.getInt("userid")));
 
                         //set scheduled inspections
                         break;

@@ -8,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.input.KeyCode;
+import main.model.UserDBModel;
 
 public class PasswordPromptController {
 
@@ -21,7 +22,7 @@ public class PasswordPromptController {
     private Button confirmBtn;
 
     private final BooleanProperty hasConfirmed = new SimpleBooleanProperty();
-    private UserController userController;
+    private UserDBModel userDBModel;
     private String username;
 
     @FXML
@@ -58,7 +59,7 @@ public class PasswordPromptController {
         }
 
         if (valid) {
-            int id = userController.canLogin(username, passwordField.getText());
+            int id = userDBModel.canLogin(username, passwordField.getText());
             if (id != 0) setHasConfirmed(true);
             else error.setText("Can't save changes.");
         }
@@ -69,7 +70,7 @@ public class PasswordPromptController {
         this.username = username;
     }
 
-    public void setUserController(UserController userController) {
-        this.userController = userController;
+    public void setUserDBModel(UserDBModel userDBModel) {
+        this.userDBModel = userDBModel;
     }
 }
