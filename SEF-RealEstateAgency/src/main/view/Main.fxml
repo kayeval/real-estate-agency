@@ -121,7 +121,7 @@
                 <Font size="42.0" />
             </font>
         </Text>
-        <Label fx:id="lblCurDate" layoutX="790.0" layoutY="632.0" text="It is now: " />
+        <Label fx:id="lblCurDate" layoutX="784.0" layoutY="632.0" text="It is now: " />
         <Button fx:id="notifBtn" layoutX="783.0" layoutY="6.0" mnemonicParsing="false" onAction="#showNotifications" prefHeight="29.0" prefWidth="40.0" />
     </children>
 </AnchorPane>

@@ -891,7 +891,7 @@ public class MainController {
 
     private void assignProperty(ActionEvent event) {
         Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
-//        System.out.println(property.getPropertyID());
+
         if (property != null) {
             Stage assignPropertyStage = new Stage();
             assignPropertyStage.setTitle("Assign Property");
@@ -1003,8 +1003,6 @@ public class MainController {
             editPropertyStage.setScene(scene);
             editPropertyStage.show();
         }
-
-
     }
 
 
@@ -1029,7 +1027,7 @@ public class MainController {
 
     private void initClock() {
         Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy HH:mm");
             lblCurDate.setText("It is now: " + LocalDateTime.now().format(formatter));
         }), new KeyFrame(Duration.seconds(1)));
         clock.setCycleCount(Animation.INDEFINITE);
