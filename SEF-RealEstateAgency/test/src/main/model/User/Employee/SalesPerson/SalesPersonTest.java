@@ -13,7 +13,6 @@ import main.model.User.PropertyOwner.Vendor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -38,7 +37,7 @@ public class SalesPersonTest {
         property = new SaleProperty("123 A St", "Melbourne", null, null, 10000, propertyOwner);
         date = LocalDateTime.now(ZoneId.systemDefault()).minus(6, ChronoUnit.DAYS);
         salesPerson = new SalesConsultant("test", "test@test.com", date.toLocalDate(), 50040);
-        proposal = new Offer( 10000, property, buyer);
+        proposal = new Offer(10000, property, buyer);
     }
 
     @Test
@@ -56,7 +55,7 @@ public class SalesPersonTest {
 
     @Test
     public void itShouldThrowNotListedPropertyExceptionWhenAcceptingOfferForUnlistedProperty() {
-        proposal = new Offer( 10000, property, buyer);
+        proposal = new Offer(10000, property, buyer);
 
         try {
             buyer.submitProposal(proposal);

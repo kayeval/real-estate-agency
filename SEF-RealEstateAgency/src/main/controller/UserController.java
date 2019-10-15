@@ -7,6 +7,7 @@ import main.model.User.Customer.Customer;
 import main.model.User.Customer.Renter;
 import main.model.User.Employee.BranchAdmin;
 import main.model.User.Employee.BranchManager;
+import main.model.User.Employee.Employee;
 import main.model.User.Employee.PartTimeEmployee;
 import main.model.User.Employee.SalesPerson.PropertyManager;
 import main.model.User.Employee.SalesPerson.SalesConsultant;
@@ -74,7 +75,7 @@ public class UserController {
     public Map<String, User> getEmployees() {
         Map<String, User> users = new HashMap<>();
 
-        String sql = "SELECT u.userid, username, email, hiredate, etype, salary FROM users u JOIN employees e ON u.userid=e.userid";
+        String sql = "SELECT u.userid, username, email, hiredate, etype, salary, parttime FROM users u JOIN employees e ON u.userid=e.userid";
 
         try (Connection conn = new DBConnector().getConnection();
              Statement stmt = conn.createStatement();
@@ -88,9 +89,6 @@ public class UserController {
                         break;
                     case "manager":
                         employee = new BranchManager(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
-                        break;
-                    case "parttime":
-                        employee = new PartTimeEmployee(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
                         break;
                     case "propertymanager":
                         employee = new PropertyManager(rs.getString("username"), rs.getString("email"), rs.getDate("hiredate").toLocalDate(), rs.getDouble("salary"));
@@ -110,6 +108,8 @@ public class UserController {
                         employee = null;
                 }
                 if (employee != null) {
+                    if (rs.getBoolean("parttime"))
+                        ((Employee) employee).setPartTimeEmployee(new PartTimeEmployee());
                     employee.setUserID(rs.getString("etype") + rs.getInt("userid"));
                     users.putIfAbsent(employee.getUserID(), employee);
                 }
@@ -493,7 +493,7 @@ public class UserController {
         }
     }
 
-    public void registerEmployee(String username, String email, String password, double salary, LocalDate hireDate, String etype) throws SQLException {
+    public void registerEmployee(String username, String email, String password, double salary, LocalDate hireDate, String etype, boolean parttime) throws SQLException {
         int id = 0;
 
         String sql = "INSERT INTO users (username, email, password) VALUES(?, ?, ?)";
@@ -516,13 +516,14 @@ public class UserController {
             if (rs.next()) {
                 id = rs.getInt(1);
 
-                sql = "INSERT INTO employees (userid, salary, hiredate, etype) VALUES (?, ?, ?, ?)";
+                sql = "INSERT INTO employees (userid, salary, hiredate, etype, parttime) VALUES (?, ?, ?, ?, ?)";
                 pstmt = conn.prepareStatement(sql);
 
                 pstmt.setInt(1, id);
                 pstmt.setDouble(2, salary);
                 pstmt.setDate(3, Date.valueOf(hireDate));
                 pstmt.setString(4, etype);
+                pstmt.setBoolean(5, parttime);
                 pstmt.executeUpdate();
             }
         }
@@ -532,12 +533,35 @@ public class UserController {
         Map<String, User> salespersons = new HashMap<>();
 
         for (String key : getEmployees().keySet()) {
-            if (key.contains("salesconsultant") || key.contains("propertymanager"))
+            if (key.startsWith("sales") || key.startsWith("property"))
                 salespersons.putIfAbsent(key, getEmployees().get(key));
         }
 
         return salespersons;
     }
+
+    public Map<String, User> getSalesConsultants() {
+        Map<String, User> users = new HashMap<>();
+
+        for (String key : getSalesPersons().keySet()) {
+            if (key.startsWith("sales"))
+                users.putIfAbsent(key, getSalesPersons().get(key));
+        }
+
+        return users;
+    }
+
+    public Map<String, User> getPropertyManagers() {
+        Map<String, User> users = new HashMap<>();
+
+        for (String key : getSalesPersons().keySet()) {
+            if (!key.startsWith("sales"))
+                users.putIfAbsent(key, getSalesPersons().get(key));
+        }
+
+        return users;
+    }
+
 
     public User currentlyAssignedToProperty(Property p) {
         boolean found = false;
@@ -549,9 +573,21 @@ public class UserController {
             Map.Entry entry = (Map.Entry) iter.next();
 
             SalesPerson salesPerson = (SalesPerson) entry.getValue();
+//            Iterator<Property> iterator = salesPerson.getAssignedProperties().values().iterator();
+//
+//            while (!found && iterator.hasNext()) {
+//                System.out.println("value= " + iterator.next());
+//                if (p.getPropertyID().equals(iterator.next().getPropertyID())) {
+//                    found = true;
+//                    user = salesPerson;
+//                }
+//            }
+
             for (Property assigned : salesPerson.getAssignedProperties().values()) {
-                found = true;
-                user = salesPerson;
+                if (p.getPropertyID().equals(assigned.getPropertyID())) {
+                    found = true;
+                    user = salesPerson;
+                }
 //                System.out.println("Salesperson " + salesPerson.getUsername() + " is assigned to property " + assigned.getPropertyID());
 //                System.out.println(assigned.getPropertyID().equals(p.getPropertyID()));
             }
@@ -562,5 +598,25 @@ public class UserController {
         }
 
         return user;
+    }
+
+    public boolean isParttimer(int userID) {
+        boolean found = false, isParttime = false;
+
+        Iterator iter = getEmployees().entrySet().iterator();
+
+        while (!found && iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+
+            Employee employee = (Employee) entry.getValue();
+            if (employee.getUserID().contains(userID + "")) {
+                found = true;
+
+                if (employee.getPartTimeEmployee() != null)
+                    isParttime = true;
+            }
+        }
+
+        return isParttime;
     }
 }

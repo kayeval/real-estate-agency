@@ -43,6 +43,8 @@ public class AssignPropertyController {
 
     private ObservableList<User> data;
 
+    private boolean isRentalProperty;
+
     private final BooleanProperty hasConfirmed = new SimpleBooleanProperty();
 
     public BooleanProperty hasConfirmedProperty() {
@@ -76,7 +78,10 @@ public class AssignPropertyController {
 
     public void refreshTable() {
         //data is filtered according to property passed in
-        data = FXCollections.observableArrayList(userController.getSalesPersons().values());
+        if (isRentalProperty)
+            data = FXCollections.observableArrayList(userController.getPropertyManagers().values());
+        else data = FXCollections.observableArrayList(userController.getSalesConsultants().values());
+
         typeField.setCellValueFactory(new PropertyValueFactory<Employee, String>("type"));
         usernameField.setCellValueFactory(new PropertyValueFactory<User, String>("username"));
         totalField.setCellValueFactory(new PropertyValueFactory<SalesPerson, Integer>("totalAssignments"));
@@ -102,8 +107,6 @@ public class AssignPropertyController {
 
     public void setUserController(UserController userController) {
         this.userController = userController;
-
-        refreshTable();
     }
 
     public User getSelectedUser() {
@@ -112,5 +115,11 @@ public class AssignPropertyController {
 
     public Label getLblCurrentAssign() {
         return lblCurrentAssign;
+    }
+
+    public void isRentalProperty(boolean rental) {
+        isRentalProperty = rental;
+
+        refreshTable();
     }
 }

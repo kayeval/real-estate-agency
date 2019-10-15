@@ -44,8 +44,7 @@ public class BranchManager extends Employee {
     }
 
     public boolean inspectDocuments(Property property) {
-        if (!property.areDocumentsInspected())
-        {
+        if (!property.areDocumentsInspected()) {
             property.setDocumentsInspected(true);
         }
         return true;

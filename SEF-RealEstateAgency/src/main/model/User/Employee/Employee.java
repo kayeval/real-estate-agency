@@ -10,6 +10,7 @@ import java.time.ZoneId;
 public abstract class Employee extends User {
     private LocalDate hireDate;
     private double salary;
+    private PartTimeEmployee partTimeEmployee;
 
     public Employee(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
         super(username, email);
@@ -41,4 +42,11 @@ public abstract class Employee extends User {
         return false;
     }
 
+    public void setPartTimeEmployee(PartTimeEmployee partTimeEmployee) {
+        this.partTimeEmployee = partTimeEmployee;
+    }
+
+    public PartTimeEmployee getPartTimeEmployee() {
+        return partTimeEmployee;
+    }
 }

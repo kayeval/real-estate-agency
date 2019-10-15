@@ -1,45 +1,44 @@
 package main.model.User.Employee;
 
-import main.model.User.InvalidEmailException;
+import main.model.User.WorkingHour;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PartTimeEmployee extends Employee {
-    private Map<LocalDate, Double> workingHours;
+public class PartTimeEmployee {
+    private Map<Integer, WorkingHour> workingHours;
     private boolean hoursApproved = false;
 
-    public PartTimeEmployee(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
-        super(username, email, hireDate, salary);
+    public PartTimeEmployee() {
         workingHours = new HashMap<>();
     }
 
-    public void inputHours(LocalDate date, double hours) {
-        Double h = workingHours.putIfAbsent(date, hours);
+    public void inputHours(WorkingHour workingHour) {
+        WorkingHour w = workingHours.putIfAbsent(workingHour.getID(), workingHour);
 
-        if (h != null) {
-            workingHours.replace(date, hours);
+        if (w != null) {
+            workingHours.replace(workingHour.getID(), workingHour);
         }
     }
 
     public double getHoursForMonth(LocalDate date) {
         double hours = .0;
         Month month = date.getMonth();
-        LocalDate dateEntry;
+        Integer id;
 
-        for (Map.Entry<LocalDate, Double> currentEntry : workingHours.entrySet()) {
-            dateEntry = (LocalDate) currentEntry.getKey();
-            if (dateEntry.getMonth() == month) {
-                hours += (double) currentEntry.getValue();
+        for (Map.Entry<Integer, WorkingHour> currentEntry : workingHours.entrySet()) {
+            id = currentEntry.getKey();
+            if (workingHours.get(id).getDate().getMonth() == month) {
+                hours += currentEntry.getValue().getHours();
             }
         }
 
         return hours;
     }
 
-    public Map<LocalDate, Double> getWorkingHours() {
+    public Map<Integer, WorkingHour> getWorkingHours() {
         return workingHours;
     }
 
@@ -50,6 +49,4 @@ public class PartTimeEmployee extends Employee {
     public void setHoursApproved(boolean hoursApproved) {
         this.hoursApproved = hoursApproved;
     }
-
-    //test message
 }

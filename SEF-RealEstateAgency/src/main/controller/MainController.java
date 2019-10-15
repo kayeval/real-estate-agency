@@ -1,5 +1,8 @@
 package main.controller;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -10,19 +13,27 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import main.EditSalePropertyController;
 import main.model.DBConnector;
+import main.model.Inspection;
 import main.model.Property.Property;
 import main.model.Property.PropertyType;
 import main.model.Property.RentalProperty;
+import main.model.Proposal.Proposal;
 import main.model.User.Customer.Customer;
 import main.model.User.Customer.Renter;
+import main.model.User.Employee.Employee;
+import main.model.User.Employee.PartTimeEmployee;
 import main.model.User.User;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 public class MainController {
 
@@ -51,13 +62,13 @@ public class MainController {
     private TableColumn<Property, Integer> carsField;
 
     @FXML
-    private TableColumn<Property, Double> priceField;
+    private TableColumn<Property, Double> minPriceField;
 
     @FXML
-    private TextField searchField;
+    private TextField propertySearchField;
 
     @FXML
-    private ComboBox<String> stateFilter;
+    private ComboBox<String> propertyStateCmb;
 
     @FXML
     private MenuButton userActions;
@@ -69,69 +80,260 @@ public class MainController {
     private MenuItem logoutItem;
 
     @FXML
+    private TableColumn<Proposal, Boolean> waitingForPaymentField;
+
+    @FXML
+    private TableColumn<Inspection, String> inspectionPropertyField;
+
+    @FXML
+    private TableColumn<Proposal, String> proposalPropertyField;
+
+    @FXML
+    private Label lblCurDate;
+
+    @FXML
+    private ComboBox<String> inspectionStateCmb;
+
+    @FXML
     private Button btnAddListing;
+
+    @FXML
+    private TableColumn<Employee, String> emplStatusField;
+
+    @FXML
+    private Tab proposalTab;
+
+    @FXML
+    private Button runPayrollBtn;
+
+    @FXML
+    private Tab inspectionTab;
+
+    @FXML
+    private TableColumn<Employee, String> emplUsernameField;
+
+    @FXML
+    private TableView<Inspection> inspectionTableView;
+
+    @FXML
+    private TableColumn<Property, String> propertyStatusField;
+
+    @FXML
+    private ComboBox<String> proposalStateCmb;
+
+    @FXML
+    private TableView<Proposal> proposalTableView;
+
+    @FXML
+    private TableView<Employee> employeeTableView;
+
+    @FXML
+    private TableColumn<Inspection, LocalDate> inspectionDateField;
+
+    @FXML
+    private Tab propertyTab;
+
+    @FXML
+    private TableColumn<Inspection, String> inspectionStatusField;
+
+    @FXML
+    private TableColumn<Proposal, String> proposalStatusField;
+
+    @FXML
+    private TableColumn<Inspection, LocalTime> inspectionTimeField;
+
+    @FXML
+    private Button btnScheduleInspection;
+
+    @FXML
+    private Button notifBtn;
+
+    @FXML
+    private TableColumn<Proposal, LocalDate> proposalDateField;
+
+    @FXML
+    private TableColumn<Proposal, Double> offerPriceField;
+
+    @FXML
+    private TableColumn<Employee, Double> emplSalaryField;
+
+    @FXML
+    private ComboBox<String> employeeStateCmb;
+
+    @FXML
+    private TableColumn<Employee, LocalDate> emplHireDateField;
+
+    @FXML
+    private Tab employeeTab;
+
+    @FXML
+    private TableColumn<Employee, String> emplTypeField;
+
+    @FXML
+    private TableColumn<PartTimeEmployee, LocalDate> parttimeDateField;
+
+    @FXML
+    private TableColumn<PartTimeEmployee, Double> parttimeHoursField;
+
+    @FXML
+    private TableView<PartTimeEmployee> workingHoursTableView;
+
+    @FXML
+    private Tab workingHoursTab;
+
+    @FXML
+    private TableColumn<PartTimeEmployee, String> parttimeStatusField;
+
+    @FXML
+    private ComboBox<String> workingHoursStateCmb;
+
+    @FXML
+    private Button addWorkingHoursBtn;
+
+    @FXML
+    private TabPane tabPane;
+
     private int userID;
+    private String registeredUserType;
+
+    private DBConnector dbConnector = new DBConnector();
+
     private UserController userController;
     private PropertyController propertyController;
-    private ObservableList<Property> data;
+
+    private ObservableList<Property> properties;
+    private ObservableList<Inspection> inspections;
+    private ObservableList<User> employees;
+    private ObservableList<Proposal> proposals;
+
     private FilteredList<Property> filteredList;
-    private DBConnector dbConnector = new DBConnector();
-    private ContextMenu cm;
-    private String type;
+
+    private ContextMenu propertyContextMenu, inspectionContextMenu, proposalContextMenu, employeeContextMenu;
+
     private Property selectedProperty;
+    private Inspection selectedInspection;
+    private Proposal selectedProposal;
+    private User selectedEmployee;
 
     @FXML
     void initialize() {
-        //TODO DIFFERENT MAIN VIEW COMPONENTS FOR DIFFERENT USERS
+        tabPane.getTabs().remove(workingHoursTab);
+
+        initClock();
+
+        //TODO set graphic for notification button
+
+
+        //setup controllers
         userController = new UserController();
         propertyController = new PropertyController();
         propertyController.setUserController(userController);
 
         dbConnector = new DBConnector();
-        cm = new ContextMenu();
-        cm.setAutoHide(true);
 
-        stateFilter.getItems().addAll("All", "Active", "Pending", "Inactive");
-        stateFilter.getSelectionModel().selectFirst();
-        stateFilter.getSelectionModel().selectedIndexProperty().addListener( (options, oldValue, newValue) ->
-        {  // something changes
+        //setup context menus
+        propertyContextMenu = new ContextMenu();
+        propertyContextMenu.setAutoHide(true);
 
-             });
+        employeeContextMenu = new ContextMenu();
+        employeeContextMenu.setAutoHide(true);
 
-//        ChangeListener<Object> listener = (obs, oldValue, newValue) -> {
-//            if (newValue instanceof Property) {
-//                System.out.println(propertyTableView.getSelectionModel());
-//                System.out.println(propertyTableView.getSelectionModel().getTableView());
-//                System.out.println(propertyTableView.getSelectionModel().getSelectedItem().getPropertyID());
-//            }
-//        };
+        inspectionContextMenu = new ContextMenu();
+        inspectionContextMenu.setAutoHide(true);
 
-//        propertyTableView.focusedProperty().addListener(listener);
-//        propertyTableView.getSelectionModel().selectedItemProperty().addListener(listener);
+        proposalContextMenu = new ContextMenu();
+        proposalContextMenu.setAutoHide(true);
+
+        //setup state combo boxes
+        propertyStateCmb.getItems().addAll("All", "Active", "Pending", "Inactive");
+        propertyStateCmb.getSelectionModel().selectFirst();
+        propertyStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
+            switch (propertyStateCmb.getValue()) {
+                case "Active":
+                    refreshPropertyTable("active");
+                    break;
+                case "Pending":
+                    refreshPropertyTable("pending");
+                    break;
+                case "Inactive":
+                    refreshPropertyTable("inactive");
+                    break;
+                default:
+                    refreshPropertyTable("all");
+                    break;
+            }
+        });
+
+        employeeStateCmb.getItems().addAll("All", "Part-time", "Full-time");
+        employeeStateCmb.getSelectionModel().selectFirst();
+        employeeStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
+            switch (employeeStateCmb.getValue()) {
+                case "Part-time":
+                    refreshEmployeeTable("part-time");
+                    break;
+                case "Full-time":
+                    refreshEmployeeTable("full-time");
+                    break;
+                default:
+                    refreshEmployeeTable("all");
+                    break;
+            }
+        });
+
+        proposalStateCmb.getItems().addAll("All", "Accepted", "Pending", "Rejected");
+        proposalStateCmb.getSelectionModel().selectFirst();
+        proposalStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
+            switch (proposalStateCmb.getValue()) {
+                case "Accepted":
+                    refreshProposalTable("accepted");
+                    break;
+                case "Pending":
+                    refreshProposalTable("pending");
+                    break;
+                case "Rejected":
+                    refreshProposalTable("rejected");
+                    break;
+                default:
+                    refreshProposalTable("all");
+                    break;
+            }
+        });
+
+        inspectionStateCmb.getItems().addAll("All", "Scheduled", "Completed", "Cancelled");
+        inspectionStateCmb.getSelectionModel().selectFirst();
+        inspectionStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
+            switch (inspectionStateCmb.getValue()) {
+                case "Scheduled":
+                    refreshInspectionTable("scheduled");
+                    break;
+                case "Completed":
+                    refreshInspectionTable("completed");
+                    break;
+                case "Cancelled":
+                    refreshInspectionTable("cancelled");
+                    break;
+                default:
+                    refreshInspectionTable("all");
+                    break;
+            }
+        });
+
     }
 
-    public void refreshTable() {
-        switch (type) {
-            case "buyer":
-                data = FXCollections.observableArrayList(propertyController.getSales().values());
-                break;
-            case "renter":
-                data = FXCollections.observableArrayList(propertyController.getRentals().values());
-                break;
-            case "vendor":
-            case "landlord":
-                data = FXCollections.observableArrayList(propertyController.getProperties(type, userID).values());
-                break;
-            case "propertymanager":
-            case "salesconsultant":
-                data = FXCollections.observableArrayList(propertyController.getAssignedProperties(userID).values());
-                break;
-            default:
-                data = FXCollections.observableArrayList(propertyController.getProperties().values());
-                break;
-        }
+    public void refreshEmployeeTable(String state) {
+        switch (state) {
+            case "part-time": {
 
-//        idField.setCellValueFactory(new PropertyValueFactory<Property, String>("propertyID"));
+                break;
+            }
+            case "full-time": {
+
+                break;
+            }
+            default:
+                employees = FXCollections.observableArrayList(userController.getEmployees().values());
+        }
+        properties = FXCollections.observableArrayList(propertyController.getActiveProperties().values());
 
         boolSR.setCellValueFactory(new PropertyValueFactory<Property, String>("strippedPropertyID"));
         typeField.setCellValueFactory(new PropertyValueFactory<Property, PropertyType>("propertyType"));
@@ -140,12 +342,94 @@ public class MainController {
         bedsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("beds"));
         bathsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("baths"));
         carsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("cars"));
-        priceField.setCellValueFactory(new PropertyValueFactory<Property, Double>("price"));
+        minPriceField.setCellValueFactory(new PropertyValueFactory<Property, Double>("price"));
+        propertyStatusField.setCellValueFactory(new PropertyValueFactory<Property, String>("status"));
 
-        propertyTableView.setItems(data);
-        propertyTableView.setContextMenu(cm);
+        propertyTableView.setItems(properties);
+        propertyTableView.setContextMenu(propertyContextMenu);
     }
 
+    public void refreshProposalTable(String state) {
+
+    }
+
+    public void refreshInspectionTable(String state) {
+
+    }
+
+    public void refreshPropertyTable(String state) {
+        switch (registeredUserType) {
+            case "buyer":
+                properties = FXCollections.observableArrayList(propertyController.getActiveSales().values());
+                break;
+            case "renter":
+                properties = FXCollections.observableArrayList(propertyController.getActiveRentals().values());
+                break;
+            case "vendor":
+            case "landlord":
+                switch (state) {
+                    case "all":
+                        properties = FXCollections.observableArrayList(propertyController.getOwnProperties(registeredUserType, userID).values());
+                        break;
+                    case "inactive":
+                        properties = FXCollections.observableArrayList(propertyController.getOwnInactiveProperties(registeredUserType, userID).values());
+                        break;
+                    case "pending":
+                        properties = FXCollections.observableArrayList(propertyController.getOwnPendingProperties(registeredUserType, userID).values());
+                        break;
+                    case "active":
+                        properties = FXCollections.observableArrayList(propertyController.getOwnActiveProperties(registeredUserType, userID).values());
+                        break;
+                }
+                break;
+            case "propertymanager":
+            case "salesconsultant":
+                switch (state) {
+                    case "all":
+                        properties = FXCollections.observableArrayList(propertyController.getAssignedProperties(userID).values());
+                        break;
+                    case "inactive":
+                        properties = FXCollections.observableArrayList(propertyController.getAssignedInactiveProperties(userID).values());
+                        break;
+                    case "pending":
+                        properties = FXCollections.observableArrayList(propertyController.getAssignedPendingProperties(userID).values());
+                        break;
+                    case "active":
+                        properties = FXCollections.observableArrayList(propertyController.getAssignedActiveProperties(userID).values());
+                        break;
+                }
+                break;
+            default:
+                switch (state) {
+                    case "all":
+                        properties = FXCollections.observableArrayList(propertyController.getProperties().values());
+                        break;
+                    case "inactive":
+                        properties = FXCollections.observableArrayList(propertyController.getInactiveProperties().values());
+                        break;
+                    case "pending":
+                        properties = FXCollections.observableArrayList(propertyController.getPendingProperties().values());
+                        break;
+                    case "active":
+                        properties = FXCollections.observableArrayList(propertyController.getActiveProperties().values());
+                        break;
+                }
+                break;
+        }
+
+        boolSR.setCellValueFactory(new PropertyValueFactory<Property, String>("strippedPropertyID"));
+        typeField.setCellValueFactory(new PropertyValueFactory<Property, PropertyType>("propertyType"));
+        addressField.setCellValueFactory(new PropertyValueFactory<Property, String>("address"));
+        suburbField.setCellValueFactory(new PropertyValueFactory<Property, String>("suburb"));
+        bedsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("beds"));
+        bathsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("baths"));
+        carsField.setCellValueFactory(new PropertyValueFactory<Property, Integer>("cars"));
+        minPriceField.setCellValueFactory(new PropertyValueFactory<Property, Double>("price"));
+        propertyStatusField.setCellValueFactory(new PropertyValueFactory<Property, String>("status"));
+
+        propertyTableView.setItems(properties);
+        propertyTableView.setContextMenu(propertyContextMenu);
+    }
 
     @FXML
     void addListing(ActionEvent event) throws IOException {
@@ -153,11 +437,11 @@ public class MainController {
         Stage addListingStage = new Stage();
         // Load root layout from fxml file
         FXMLLoader loader = new FXMLLoader();
-        if (type.equals("vendor"))
+        if (registeredUserType.equals("vendor"))
             loader.setLocation(getClass().getResource("/main/view/AddSaleProperty.fxml"));
         else loader.setLocation(getClass().getResource("/main/view/AddRentalProperty.fxml"));
         AnchorPane rootLayout = loader.load();
-        if (type.equals("vendor")) {
+        if (registeredUserType.equals("vendor")) {
             AddSalePropertyController addSalePropertyController = loader.getController();
 
             addSalePropertyController.hasSavedProperty().addListener((obs, wasSaved, isSaved) -> {
@@ -165,7 +449,7 @@ public class MainController {
                     propertyController.addProperty(addSalePropertyController.getAddress(), addSalePropertyController.getSuburb(), addSalePropertyController.getPropertyType(),
                             addSalePropertyController.getBaths(), addSalePropertyController.getCars(), addSalePropertyController.getBeds(), addSalePropertyController.getPrice(),
                             null, userID);
-                    refreshTable();
+                    refreshPropertyTable(propertyStateCmb.getValue().toLowerCase());
                     addListingStage.hide();
                 }
             });
@@ -177,7 +461,7 @@ public class MainController {
                     propertyController.addProperty(addRentalPropertyController.getAddress(), addRentalPropertyController.getSuburb(), addRentalPropertyController.getPropertyType(),
                             addRentalPropertyController.getBaths(), addRentalPropertyController.getCars(), addRentalPropertyController.getBeds(), addRentalPropertyController.getPrice(),
                             addRentalPropertyController.getContractDurations(), userID);
-                    refreshTable();
+                    refreshPropertyTable(propertyStateCmb.getValue().toLowerCase());
                     addListingStage.hide();
                 }
             });
@@ -209,7 +493,7 @@ public class MainController {
 
     @FXML
     void updateUserDetails(ActionEvent event) throws IOException {
-        if (type.equals("buyer") || type.equals("renter")) {
+        if (registeredUserType.equals("buyer") || registeredUserType.equals("renter")) {
             Stage editUserStage = new Stage();
             editUserStage.setTitle("Edit User Details");
             FXMLLoader loader = new FXMLLoader();
@@ -225,7 +509,7 @@ public class MainController {
             editCustomerController.setUserController(userController);
             User u = null;
 
-            if (type.equals("renter")) {
+            if (registeredUserType.equals("renter")) {
                 u = userController.getCustomers().get("renter" + userID);
                 editCustomerController.setBuyer(false);
                 editCustomerController.setIncome(((Renter) u).getIncome());
@@ -259,9 +543,9 @@ public class MainController {
             editUserController.setUserController(userController);
             User u = null;
 
-            if (userController.getEmployees().containsKey(type + userID))
-                u = userController.getEmployees().get(type + userID);
-            else u = userController.getPropertyOwners().get(type + userID);
+            if (userController.getEmployees().containsKey(registeredUserType + userID))
+                u = userController.getEmployees().get(registeredUserType + userID);
+            else u = userController.getPropertyOwners().get(registeredUserType + userID);
             editUserController.setUsername(u.getUsername());
             editUserController.setEmail(u.getEmail());
 
@@ -272,141 +556,380 @@ public class MainController {
         }
     }
 
-    public void setType(String type) {
-        this.type = type;
-        hideComponents(type);
-    }
-
-
-    public void showContextMenu(TableView tv, MouseEvent e) {
-        cm.show(tv, e.getScreenX(), e.getScreenY());
+    public void setRegisteredUserType(String registeredUserType) {
+        this.registeredUserType = registeredUserType;
+        System.out.println(registeredUserType);
+        hideComponents(registeredUserType);
     }
 
     public void hideComponents(String type) {
         switch (type) {
-            case "guest": {
-                updateDetailsItem.setVisible(false);
-                logoutItem.setText("Login");
-                btnAddListing.setVisible(false);
-                break;
-            }
             case "buyer": {
-                priceField.setText("Listed Price");
+                minPriceField.setText("Listed Price");
+
                 btnAddListing.setVisible(false);
-                MenuItem item1 = new MenuItem("Make offer");
-                cm.getItems().add(item1);
+                btnScheduleInspection.setVisible(false);
+
+                propertyStateCmb.setVisible(false);
+
+                MenuItem item1 = new MenuItem("Send offer");
+                item1.setOnAction(this::submitProposal);
+
+                propertyContextMenu.getItems().add(item1);
+
+                MenuItem viewProposal = new MenuItem("View offer");
+                viewProposal.setOnAction(this::viewProposal);
+
+                proposalContextMenu.getItems().add(viewProposal);
+
+                MenuItem item2 = new MenuItem("Withdraw offer");
+                item2.setOnAction(this::withdrawProposal);
+
+                proposalContextMenu.getItems().add(item2);
+
+                MenuItem item3 = new MenuItem("Cancel inspection");
+                item3.setOnAction(this::cancelInspection);
+
+                inspectionContextMenu.getItems().add(item3);
+
+                tabPane.getTabs().remove(employeeTab);
+                btnScheduleInspection.setVisible(false);
                 break;
-            }
+            } //buyer
+
             case "renter": {
-                priceField.setText("Weekly Rental");
+                minPriceField.setText("Weekly Rental");
+
                 btnAddListing.setVisible(false);
+                btnScheduleInspection.setVisible(false);
+
+                propertyStateCmb.setVisible(false);
+
                 MenuItem item1 = new MenuItem("Send application");
-                cm.getItems().add(item1);
+                item1.setOnAction(this::submitProposal);
+                propertyContextMenu.getItems().add(item1);
+
+                MenuItem viewProposal = new MenuItem("View application");
+                viewProposal.setOnAction(this::viewProposal);
+                proposalContextMenu.getItems().add(viewProposal);
+
+                MenuItem item2 = new MenuItem("Withdraw application");
+                item2.setOnAction(this::withdrawProposal);
+                proposalContextMenu.getItems().add(item2);
+
+                MenuItem item3 = new MenuItem("Cancel inspection");
+                item3.setOnAction(this::cancelInspection);
+                inspectionContextMenu.getItems().add(item3);
+
+                tabPane.getTabs().remove(employeeTab);
+                btnScheduleInspection.setVisible(false);
                 break;
-            }
+            } //renter
+
             case "vendor":
+                btnScheduleInspection.setVisible(false);
+
+                MenuItem viewApplication = new MenuItem("View offer");
+                viewApplication.setOnAction(this::viewProposal);
+
+                proposalContextMenu.getItems().add(viewApplication);
+
             case "landlord": {
                 MenuItem item1 = new MenuItem("Edit");
-                MenuItem item2 = new MenuItem("Delete");
-
-                cm.getItems().add(item1);
-                cm.getItems().add(item2);
-
                 item1.setOnAction(this::updateProperty);
+
+                MenuItem item2 = new MenuItem("Deactivate");
+                item2.setOnAction(this::deactivateProperty);
+
+                propertyContextMenu.getItems().add(item1);
+                propertyContextMenu.getItems().add(item2);
+
+                MenuItem item3 = new MenuItem("View application");
+                item3.setOnAction(this::viewProposal);
+
+                proposalContextMenu.getItems().clear();
+                proposalContextMenu.getItems().add(item3);
+
+                tabPane.getTabs().remove(employeeTab);
                 break;
-            }
-            case "salesconsulant": {
-                //change table to add property owner column?
+            } //vendor
+
+            case "salesconsultant": {
                 btnAddListing.setVisible(false);
+                minPriceField.setText("Weekly Rental");
 
-                MenuItem item1 = new MenuItem("Schedule inspection");
-                MenuItem item2 = new MenuItem("View offers");
+                MenuItem item1 = new MenuItem("Advertise property");
+//                item1.setOnAction(this::advertiseListing);
 
-                cm.getItems().add(item1);
-                cm.getItems().add(item2);
+                MenuItem item2 = new MenuItem("Organize legal documents");
+//                item2.setOnAction(this::organizeDocuments);
 
-                item1.setOnAction(this::scheduleInspection);
-                item2.setOnAction(this::viewProposals);
+                MenuItem item3 = new MenuItem("Contact property owner");
+                item3.setOnAction(this::contactPropertyOwner);
+
+                MenuItem item4 = new MenuItem("View commission");
+                item4.setOnAction(this::viewCommissionManagementFee);
+
+                propertyContextMenu.getItems().add(item1);
+                propertyContextMenu.getItems().add(item2);
+                propertyContextMenu.getItems().add(item3);
+                propertyContextMenu.getItems().add(item4);
+
+                MenuItem contact = new MenuItem("Contact renter");
+                contact.setOnAction(this::contactCustomer);
+                proposalContextMenu.getItems().add(contact);
+
+                MenuItem resched = new MenuItem("Reschedule");
+                resched.setOnAction(this::rescheduleInspection);
+
+                MenuItem sched = new MenuItem("Cancel");
+                sched.setOnAction(this::cancelInspection);
+
+                inspectionContextMenu.getItems().add(resched);
+                inspectionContextMenu.getItems().add(sched);
+
+                tabPane.getTabs().remove(employeeTab);
                 break;
-            }
+            } //salesconsultant
+
             case "propertymanager": {
                 btnAddListing.setVisible(false);
 
-                MenuItem item1 = new MenuItem("Schedule inspection");
-                MenuItem item2 = new MenuItem("View applications");
+                MenuItem item1 = new MenuItem("View maintenance report");
+                item1.setOnAction(this::viewMaintenanceReport);
 
-                cm.getItems().add(item1);
-                cm.getItems().add(item2);
+                MenuItem item2 = new MenuItem("Contact property owner");
+                item2.setOnAction(this::contactPropertyOwner);
 
-                item1.setOnAction(this::scheduleInspection);
-                item2.setOnAction(this::viewProposals);
+                MenuItem item3 = new MenuItem("View management fee");
+                item3.setOnAction(this::viewCommissionManagementFee);
+
+                propertyContextMenu.getItems().add(item1);
+                propertyContextMenu.getItems().add(item2);
+                propertyContextMenu.getItems().add(item3);
+
+                MenuItem contact = new MenuItem("Contact buyer");
+                contact.setOnAction(this::contactCustomer);
+                proposalContextMenu.getItems().add(contact);
+
+                MenuItem resched = new MenuItem("Reschedule");
+                resched.setOnAction(this::rescheduleInspection);
+
+                MenuItem sched = new MenuItem("Cancel");
+                sched.setOnAction(this::cancelInspection);
+
+                inspectionContextMenu.getItems().add(resched);
+                inspectionContextMenu.getItems().add(sched);
+
+                tabPane.getTabs().remove(employeeTab);
                 break;
-            }
-            case "admin":
-                //change table to see employee details?
+            } //propertymanager
+
+            case "admin": {
                 btnAddListing.setVisible(false);
+
+                MenuItem item = new MenuItem("View assigned properties");
+                item.setOnAction(this::viewAssignedProperties);
+
+                employeeContextMenu.getItems().add(item);
+
+                //remove all tabs except employees
+                tabPane.getTabs().remove(proposalTab);
+                tabPane.getTabs().remove(propertyTab);
+                tabPane.getTabs().remove(inspectionTab);
                 break;
+            } //admin
+
             case "manager": {
                 btnAddListing.setVisible(false);
 
                 MenuItem item1 = new MenuItem("Assign to employee");
-                cm.getItems().add(item1);
-
                 item1.setOnAction(this::assignProperty);
+
+                MenuItem item2 = new MenuItem("Inspect documents");
+                item2.setOnAction(this::inspectDocuments);
+
+                propertyContextMenu.getItems().add(item1);
+                propertyContextMenu.getItems().add(item2);
+
+                tabPane.getTabs().remove(employeeTab);
                 break;
+            } //manager
+
+            case "guest":
+
+            default: {
+                updateDetailsItem.setVisible(false);
+                logoutItem.setText("Login");
+                btnAddListing.setVisible(false);
+                propertyStateCmb.setVisible(false);
+
+                //remove all tabs except properties
+                tabPane.getTabs().remove(proposalTab);
+                tabPane.getTabs().remove(employeeTab);
+                tabPane.getTabs().remove(inspectionTab);
             }
         }
-        refreshTable();
+
+        if (userController.isParttimer(userID)) {
+            if (!tabPane.getTabs().contains(workingHoursTab))
+                tabPane.getTabs().add(workingHoursTab);
+        }
+
+        refreshPropertyTable("all");
+        refreshProposalTable("all");
+        refreshInspectionTable("all");
+        refreshEmployeeTable("all");
+    }
+
+    private void withdrawProposal(ActionEvent actionEvent) {
+        Proposal proposal = proposalTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (proposal != null) {
+
+        }
+    }
+
+    private void submitProposal(ActionEvent actionEvent) {
+        Proposal proposal = proposalTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (proposal != null) {
+
+        }
+    }
+
+    private void viewProposal(ActionEvent actionEvent) {
+        Proposal proposal = proposalTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (proposal != null) {
+            //either view as non-Customer (cannot edit) or view as Customer (has edit button)
+
+        }
+
+    }
+
+    //get customer from proposal
+    private void contactCustomer(ActionEvent actionEvent) {
+        Proposal proposal = proposalTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (proposal != null) {
+
+        }
+    }
+
+    @FXML
+    void scheduleInspection(ActionEvent event) {
+        Inspection inspection = inspectionTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (inspection != null) {
+
+        }
+    }
+
+    private void rescheduleInspection(ActionEvent actionEvent) {
+        Inspection inspection = inspectionTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (inspection != null) {
+
+        }
+    }
+
+    private void cancelInspection(ActionEvent actionEvent) {
+        Inspection inspection = inspectionTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (inspection != null) {
+
+        }
+    }
+
+    private void viewAssignedProperties(ActionEvent actionEvent) {
+        Employee employee = employeeTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (employee != null) {
+
+        }
+    }
+
+    private void viewCommissionManagementFee(ActionEvent actionEvent) {
+
+    }
+
+    //get property owner from property
+    private void contactPropertyOwner(ActionEvent actionEvent) {
+        Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (property != null) {
+
+        }
+    }
+
+    private void viewMaintenanceReport(ActionEvent actionEvent) {
+        Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (property != null) {
+
+        }
+    }
+
+    private void deactivateProperty(ActionEvent actionEvent) {
+        Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (property != null) {
+
+        }
+    }
+
+    private void inspectDocuments(ActionEvent actionEvent) {
+        Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+
+        if (property != null) {
+
+        }
     }
 
     private void assignProperty(ActionEvent event) {
         Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
-        System.out.println(property.getPropertyID());
-        Stage assignPropertyStage = new Stage();
-        assignPropertyStage.setTitle("Assign Property");
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/main/view/AssignProperty.fxml"));
-        AnchorPane rootLayout = null;
-        try {
-            rootLayout = loader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        AssignPropertyController assignPropertyController = loader.getController();
-        assignPropertyController.setUserController(userController);
-
-        User currentAssignment = userController.currentlyAssignedToProperty(property);
-
-        if (currentAssignment == null)
-            assignPropertyController.getLblCurrentAssign().setText("Currently assigned: NONE");
-        else
-            assignPropertyController.getLblCurrentAssign().setText("Currently assigned: " + currentAssignment.getUsername());
-
-        assignPropertyController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
-            if (isConfirmed) {
-                assignPropertyStage.hide();
-                propertyController.assignProperty(property.getPropertyID(), assignPropertyController.getSelectedUser().getUserID());
+//        System.out.println(property.getPropertyID());
+        if (property != null) {
+            Stage assignPropertyStage = new Stage();
+            assignPropertyStage.setTitle("Assign Property");
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/main/view/AssignProperty.fxml"));
+            AnchorPane rootLayout = null;
+            try {
+                rootLayout = loader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
-        Scene scene = new Scene(rootLayout);
-        assignPropertyStage.setScene(scene);
-        assignPropertyStage.show();
-    }
 
-    private void viewProposals(ActionEvent event) {
+            AssignPropertyController assignPropertyController = loader.getController();
+            assignPropertyController.setUserController(userController);
+            assignPropertyController.isRentalProperty(property.getPropertyID().startsWith("rental"));
 
-    }
+            User currentAssignment = userController.currentlyAssignedToProperty(property);
 
-    private void scheduleInspection(ActionEvent event) {
+            if (currentAssignment == null)
+                assignPropertyController.getLblCurrentAssign().setText("Currently assigned: NONE");
+            else
+                assignPropertyController.getLblCurrentAssign().setText("Currently assigned: " + currentAssignment.getUsername());
 
+            assignPropertyController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
+                if (isConfirmed) {
+                    assignPropertyStage.hide();
+                    propertyController.assignProperty(property.getPropertyID(), assignPropertyController.getSelectedUser().getUserID());
+                }
+            });
+            Scene scene = new Scene(rootLayout);
+            assignPropertyStage.setScene(scene);
+            assignPropertyStage.show();
+        }
     }
 
     private void updateProperty(ActionEvent event) {
         Stage editPropertyStage = new Stage();
         editPropertyStage.setTitle("Edit Property Details");
         FXMLLoader loader = new FXMLLoader();
-        if (type.equals("landlord")) {
+        if (registeredUserType.equals("landlord")) {
             loader.setLocation(getClass().getResource("/main/view/EditRentalProperty.fxml"));
             AnchorPane rootLayout = null;
             try {
@@ -482,9 +1005,32 @@ public class MainController {
 
     }
 
+
+    @FXML
+    void addWorkingHours(ActionEvent event) {
+
+    }
+
+    @FXML
+    void runPayroll(ActionEvent event) {
+
+    }
+
+    @FXML
+    void showNotifications(ActionEvent event) {
+        System.out.println("NOTIFICATION POPUP HERE");
+    }
+
     public void setUserID(int userID) {
         this.userID = userID;
     }
 
-
+    private void initClock() {
+        Timeline clock = new Timeline(new KeyFrame(Duration.ZERO, e -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            lblCurDate.setText("It is now: " + LocalDateTime.now().format(formatter));
+        }), new KeyFrame(Duration.seconds(1)));
+        clock.setCycleCount(Animation.INDEFINITE);
+        clock.play();
+    }
 }

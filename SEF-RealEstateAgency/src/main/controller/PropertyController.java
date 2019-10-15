@@ -36,6 +36,8 @@ public class PropertyController {
                 String propertyType = rs.getString("propertytype");
                 double price = rs.getDouble("price");
                 String suburb = rs.getString("suburb");
+                boolean inspected = rs.getBoolean("inspected");
+                boolean active = rs.getBoolean("active");
                 int propertyOwnerID = rs.getInt("listedby");
 
                 //add list of contract durations to set
@@ -55,6 +57,8 @@ public class PropertyController {
                     Property p = new RentalProperty(address, suburb, capacity, PropertyType.valueOf(propertyType.toUpperCase()),
                             price, (PropertyOwner) userController.getPropertyOwners().get("landlord" + propertyOwnerID), contractDurationSet);
                     p.setPropertyID("rental" + id);
+                    p.setDocumentsInspected(inspected);
+                    p.setActive(active);
                     properties.putIfAbsent(p.getPropertyID(), p);
                 } else {
                     Property p = new SaleProperty(address, suburb, capacity, PropertyType.valueOf(propertyType.toUpperCase()), price,
@@ -75,7 +79,7 @@ public class PropertyController {
 
         String sql = "INSERT INTO properties (price, listeddate, active, address, " +
                 "suburb, beds, baths, carspaces, " +
-                "propertytype, listedby, rental, contractdurations) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "propertytype, listedby, rental, contractdurations, inspected) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dbConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -97,6 +101,8 @@ public class PropertyController {
                     acceptedContractDurations.add(contractDuration.toString());
                 pstmt.setString(12, String.join(",", acceptedContractDurations));
             } else pstmt.setString(12, "");
+
+            pstmt.setBoolean(12, false);
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -150,7 +156,7 @@ public class PropertyController {
         return rentals;
     }
 
-    public Map<String, Property> getProperties(String type, int userID) {
+    public Map<String, Property> getOwnProperties(String type, int userID) {
         //if type is vendor or landlord check property owner
         Map<String, Property> properties = new HashMap<>();
 
@@ -204,5 +210,125 @@ public class PropertyController {
 
     public void setUserController(UserController userController) {
         this.userController = userController;
+    }
+
+    public Map<String, Property> getPendingProperties() {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getProperties().values())
+            if (!p.areDocumentsInspected())
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getActiveProperties() {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getProperties().values()) {
+            try {
+                if (p.isActive())
+                    properties.putIfAbsent(p.getPropertyID(), p);
+            } catch (DeactivatedPropertyException e) {
+//                e.printStackTrace();
+            }
+        }
+
+        return properties;
+    }
+
+    public Map<String, Property> getInactiveProperties() {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getProperties().values()) {
+            try {
+                if (!p.isActive())
+                    properties.putIfAbsent(p.getPropertyID(), p);
+            } catch (DeactivatedPropertyException e) {
+//                e.printStackTrace();
+            }
+        }
+
+        return properties;
+    }
+
+    public Map<String, Property> getActiveSales() {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getActiveProperties().values())
+            if (p.getPropertyID().startsWith("sales"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getActiveRentals() {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getActiveProperties().values())
+            if (!p.getPropertyID().startsWith("sales"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getOwnInactiveProperties(String registeredUserType, int userID) {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getOwnProperties(registeredUserType, userID).values())
+            if (p.getStatus().equals("Inactive"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getOwnPendingProperties(String registeredUserType, int userID) {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getOwnProperties(registeredUserType, userID).values())
+            if (p.getStatus().equals("Pending"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getOwnActiveProperties(String registeredUserType, int userID) {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getOwnProperties(registeredUserType, userID).values())
+            if (p.getStatus().equals("Active"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getAssignedInactiveProperties(int userID) {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getAssignedProperties(userID).values())
+            if (p.getStatus().equals("Inactive"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getAssignedPendingProperties(int userID) {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getAssignedProperties(userID).values())
+            if (p.getStatus().equals("Pending"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
+    }
+
+    public Map<String, Property> getAssignedActiveProperties(int userID) {
+        Map<String, Property> properties = new HashMap<>();
+
+        for (Property p : getAssignedProperties(userID).values())
+            if (p.getStatus().equals("Active"))
+                properties.putIfAbsent(p.getPropertyID(), p);
+
+        return properties;
     }
 }

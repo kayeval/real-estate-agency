@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.AnchorPane?>
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="737.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controller.AssignPropertyController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0"
+            prefWidth="737.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="main.controller.AssignPropertyController">
     <children>
         <TableView fx:id="userTableView" layoutY="39.0" prefHeight="461.0" prefWidth="737.0">
             <columns>
-                <TableColumn fx:id="typeField" prefWidth="180.0" resizable="false" text="Type" />
-                <TableColumn fx:id="usernameField" prefWidth="234.0" resizable="false" text="Username" />
-                <TableColumn fx:id="totalField" prefWidth="124.0" resizable="false" text="Total Assignments" />
-                <TableColumn fx:id="hireField" prefWidth="199.0" text="Hire Date" />
+                <TableColumn fx:id="typeField" prefWidth="180.0" resizable="false" text="Type"/>
+                <TableColumn fx:id="usernameField" prefWidth="234.0" resizable="false" text="Username"/>
+                <TableColumn fx:id="totalField" prefWidth="124.0" resizable="false" text="Total Assignments"/>
+                <TableColumn fx:id="hireField" prefWidth="199.0" text="Hire Date"/>
             </columns>
         </TableView>
-        <Label layoutX="12.0" layoutY="8.0" prefHeight="27.0" prefWidth="119.0" text="Search Users:" />
-        <TextField fx:id="searchField" layoutX="92.0" layoutY="6.0" onAction="#searchUsers" prefHeight="29.0" prefWidth="188.0" promptText="Type a username..." />
-        <Button fx:id="btnAssign" layoutX="576.0" layoutY="6.0" mnemonicParsing="false" onAction="#assignProperty" prefHeight="29.0" prefWidth="155.0" text="Assign" />
-      <Label fx:id="lblCurrentAssign" layoutX="296.0" layoutY="8.0" prefHeight="27.0" prefWidth="273.0" text="Currently assigned:" />
+        <Label layoutX="12.0" layoutY="8.0" prefHeight="27.0" prefWidth="119.0" text="Search Users:"/>
+        <TextField fx:id="searchField" layoutX="92.0" layoutY="6.0" onAction="#searchUsers" prefHeight="29.0"
+                   prefWidth="188.0" promptText="Type a username..."/>
+        <Button fx:id="btnAssign" layoutX="576.0" layoutY="6.0" mnemonicParsing="false" onAction="#assignProperty"
+                prefHeight="29.0" prefWidth="155.0" text="Assign"/>
+        <Label fx:id="lblCurrentAssign" layoutX="296.0" layoutY="8.0" prefHeight="27.0" prefWidth="273.0"
+               text="Currently assigned:"/>
     </children>
 </AnchorPane>

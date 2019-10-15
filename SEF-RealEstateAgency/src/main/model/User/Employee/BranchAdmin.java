@@ -43,36 +43,42 @@ public class BranchAdmin extends Employee {
     public boolean payAllEmployees(HashMap<String, Employee> employees) {
 
         for (Entry<String, Employee> entry : employees.entrySet()) {
-            payEmployee(entry.getValue());
+            try {
+                payEmployee(entry.getValue());
+            } catch (HoursNotFoundException | HoursNotApprovedException e) {
+                e.printStackTrace();
+            }
         }
 
         return true;
     }
 
-    public boolean payEmployee(Employee employee) {
-        double salary = employee.getSalary();
-        //payroll functionality
-        return true;
-    }
+    public boolean payEmployee(Employee employee) throws HoursNotFoundException, HoursNotApprovedException {
+        boolean valid = true;
 
-    public boolean payEmployee(PartTimeEmployee ptEmployee) throws HoursNotFoundException, HoursNotApprovedException {
-        if (ptEmployee.getHoursForMonth(LocalDate.now()) <= 0.0) {
-            throw new HoursNotFoundException();
-        }
+        if (employee.getPartTimeEmployee() != null) {
+            if (employee.getPartTimeEmployee().getHoursForMonth(LocalDate.now()) <= 0.0) {
+                throw new HoursNotFoundException();
+            }
 
-        if (ptEmployee.isHoursApproved() == false) {
-            throw new HoursNotApprovedException();
-        }
+            if (employee.getPartTimeEmployee().isHoursApproved() == false) {
+                throw new HoursNotApprovedException();
+            }
 
-        double salary = ptEmployee.getSalary();
-        double fullTimeHours = 152.00;
+            double salary = employee.getSalary();
+            double fullTimeHours = 152.00; //TODO: CHANGE?
 
-        if (ptEmployee.isHoursApproved()) {
-            salary *= (ptEmployee.getHoursForMonth(LocalDate.now()) / fullTimeHours);
+            if (employee.getPartTimeEmployee().isHoursApproved()) {
+                salary *= (employee.getPartTimeEmployee().getHoursForMonth(LocalDate.now()) / fullTimeHours);
+                //payroll functionality
+                valid = true;
+            }
+        } else {
+            double salary = employee.getSalary();
             //payroll functionality
-            return true;
         }
-        return false;
+
+        return valid;
     }
 
     public boolean payCommission(HashMap<String, Property> listings, BankAccount account) {

@@ -36,8 +36,8 @@ public class CustomerTest {
         buyer2 = new Buyer("Test 2", "test2@email.com");
         property = new SaleProperty("123 ABC Street", "Melbourne", null, null,
                 10000, propertyOwner);
-        proposal = new Offer( 10000, property, buyer);
-        proposal2 = new Offer( 15000, property, buyer);
+        proposal = new Offer(10000, property, buyer);
+        proposal2 = new Offer(15000, property, buyer);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class CustomerTest {
             e.printStackTrace();
         }
 
-        proposal = new Offer( 12000, property, buyer);
+        proposal = new Offer(12000, property, buyer);
 
         DeactivatedPropertyException ex = assertThrows(DeactivatedPropertyException.class, () ->
                 buyer.submitProposal(proposal));

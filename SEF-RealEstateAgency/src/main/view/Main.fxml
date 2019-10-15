@@ -1,44 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import java.lang.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="941.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controller.MainController">
+<AnchorPane id="background" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="660.0" prefWidth="941.0" stylesheets="@../res/login.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controller.MainController">
     <children>
-        <TableView fx:id="propertyTableView" layoutY="39.0" prefHeight="461.0" prefWidth="941.0">
-            <columns>
-            <TableColumn fx:id="boolSR" prefWidth="83.0" text="For Sale/Rent" />
-                <TableColumn fx:id="typeField" prefWidth="115.0" resizable="false" text="Type" />
-                <TableColumn fx:id="addressField" prefWidth="255.0" resizable="false" text="Address" />
-                <TableColumn fx:id="suburbField" prefWidth="160.0" resizable="false" text="Suburb" />
-                <TableColumn fx:id="bedsField" prefWidth="65.0" resizable="false" text="Beds" />
-                <TableColumn fx:id="bathsField" prefWidth="59.0" resizable="false" text="Baths" />
-                <TableColumn fx:id="carsField" prefWidth="86.0" text="Car Spaces" />
-                <TableColumn fx:id="priceField" prefWidth="192.0" resizable="false" text="Price" />
-            </columns>
-        </TableView>
-        <Label layoutX="12.0" layoutY="8.0" prefHeight="27.0" prefWidth="119.0" text="Search Suburbs:" />
-        <TextField fx:id="searchField" layoutX="112.0" layoutY="6.0" onAction="#searchSuburbs" prefHeight="29.0" prefWidth="188.0" promptText="Type suburbs..." />
-        <Label alignment="CENTER" layoutX="364.0" layoutY="3.0" prefHeight="38.0" prefWidth="266.0" text="Real Estate System" textAlignment="CENTER">
-            <font>
-                <Font name="System Bold" size="26.0" />
-            </font>
-        </Label>
-        <MenuButton fx:id="userActions" layoutX="865.0" layoutY="6.0" mnemonicParsing="false" text="User">
+        <MenuButton fx:id="userActions" layoutX="834.0" layoutY="6.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="96.0" text="User">
             <items>
                 <MenuItem fx:id="updateDetailsItem" mnemonicParsing="false" onAction="#updateUserDetails" text="Update details" />
                 <MenuItem fx:id="logoutItem" mnemonicParsing="false" onAction="#logout" text="Logout" />
             </items>
         </MenuButton>
-        <Button fx:id="btnAddListing" layoutX="766.0" layoutY="6.0" mnemonicParsing="false" onAction="#addListing" text="Add Listing" />
-      <ComboBox fx:id="stateFilter" layoutX="661.0" layoutY="6.0" prefHeight="25.0" prefWidth="96.0" promptText="Status " />
+        <TabPane fx:id="tabPane" layoutY="87.0" prefHeight="573.0" prefWidth="941.0" side="BOTTOM" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab fx:id="propertyTab" text="Properties">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="539.0" prefWidth="941.0">
+                            <children>
+                                <Button fx:id="btnAddListing" layoutX="689.0" layoutY="10.0" mnemonicParsing="false" onAction="#addListing" prefHeight="29.0" prefWidth="132.0" text="Add Listing" />
+                                <ComboBox fx:id="propertyStateCmb" layoutX="834.0" layoutY="10.0" prefHeight="29.0" prefWidth="96.0" promptText="Status " />
+                                <Label layoutX="15.0" layoutY="12.0" prefHeight="27.0" prefWidth="96.0" text="Search Suburbs:" />
+                                <TextField fx:id="propertySearchField" layoutX="116.0" layoutY="11.0" onAction="#searchSuburbs" prefHeight="29.0" prefWidth="177.0" promptText="Type suburb..." />
+                                <TableView fx:id="propertyTableView" layoutY="49.0" prefHeight="495.0" prefWidth="941.0">
+                                    <columns>
+                                        <TableColumn fx:id="boolSR" prefWidth="98.0" text="For Sale/Rent" />
+                                        <TableColumn fx:id="typeField" prefWidth="89.0" resizable="false" text="Type" />
+                                        <TableColumn fx:id="addressField" prefWidth="239.0" resizable="false" text="Address" />
+                                        <TableColumn fx:id="suburbField" prefWidth="122.0" resizable="false" text="Suburb" />
+                                        <TableColumn fx:id="bedsField" prefWidth="53.0" resizable="false" text="Beds" />
+                                        <TableColumn fx:id="bathsField" prefWidth="53.0" resizable="false" text="Baths" />
+                                        <TableColumn fx:id="carsField" prefWidth="79.0" text="Car Spaces" />
+                                        <TableColumn fx:id="minPriceField" prefWidth="101.0" resizable="false" text="Min Price" />
+                                        <TableColumn fx:id="propertyStatusField" prefWidth="106.0" resizable="false" text="Status" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab fx:id="inspectionTab" text="Inspections">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <TableView fx:id="inspectionTableView" layoutY="49.0" prefHeight="495.0" prefWidth="941.0">
+                                    <columns>
+                                        <TableColumn fx:id="inspectionDateField" prefWidth="160.0" text="Date" />
+                                        <TableColumn fx:id="inspectionTimeField" prefWidth="146.0" resizable="false" text="Time" />
+                                        <TableColumn fx:id="inspectionPropertyField" prefWidth="422.0" resizable="false" text="Property" />
+                                        <TableColumn fx:id="inspectionStatusField" prefWidth="222.0" resizable="false" text="Status" />
+                                    </columns>
+                                </TableView>
+                                <ComboBox fx:id="inspectionStateCmb" layoutX="834.0" layoutY="10.0" prefHeight="29.0" prefWidth="96.0" promptText="Status " />
+                                <Button fx:id="btnScheduleInspection" layoutX="668.0" layoutY="10.0" mnemonicParsing="false" onAction="#scheduleInspection" prefHeight="29.0" prefWidth="153.0" text="Schedule Inspection" />
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab fx:id="proposalTab" text="Proposals">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="496.0" prefWidth="941.0">
+                            <children>
+                                <TableView fx:id="proposalTableView" layoutY="49.0" prefHeight="495.0" prefWidth="941.0">
+                                    <columns>
+                                        <TableColumn fx:id="waitingForPaymentField" minWidth="0.0" prefWidth="131.0" text="Awaiting Payment" />
+                                        <TableColumn fx:id="proposalDateField" prefWidth="271.0" text="Date Submitted" />
+                                        <TableColumn fx:id="proposalPropertyField" minWidth="3.0" prefWidth="232.0" text="Property" />
+                                        <TableColumn fx:id="offerPriceField" prefWidth="166.0" text="Offer Price" />
+                                        <TableColumn fx:id="proposalStatusField" minWidth="0.0" prefWidth="140.0" text="Status" />
+                                    </columns>
+                                </TableView>
+                                <ComboBox fx:id="proposalStateCmb" layoutX="834.0" layoutY="10.0" prefWidth="96.0" promptText="Status" />
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab fx:id="employeeTab" text="Employees">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <TableView fx:id="employeeTableView" layoutY="49.0" prefHeight="495.0" prefWidth="941.0">
+                                    <columns>
+                                        <TableColumn fx:id="emplTypeField" minWidth="0.0" prefWidth="163.0" text="Type" />
+                                        <TableColumn fx:id="emplUsernameField" prefWidth="270.0" text="Username" />
+                                        <TableColumn fx:id="emplHireDateField" prefWidth="220.0" text="Hire Date" />
+                                        <TableColumn fx:id="emplSalaryField" prefWidth="137.0" text="Salary" />
+                                        <TableColumn fx:id="emplStatusField" prefWidth="160.0" text="Status" />
+                                    </columns>
+                                </TableView>
+                                <Button fx:id="runPayrollBtn" layoutX="710.0" layoutY="10.0" mnemonicParsing="false" onAction="#runPayroll" prefHeight="29.0" prefWidth="111.0" text="Run Payroll" />
+                                <ComboBox fx:id="employeeStateCmb" layoutX="834.0" layoutY="10.0" prefWidth="96.0" promptText="Status" />
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab fx:id="workingHoursTab" text="Working Hours">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <TableView fx:id="workingHoursTableView" layoutY="49.0" prefHeight="495.0" prefWidth="941.0">
+                                    <columns>
+                                        <TableColumn fx:id="parttimeDateField" prefWidth="293.0" text="Date" />
+                                        <TableColumn fx:id="parttimeHoursField" prefWidth="327.0" text="Hours" />
+                                        <TableColumn fx:id="parttimeStatusField" minWidth="0.0" prefWidth="320.0" text="Status" />
+                                    </columns>
+                                </TableView>
+                                <ComboBox fx:id="workingHoursStateCmb" layoutX="834.0" layoutY="10.0" prefWidth="96.0" promptText="Status" />
+                                <Button fx:id="addWorkingHoursBtn" layoutX="668.0" layoutY="10.0" mnemonicParsing="false" onAction="#addWorkingHours" prefHeight="29.0" prefWidth="153.0" text="Add Working Hours" />
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+        <Text fontSmoothingType="LCD" layoutX="316.0" layoutY="72.0" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="2.0" text="Real Estate Agency" textAlignment="CENTER">
+            <font>
+                <Font size="42.0" />
+            </font>
+        </Text>
+        <Label fx:id="lblCurDate" layoutX="790.0" layoutY="632.0" text="It is now: " />
+        <Button fx:id="notifBtn" layoutX="783.0" layoutY="6.0" mnemonicParsing="false" onAction="#showNotifications" prefHeight="29.0" prefWidth="40.0" />
     </children>
 </AnchorPane>

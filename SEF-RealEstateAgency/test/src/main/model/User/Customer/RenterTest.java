@@ -41,7 +41,7 @@ public class RenterTest {
 
     @Test
     public void itShouldThrowInvalidContractDurationExceptionWhenSubmittingProposalWithUnacceptableContractDuration() {
-        proposal = new Application( 11000, property, renter, ContractDuration.SIX_MONTHS);
+        proposal = new Application(11000, property, renter, ContractDuration.SIX_MONTHS);
 
         InvalidContractDurationException ex = assertThrows(InvalidContractDurationException.class, () ->
                 renter.submitProposal(proposal));

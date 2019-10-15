@@ -66,30 +66,31 @@ public class LoginController {
             mainController.setUserID(id);
             switch (userController.loginType(id)) {
                 case "buyer":
-                    mainController.setType("buyer");
+                    mainController.setRegisteredUserType("buyer");
                     break;
                 case "renter":
-                    mainController.setType("renter");
+                    mainController.setRegisteredUserType("renter");
                     break;
                 case "admin":
-                    mainController.setType("admin");
+                    mainController.setRegisteredUserType("admin");
                     break;
                 case "manager":
-                    mainController.setType("manager");
+                    mainController.setRegisteredUserType("manager");
                     break;
                 case "parttime":
-                    mainController.setType("parttime");
+                    mainController.setRegisteredUserType("parttime");
                     break;
                 case "propertymanager":
-                    mainController.setType("propertymanager");
+                    mainController.setRegisteredUserType("propertymanager");
                     break;
                 case "salesconsultant":
-                    mainController.setType("salesconsultant");
+                    mainController.setRegisteredUserType("salesconsultant");
+                    break;
                 case "vendor":
-                    mainController.setType("vendor");
+                    mainController.setRegisteredUserType("vendor");
                     break;
                 case "landlord":
-                    mainController.setType("landlord");
+                    mainController.setRegisteredUserType("landlord");
                     break;
                 default:
             }
@@ -111,7 +112,7 @@ public class LoginController {
 
         MainController mainController = loader.getController();
 //        mainController.setUserID(id);
-        mainController.setType("guest");
+        mainController.setRegisteredUserType("guest");
         Scene nextScene = new Scene(nextPane);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -123,7 +124,7 @@ public class LoginController {
     void registerAction(MouseEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader();
 
-        loader.setLocation(getClass().getResource("/main/view/Register.fxml"));
+        loader.setLocation(getClass().getResource("/main/view/RegisterCustomer.fxml"));
         Parent nextPane = loader.load();
         Scene nextScene = new Scene(nextPane);
         nextScene.getStylesheets().add("/main/res/combobox.css");

@@ -117,15 +117,35 @@ public abstract class Property {
         return true;
     }
 
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
     public String getStrippedPropertyID() {
-        return propertyID.replaceAll("\\d", "");
+        String stripped = propertyID.replaceAll("\\d", "");
+        return stripped.substring(0, 1).toUpperCase() + stripped.substring(1);
+    }
+
+    public String getStatus() {
+        String status = "";
+
+        if (isActive)
+            status = "Active";
+        else if (!isActive && areDocumentsInspected())
+            status = "Inactive";
+        else if (!areDocumentsInspected())
+            status = "Pending";
+
+        return status;
     }
 
     public boolean areDocumentsInspected() {
         return documentsInspected;
     }
 
-    public void setDocumentsInspected(boolean inspected) { this.documentsInspected = inspected;}
+    public void setDocumentsInspected(boolean inspected) {
+        this.documentsInspected = inspected;
+    }
 
     public Proposal getProposal() {
         return proposal;

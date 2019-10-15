@@ -13,6 +13,7 @@ public abstract class Proposal {
     private Customer customer;
     private Property property;
     private boolean accepted;
+    private boolean waitingForPayment;
 
     public Proposal(double price, Property property, Customer customer) {
         this.submissionDate = LocalDateTime.now(ZoneId.systemDefault());
@@ -20,6 +21,15 @@ public abstract class Proposal {
         this.customer = customer;
         this.property = property;
         this.accepted = false;
+        this.waitingForPayment = false;
+    }
+
+    public void setWaitingForPayment(boolean waitingForPayment) {
+        this.waitingForPayment = waitingForPayment;
+    }
+
+    public boolean isWaitingForPayment() {
+        return waitingForPayment;
     }
 
     public void setProposalID(String proposalID) {

@@ -7,9 +7,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import main.controller.LoginController;
 import main.controller.UserController;
-import main.model.Property.Property;
-import main.model.User.Employee.SalesPerson.SalesPerson;
-import main.model.User.User;
 
 public class Main extends Application {
     @Override
