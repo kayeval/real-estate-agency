@@ -13,6 +13,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import main.model.DBModel.UserDBModel;
+import main.model.User.User;
 
 import java.io.IOException;
 
@@ -31,8 +32,7 @@ public class EditUserController {
     private Button saveBtn;
 
     private UserDBModel userDBModel;
-    private String username;
-    private String email;
+    private User user;
 
     private final BooleanProperty hasSaved = new SimpleBooleanProperty();
 
@@ -46,6 +46,10 @@ public class EditUserController {
 
     public final void setSaved(boolean saved) {
         hasSavedProperty().set(saved);
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @FXML
@@ -81,7 +85,7 @@ public class EditUserController {
         }
 
         if (valid) {
-            if (!usernameField.getText().equals(username) && !userDBModel.isUniqueUsername(usernameField.getText()))
+            if (!usernameField.getText().equals(user.getUsername()) && !userDBModel.isUniqueUsername(usernameField.getText()))
                 error.setText("That username is already taken.");
             else if (!userDBModel.isValidEmailFormat(emailField.getText())) {
                 error.setText("Invalid email format");
@@ -98,14 +102,14 @@ public class EditUserController {
             AnchorPane rootLayout = loader.load();
 
             PasswordPromptController passwordPromptController = loader.getController();
-            passwordPromptController.setUsername(username);
+            passwordPromptController.setUser(user);
             passwordPromptController.setUserDBModel(userDBModel);
             passwordPromptController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                 if (isConfirmed) {
                     confirmChangeStage.hide();
                     setSaved(true);
 
-                    userDBModel.updateUserDetails(usernameField.getText(), emailField.getText(), username);
+                    userDBModel.updateUserDetails(usernameField.getText(), user.getEmail(), user.getUsername());
                 }
             });
 
@@ -117,16 +121,8 @@ public class EditUserController {
     }
 
     public void start() {
-        usernameField.setText(username);
-        emailField.setText(email);
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+        usernameField.setText(user.getUsername());
+        emailField.setText(user.getEmail());
     }
 
     public void setUserDBModel(UserDBModel userDBModel) {

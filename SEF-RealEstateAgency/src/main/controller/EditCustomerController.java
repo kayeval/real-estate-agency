@@ -15,6 +15,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import main.model.DBModel.UserDBModel;
 import main.model.DecimalFilter;
+import main.model.User.User;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -44,6 +45,7 @@ public class EditCustomerController {
     private Button saveBtn;
 
     private UserDBModel userDBModel;
+    private User user;
     private String username;
     private String email;
     private String suburbs;
@@ -163,13 +165,14 @@ public class EditCustomerController {
 
         if (canSave) {
             Stage confirmChangeStage = new Stage();
+            confirmChangeStage.setTitle("Confirm changes");
             // Load root layout from fxml file
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/main/view/PasswordPrompt.fxml"));
             AnchorPane rootLayout = loader.load();
 
             PasswordPromptController passwordPromptController = loader.getController();
-            passwordPromptController.setUsername(username);
+            passwordPromptController.setUser(user);
             passwordPromptController.setUserDBModel(userDBModel);
             passwordPromptController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                 if (isConfirmed) {
@@ -190,6 +193,10 @@ public class EditCustomerController {
             confirmChangeStage.setScene(scene);
             confirmChangeStage.show();
         }
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public void setEmail(String email) {

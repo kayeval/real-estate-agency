@@ -2,9 +2,12 @@ package main.model.DBModel;
 
 import main.model.Property.*;
 import main.model.Proposal.ContractDuration;
+import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.PropertyOwner.PropertyOwner;
 
+import java.sql.Date;
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -12,13 +15,18 @@ import java.util.*;
 public class PropertyDBModel {
     private DBConnector dbConnector;
     private UserDBModel userDBModel;
+    private Map<String, Property> allProperties;
 
     public PropertyDBModel() {
         dbConnector = new DBConnector();
     }
 
-    public Map<String, Property> getProperties() {
-        Map<String, Property> properties = new HashMap<>();
+    public void loadPropertiesFromDB() {
+        allProperties = getAllProperties();
+    }
+
+    public Map<String, Property> getAllProperties() {
+        allProperties = new HashMap<>();
 
         String sql = "SELECT * from properties";
         try (Connection conn = dbConnector.getConnection();
@@ -38,6 +46,9 @@ public class PropertyDBModel {
                 boolean inspected = rs.getBoolean("inspected");
                 boolean active = rs.getBoolean("active");
                 int propertyOwnerID = rs.getInt("listedby");
+                int assignedTo = rs.getInt("assignedto");
+                LocalDateTime listedDate = rs.getTimestamp("listeddate").toLocalDateTime();
+                ;
 
                 //add list of contract durations to set
                 Capacity capacity = new Capacity(cars, beds, baths);
@@ -46,6 +57,7 @@ public class PropertyDBModel {
                     String contractDurations = rs.getString("contractdurations");
                     Set<ContractDuration> contractDurationSet = new HashSet<>();
                     String[] split = contractDurations.split("\\s*,\\s*");
+
                     for (String s : split) {
                         if (s.equals("ONE_YEAR"))
                             contractDurationSet.add(ContractDuration.ONE_YEAR);
@@ -53,24 +65,48 @@ public class PropertyDBModel {
                             contractDurationSet.add(ContractDuration.TWO_YEARS);
                         else contractDurationSet.add(ContractDuration.SIX_MONTHS);
                     }
+
                     Property p = new RentalProperty(address, suburb, capacity, PropertyType.valueOf(propertyType.toUpperCase()),
-                            price, (PropertyOwner) userDBModel.getPropertyOwners().get("landlord" + propertyOwnerID), contractDurationSet);
+                            price, ((PropertyOwner) userDBModel.getUser(propertyOwnerID)), contractDurationSet);
+                    p.getPropertyOwner().getListedProperties().putIfAbsent(p.getPropertyID(), p);
+
                     p.setPropertyID("rental" + id);
                     p.setDocumentsInspected(inspected);
                     p.setActive(active);
-                    properties.putIfAbsent(p.getPropertyID(), p);
+                    p.setDateListed(listedDate);
+
+                    if (assignedTo != 0) {
+                        p.setSalesPerson((SalesPerson) userDBModel.getUser(assignedTo));
+                        p.getSalesPerson().getAssignedProperties().putIfAbsent(p.getPropertyID(), p);
+                    }
+
+                    ((RentalProperty) p).setNextMaintenance(rs.getDate("nextmaintenance").toLocalDate());
+                    ((RentalProperty) p).setPreviousMaintenance(rs.getDate("prevmaintenance").toLocalDate());
+
+                    allProperties.putIfAbsent(p.getPropertyID(), p);
                 } else {
                     Property p = new SaleProperty(address, suburb, capacity, PropertyType.valueOf(propertyType.toUpperCase()), price,
-                            (PropertyOwner) userDBModel.getPropertyOwners().get("vendor" + propertyOwnerID));
+                            ((PropertyOwner) userDBModel.getUser(propertyOwnerID)));
+                    p.getPropertyOwner().getListedProperties().putIfAbsent(p.getPropertyID(), p);
                     p.setPropertyID("sale" + id);
-                    properties.putIfAbsent(p.getPropertyID(), p);
+                    p.setDocumentsInspected(inspected);
+                    p.setActive(active);
+                    p.setDateListed(listedDate);
+
+                    if (assignedTo != 0) {
+                        p.setSalesPerson((SalesPerson) userDBModel.getUser(assignedTo));
+                        p.getSalesPerson().getAssignedProperties().putIfAbsent(p.getPropertyID(), p);
+                        System.out.println(p.getSalesPerson().getAssignedProperties().size());
+                    }
+
+                    allProperties.putIfAbsent(p.getPropertyID(), p);
                 }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
-        return properties;
+        return allProperties;
     }
 
     public void addProperty(String address, String suburb, PropertyType propertyType, int baths, int cars, int beds, double price,
@@ -78,10 +114,12 @@ public class PropertyDBModel {
 
         String sql = "INSERT INTO properties (price, listeddate, active, address, " +
                 "suburb, beds, baths, carspaces, " +
-                "propertytype, listedby, rental, contractdurations, inspected) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "propertytype, listedby, rental, contractdurations, inspected, assignedto, prevmaintenance, nextmaintenance) " +
+                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dbConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setObject(1, price, Types.DOUBLE);
             pstmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now(ZoneId.systemDefault())));
             pstmt.setBoolean(3, false);
@@ -101,12 +139,22 @@ public class PropertyDBModel {
                 pstmt.setString(12, String.join(",", acceptedContractDurations));
             } else pstmt.setString(12, "");
 
-            pstmt.setBoolean(12, false);
-
+            pstmt.setBoolean(13, false);
+            pstmt.setInt(14, 0);
+            if (contractDurations != null) {
+                Date now = Date.valueOf(LocalDate.now(ZoneId.systemDefault()));
+                pstmt.setDate(15, now);
+                pstmt.setDate(16, now);
+            } else {
+                pstmt.setNull(15, Types.DATE);
+                pstmt.setNull(16, Types.DATE);
+            }
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        loadPropertiesFromDB();
     }
 
     public void updatePropertyDetails(String address, String suburb, PropertyType propertyType, int baths, int cars, int beds, double price,
@@ -137,94 +185,104 @@ public class PropertyDBModel {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        loadPropertiesFromDB();
     }
 
     public Map<String, Property> getSales() {
         Map<String, Property> sales = new HashMap<>();
-        for (String key : getProperties().keySet()) {
-            if (key.contains("sale")) sales.putIfAbsent(key, getProperties().get(key));
+        for (String key : allProperties.keySet()) {
+            if (key.contains("sale")) sales.putIfAbsent(key, allProperties.get(key));
         }
         return sales;
     }
 
     public Map<String, Property> getRentals() {
         Map<String, Property> rentals = new HashMap<>();
-        for (String key : getProperties().keySet()) {
-            if (key.contains("rental")) rentals.putIfAbsent(key, getProperties().get(key));
+        for (String key : allProperties.keySet()) {
+            if (key.contains("rental")) rentals.putIfAbsent(key, allProperties.get(key));
         }
         return rentals;
     }
 
-    public Map<String, Property> getAssignedProperties(int userID) {
-        Map<String, Property> properties = new HashMap<>();
-        int propertyID = 0;
+//    public Map<String, Property> getAssignedProperties(int userID) {
+//        Map<String, Property> properties = new HashMap<>();
+//        int propertyID = 0;
+//
+//        String sql = "SELECT * from properties WHERE assignedto=" + userID;
+//        try (Connection conn = dbConnector.getConnection();
+//             Statement stmt = conn.createStatement();
+//             ResultSet rs = stmt.executeQuery(sql)) {
+//
+//            while (rs.next()) {
+//                propertyID = rs.getInt("propertyid");
+//                if (rs.getBoolean("rental")) {
+//                    properties.putIfAbsent("rental" + propertyID, properties.get("rental" + propertyID));
+//                } else properties.putIfAbsent("sale" + propertyID, properties.get("sale" + propertyID));
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return properties;
+//    }
 
-        String sql = "SELECT * from properties WHERE assignedto=" + userID;
-        try (Connection conn = dbConnector.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                propertyID = rs.getInt("propertyid");
-                if (rs.getBoolean("rental")) {
-                    properties.putIfAbsent("rental" + propertyID, getProperties().get("rental" + propertyID));
-                } else properties.putIfAbsent("sale" + propertyID, getProperties().get("sale" + propertyID));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return properties;
-    }
-
-    public void documentsInspected(Property property) {
-
-    }
-
-    public void deactivateListing(Property property) {
-
-    }
-
-    public void assignProperty(String propertyID, String userID) {
-        //remove non numeric from IDs
-        int property = Integer.parseInt(propertyID.replaceAll("[^\\d.]", ""));
-        int user = Integer.parseInt(userID.replaceAll("[^\\d.]", ""));
-
-        String sql = "UPDATE properties SET assignedto=? WHERE propertyid=?";
+    public void setDocumentsInspected(Property property) {
+        String sql = "UPDATE properties SET inspected=?, active=? WHERE propertyid=?";
         try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, user);
-            pstmt.setInt(2, property);
+            pstmt.setBoolean(1, true);
+            pstmt.setBoolean(2, true);
+            pstmt.setInt(3, Integer.parseInt(property.getPropertyID().replaceAll("[^\\d.]", "")));
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        loadPropertiesFromDB();
+    }
+
+    public void deactivateListing(Property property) {
+        String sql = "UPDATE properties SET active=? WHERE propertyid=?";
+        try (Connection connection = dbConnector.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setBoolean(1, false);
+            pstmt.setInt(2, Integer.parseInt(property.getPropertyID().replaceAll("[^\\d.]", "")));
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        allProperties.get(property.getPropertyID()).deactivate();
+    }
+
+    public void assignProperty(String propertyID, String userID) {
+        String sql = "UPDATE properties SET assignedto=? WHERE propertyid=?";
+        try (Connection connection = dbConnector.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, Integer.parseInt(userID.replaceAll("[^\\d.]", "")));
+            pstmt.setInt(2, Integer.parseInt(propertyID.replaceAll("[^\\d.]", "")));
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        allProperties.get(propertyID).setSalesPerson((SalesPerson) userDBModel.getUser(Integer.parseInt(userID.replaceAll("[^\\d.]", ""))));
     }
 
     public void setUserDBModel(UserDBModel userDBModel) {
         this.userDBModel = userDBModel;
-    }
 
-    public Map<String, Property> getProperties(String type, int userID) {
-        Map<String, Property> properties = new HashMap<>();
-
-        if (type.equals("vendor") || type.equals("landlord"))
-            for (String key : getProperties().keySet()) {
-                if (getProperties().get(key).getPropertyOwner().getUserID().contains(userID + ""))
-                    properties.putIfAbsent(key, getProperties().get(key));
-            }
-        else if (type.equals("salesconsultant") || type.equals("propertymanager")) {
-            properties = getAssignedProperties(userID);
-        }
-
-        return properties;
+        loadPropertiesFromDB();
     }
 
     public Map<String, Property> getPendingProperties() {
         Map<String, Property> properties = new HashMap<>();
 
-        for (Property p : getProperties().values())
+        for (Property p : allProperties.values())
             if (!p.areDocumentsInspected())
                 properties.putIfAbsent(p.getPropertyID(), p);
 
@@ -234,7 +292,7 @@ public class PropertyDBModel {
     public Map<String, Property> getActiveProperties() {
         Map<String, Property> properties = new HashMap<>();
 
-        for (Property p : getProperties().values()) {
+        for (Property p : allProperties.values()) {
             try {
                 if (p.isActive())
                     properties.putIfAbsent(p.getPropertyID(), p);
@@ -249,7 +307,7 @@ public class PropertyDBModel {
     public Map<String, Property> getInactiveProperties() {
         Map<String, Property> properties = new HashMap<>();
 
-        for (Property p : getProperties().values()) {
+        for (Property p : allProperties.values()) {
             try {
                 if (!p.isActive())
                     properties.putIfAbsent(p.getPropertyID(), p);
@@ -264,9 +322,14 @@ public class PropertyDBModel {
     public Map<String, Property> getActiveSales() {
         Map<String, Property> properties = new HashMap<>();
 
-        for (Property p : getActiveProperties().values())
-            if (p.getPropertyID().startsWith("sales"))
-                properties.putIfAbsent(p.getPropertyID(), p);
+        for (Property p : getSales().values()) {
+            try {
+                if (p.isActive())
+                    properties.putIfAbsent(p.getPropertyID(), p);
+            } catch (DeactivatedPropertyException e) {
+//                e.printStackTrace();
+            }
+        }
 
         return properties;
     }
@@ -274,9 +337,30 @@ public class PropertyDBModel {
     public Map<String, Property> getActiveRentals() {
         Map<String, Property> properties = new HashMap<>();
 
-        for (Property p : getActiveProperties().values())
-            if (!p.getPropertyID().startsWith("sales"))
-                properties.putIfAbsent(p.getPropertyID(), p);
+        for (Property p : getRentals().values()) {
+            try {
+                if (p.isActive())
+                    properties.putIfAbsent(p.getPropertyID(), p);
+            } catch (DeactivatedPropertyException e) {
+
+            }
+        }
+
+        return properties;
+    }
+
+    public Map<String, Property> getProperties(String registeredUserType, int userID) {
+        Map<String, Property> properties = new HashMap<>();
+
+        if (registeredUserType.equals("vendor") || registeredUserType.equals("landlord")) {
+            for (Property p : allProperties.values())
+                if ((Integer.parseInt(p.getPropertyOwner().getUserID().replaceAll("[^\\d.]", ""))) == userID)
+                    properties.putIfAbsent(p.getPropertyID(), p);
+        } else if (registeredUserType.equals("salesconsultant") || registeredUserType.equals("propertymanager")) {
+            for (Property p : allProperties.values())
+                if (p.getSalesPerson() != null && p.getSalesPerson().getUserID().contains(userID + ""))
+                    properties.putIfAbsent(p.getPropertyID(), p);
+        }
 
         return properties;
     }
@@ -284,12 +368,14 @@ public class PropertyDBModel {
     public Map<String, Property> getInactiveProperties(String registeredUserType, int userID) {
         Map<String, Property> properties = new HashMap<>();
 
-        if (registeredUserType.equals("buyer") || registeredUserType.equals("vendor")) {
-            for (Property p : getProperties(registeredUserType, userID).values())
+        if (registeredUserType.equals("landlord") || registeredUserType.equals("vendor")
+                || registeredUserType.equals("salesconsultant") || registeredUserType.equals("propertymanager")) {
+            for (Property p : getProperties(registeredUserType, userID).values()) {
                 if (p.getStatus().equals("Inactive"))
                     properties.putIfAbsent(p.getPropertyID(), p);
-        } else if (registeredUserType.equals("salesconsultant") || registeredUserType.equals("propertymanager"))
-            for (Property p : getAssignedProperties(userID).values())
+            }
+        } else
+            for (Property p : allProperties.values())
                 if (p.getStatus().equals("Inactive"))
                     properties.putIfAbsent(p.getPropertyID(), p);
 
@@ -299,30 +385,54 @@ public class PropertyDBModel {
     public Map<String, Property> getPendingProperties(String registeredUserType, int userID) {
         Map<String, Property> properties = new HashMap<>();
 
-        if (registeredUserType.equals("buyer") || registeredUserType.equals("vendor")) {
-            for (Property p : getProperties(registeredUserType, userID).values())
+        if (registeredUserType.equals("landlord") || registeredUserType.equals("vendor")
+                || registeredUserType.equals("salesconsultant") || registeredUserType.equals("propertymanager")) {
+            for (Property p : getProperties(registeredUserType, userID).values()) {
                 if (p.getStatus().equals("Pending"))
                     properties.putIfAbsent(p.getPropertyID(), p);
-        } else if (registeredUserType.equals("salesconsultant") || registeredUserType.equals("propertymanager"))
-            for (Property p : getAssignedProperties(userID).values())
+            }
+        } else
+            for (Property p : allProperties.values())
                 if (p.getStatus().equals("Pending"))
                     properties.putIfAbsent(p.getPropertyID(), p);
+
 
         return properties;
     }
 
     public Map<String, Property> getActiveProperties(String registeredUserType, int userID) {
         Map<String, Property> properties = new HashMap<>();
-        if (registeredUserType.equals("buyer") || registeredUserType.equals("vendor")) {
-            for (Property p : getProperties(registeredUserType, userID).values())
+
+        if (registeredUserType.equals("landlord") || registeredUserType.equals("vendor")
+                || registeredUserType.equals("salesconsultant") || registeredUserType.equals("propertymanager")) {
+            for (Property p : getProperties(registeredUserType, userID).values()) {
                 if (p.getStatus().equals("Active"))
                     properties.putIfAbsent(p.getPropertyID(), p);
-        } else if (registeredUserType.equals("salesconsultant") || registeredUserType.equals("propertymanager"))
-            for (Property p : getAssignedProperties(userID).values())
+            }
+
+        } else
+            for (Property p : allProperties.values())
                 if (p.getStatus().equals("Active"))
                     properties.putIfAbsent(p.getPropertyID(), p);
 
         return properties;
     }
 
+    public void updateMaintenance(LocalDate nextMaintenance, Property property) {
+        String sql = "UPDATE properties SET prevmaintenance=?, nextmaintenance=? WHERE propertyid=?";
+
+        try (Connection connection = dbConnector.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setDate(1, Date.valueOf(((RentalProperty) property).getNextMaintenance()));
+            pstmt.setDate(2, Date.valueOf(nextMaintenance));
+            pstmt.setInt(3, Integer.parseInt(property.getPropertyID().replaceAll("[^\\d.]", "")));
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        ((RentalProperty) allProperties.get(property.getPropertyID())).setPreviousMaintenance(((RentalProperty) property).getNextMaintenance());
+        ((RentalProperty) allProperties.get(property.getPropertyID())).setNextMaintenance(nextMaintenance);
+    }
 }

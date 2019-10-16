@@ -17,6 +17,7 @@ import main.model.DecimalFilter;
 import main.model.IntegerFilter;
 import main.model.Property.PropertyType;
 import main.model.Proposal.ContractDuration;
+import main.model.User.User;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -62,6 +63,7 @@ public class EditRentalPropertyController {
 
     private PropertyDBModel propertyDBModel;
     private UserDBModel userDBModel;
+    private User user;
     private String address, suburb, username;
     private int baths, beds, cars, propertyID, userID;
     private PropertyType propertyType;
@@ -216,7 +218,7 @@ public class EditRentalPropertyController {
             }
 
             PasswordPromptController passwordPromptController = loader.getController();
-            passwordPromptController.setUsername(username);
+            passwordPromptController.setUser(user);
             passwordPromptController.setUserDBModel(userDBModel);
             passwordPromptController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                 if (isConfirmed) {
@@ -284,6 +286,10 @@ public class EditRentalPropertyController {
 
     public void setContractDurations(Set<ContractDuration> contractDurations) {
         this.contractDurations = contractDurations;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
 

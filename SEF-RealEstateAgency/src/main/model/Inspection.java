@@ -4,6 +4,7 @@ import main.model.Property.Property;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class Inspection {
     private String inspectionID;
@@ -48,5 +49,9 @@ public class Inspection {
 
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
+    }
+
+    public String getDueDateFormatted() {
+        return dueDate.format(DateTimeFormatter.ofPattern("MM/dd/yy HH:mm"));
     }
 }

@@ -1,30 +1,45 @@
 package main.model.DBModel;
 
+import main.model.Property.Property;
+import main.model.Proposal.Application;
 import main.model.Proposal.ContractDuration;
+import main.model.Proposal.Offer;
 import main.model.Proposal.Proposal;
+import main.model.User.Customer.Customer;
+import main.model.User.Employee.BranchManager;
+import main.model.User.Employee.SalesPerson.SalesPerson;
+import main.model.User.PropertyOwner.PropertyOwner;
 import main.model.User.User;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 public class ProposalDBModel {
     private DBConnector dbConnector;
     private UserDBModel userDBModel;
+    private PropertyDBModel propertyDBModel;
+    private Map<String, Proposal> allProposals;
 
     public ProposalDBModel() {
         dbConnector = new DBConnector();
+    }
+
+    public void setPropertyDBModel(PropertyDBModel propertyDBModel) {
+        this.propertyDBModel = propertyDBModel;
+//        propertyDBModel.loadPropertiesFromDB();
+        refreshProposals();
     }
 
     public void setUserDBModel(UserDBModel userDBModel) {
         this.userDBModel = userDBModel;
     }
 
-    private void updateCustomersForProposal(int proposalID, ArrayList<User> customers) throws SQLException {
+    private void updateCustomersForProposal(int proposalID, Collection<User> customers) throws SQLException {
         String sql = "DELETE FROM customerproposals WHERE proposalID=?";
         try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -50,55 +65,65 @@ public class ProposalDBModel {
         }
     }
 
-
-    public void addProposal(double price, ArrayList<User> customers, String propertyID, Set<ContractDuration> contractDurations) throws SQLException {
+    public void addProposal(double price, Collection<User> customers, String propertyID, ContractDuration contractDuration) throws SQLException {
         String sql = "INSERT INTO proposals (offerprice, submissiondate, accepted, " +
-                "propertyid, contractduration, paid, withdrawn, waitingforpay) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+                "propertyid, contractduration, paid, withdrawn, waitingforpay, pending) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         int id = 0;
-        Connection conn = dbConnector.getConnection();
-        PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-        pstmt.setObject(1, price, Types.DOUBLE);
-        pstmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now(ZoneId.systemDefault())));
-        pstmt.setBoolean(3, false);
-        pstmt.setInt(4, Integer.parseInt(propertyID.replaceAll("[^\\d.]", "")));
-        if (contractDurations != null) {
-            ArrayList<String> acceptedContractDurations = new ArrayList<>();
-            for (ContractDuration contractDuration : contractDurations)
-                acceptedContractDurations.add(contractDuration.toString());
-            pstmt.setString(5, String.join(",", acceptedContractDurations));
-        } else pstmt.setString(5, "");
-        pstmt.setBoolean(6, false);
-        pstmt.setBoolean(7, false);
-        pstmt.setBoolean(8, false);
+        try (Connection conn = dbConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-        pstmt.executeUpdate();
-
-        ResultSet rs = pstmt.getGeneratedKeys();
-
-        if (rs.next()) {
-            id = rs.getInt(1);
-            updateCustomersForProposal(id, customers);
-        }
-    }
-
-    public void acceptProposal(String proposalID) {
-        String sql = "UPDATE proposals SET accepted=?, waitingforpay=? WHERE proposalid=?";
-        try (Connection connection = dbConnector.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setBoolean(1, true);
-            pstmt.setBoolean(2, true);
-            pstmt.setInt(3, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
+            pstmt.setObject(1, price, Types.DOUBLE);
+            pstmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now(ZoneId.systemDefault())));
+            pstmt.setBoolean(3, false);
+            pstmt.setInt(4, Integer.parseInt(propertyID.replaceAll("[^\\d.]", "")));
+            if (contractDuration != null) {
+                pstmt.setString(5, contractDuration.toString());
+            } else pstmt.setString(5, "");
+            pstmt.setBoolean(6, false);
+            pstmt.setBoolean(7, false);
+            pstmt.setBoolean(8, false);
+            pstmt.setBoolean(9, true);
 
             pstmt.executeUpdate();
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+
+            if (rs.next()) {
+                id = rs.getInt(1);
+                updateCustomersForProposal(id, customers);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    public void acceptProposal(String proposalID) {
+        String sql = "UPDATE proposals SET accepted=?, waitingforpay=?, pending=? WHERE proposalid=?";
+
+        try (Connection connection = dbConnector.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setBoolean(1, true);
+            pstmt.setBoolean(2, true);
+            pstmt.setBoolean(3, false);
+            pstmt.setInt(4, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        allProposals.get(proposalID).setAccepted(true);
+        allProposals.get(proposalID).setPending(false);
+        allProposals.get(proposalID).setWaitingForPayment(true);
+
+        allProposals.get(proposalID).getProperty().setProposal(allProposals.get(proposalID));
+    }
+
     public void payProposal(String proposalID) {
         String sql = "UPDATE proposals SET waitingforpay=?, paid=? WHERE proposalid=?";
+
         try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setBoolean(1, false);
@@ -109,6 +134,10 @@ public class ProposalDBModel {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        allProposals.get(proposalID).setPaid(true);
+        allProposals.get(proposalID).setWaitingForPayment(false);
+
     }
 
 //    public void rejectProposal(String proposalID) {
@@ -124,115 +153,182 @@ public class ProposalDBModel {
 //        }
 //    }
 
-    public void updateProposal(double price, int userID, String
-            propertyID, Set<ContractDuration> contractDurations, String proposalID) {
-        String sql = "UPDATE proposals SET withdrawn=? WHERE proposalid=?";
+    public void updateProposal(double price, Collection<User> users, ContractDuration contractDuration, String proposalID) throws SQLException {
+        String sql = "UPDATE proposals SET offerprice=?, contractduration=?  WHERE proposalid=?";
+        int proposalid = Integer.parseInt(proposalID.replaceAll("[^\\d.]", ""));
+
         try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setObject(1, price, Types.DOUBLE);
-            pstmt.setInt(2, userID);
-            pstmt.setInt(3, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
 
-            if (contractDurations != null) {
-                ArrayList<String> acceptedContractDurations = new ArrayList<>();
-                for (ContractDuration contractDuration : contractDurations)
-                    acceptedContractDurations.add(contractDuration.toString());
-                pstmt.setString(4, String.join(",", acceptedContractDurations));
-            } else pstmt.setString(4, "");
+            if (contractDuration != null) {
+                pstmt.setString(2, contractDuration.toString());
+            } else pstmt.setString(2, "");
+
+            pstmt.setInt(3, proposalid);
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        updateCustomersForProposal(proposalid, users);
+        Map<String, User> applicants = new HashMap<>();
+        for (User u : users)
+            applicants.putIfAbsent(u.getUserID(), u);
+
+        allProposals.get(proposalID).setPrice(price);
+        allProposals.get(proposalID).setApplicants(applicants);
+
+        if (allProposals.get(proposalID) instanceof Application)
+            ((Application) allProposals.get(proposalID)).setContractDuration(contractDuration);
     }
 
-    //also for reject
+    //also for reject?
     public void withdrawProposal(String proposalID) {
-        String sql = "UPDATE proposals SET withdrawn=?, waitingforpay=? WHERE proposalid=?";
+        String sql = "UPDATE proposals SET pending=?, withdrawn=?, waitingforpay=? WHERE proposalid=?";
+
         try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setBoolean(1, true);
-            pstmt.setBoolean(2, false);
-            pstmt.setInt(3, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
+            pstmt.setBoolean(1, false);
+            pstmt.setBoolean(2, true);
+            pstmt.setBoolean(3, false);
+            pstmt.setInt(4, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        allProposals.get(proposalID).setWithdrawn(true);
+        allProposals.get(proposalID).setWaitingForPayment(false);
+        allProposals.get(proposalID).setPending(false);
+
     }
 
     public Map<String, Proposal> getProposals() {
+        allProposals = new HashMap<>();
+
+        String sql = "SELECT p.proposalid, offerprice, submissiondate, accepted, pending, propertyid, contractduration, paid, withdrawn, " +
+                "waitingforpay, c.userid FROM proposals p JOIN customerproposals c ON p.proposalid = c.proposalid";
+        try (Connection conn = dbConnector.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Proposal p;
+                double price = rs.getDouble("offerprice");
+                LocalDateTime submissionDate = rs.getTimestamp("submissiondate").toLocalDateTime();
+                boolean accepted = rs.getBoolean("accepted");
+                int propertyid = rs.getInt("propertyid");
+                boolean paid = rs.getBoolean("paid");
+                boolean pending = rs.getBoolean("pending");
+                boolean withdrawn = rs.getBoolean("withdrawn");
+                boolean waitingforpay = rs.getBoolean("waitingforpay");
+                String proposalid = rs.getInt("proposalid") + "";
+
+                if (!rs.getString("contractduration").equals("")) { //application
+                    if (allProposals.get(proposalid) == null)
+                        p = new Application(price, propertyDBModel.getAllProperties().get("rental" + propertyid),
+                                ContractDuration.valueOf(rs.getString("contractduration")));
+                    else p = allProposals.get(proposalid);
+
+                } else {
+                    if (allProposals.get(proposalid) == null)
+                        p = new Offer(price, propertyDBModel.getAllProperties().get("sale" + propertyid));
+                    else p = allProposals.get(proposalid);
+                }
+                p.setProposalID(rs.getInt("proposalid") + "");
+                p.setWithdrawn(withdrawn);
+                p.setAccepted(accepted);
+                p.setSubmissionDate(submissionDate);
+                p.setPaid(paid);
+                p.setPending(pending);
+                p.setWaitingForPayment(waitingforpay);
+
+                User applicant = userDBModel.getUser(rs.getInt("userid"));
+                ((Customer) applicant).getProposals().putIfAbsent(p.getProposalID(), p);
+                p.getApplicants().putIfAbsent(applicant.getUserID(), applicant);
+
+                allProposals.putIfAbsent(p.getProposalID(), p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return allProposals;
+    }
+
+    public Map<String, Proposal> getProposals(User user) {
         Map<String, Proposal> proposals = new HashMap<>();
 
+        if (user instanceof Customer) {
+            for (Proposal p : allProposals.values())
+                if (p.getApplicants().containsKey(user.getUserID())) {
+                    proposals.putIfAbsent(p.getProposalID(), p);
+                }
+        } else if (user instanceof SalesPerson) {
+            for (Proposal p : allProposals.values())
+                if (p.getProperty().getSalesPerson().getUserID().equals(user.getUserID()))
+                    proposals.putIfAbsent(p.getProposalID(), p);
+        } else if (user instanceof PropertyOwner) {
+            for (Proposal p : allProposals.values())
+                if (p.getProperty().getPropertyOwner().getUserID().equals(user.getUserID()))
+                    proposals.putIfAbsent(p.getProposalID(), p);
+        } else if (user instanceof BranchManager) {
+            proposals = allProposals;
+        }
 
         return proposals;
     }
 
-    public Map<String, Proposal> getActiveProposals() {
+    public Map<String, Proposal> getAcceptedProposals(User user) {
         Map<String, Proposal> proposals = new HashMap<>();
 
+        for (Proposal p : getProposals(user).values())
+            if (p.isAccepted())
+                proposals.putIfAbsent(p.getProposalID(), p);
 
         return proposals;
     }
 
-    public Map<String, Proposal> getPendingProposals() {
+    public Map<String, Proposal> getPendingProposals(User user) {
         Map<String, Proposal> proposals = new HashMap<>();
 
+        for (Proposal p : getProposals(user).values())
+            if (p.isPending())
+                proposals.putIfAbsent(p.getProposalID(), p);
 
         return proposals;
     }
 
-    public Map<String, Proposal> getInactiveProposals() {
+    public Map<String, Proposal> getRejectedProposals(User user) {
         Map<String, Proposal> proposals = new HashMap<>();
 
+        for (Proposal p : getProposals(user).values())
+            if (!p.isAccepted() && !p.isPending())
+                proposals.putIfAbsent(p.getProposalID(), p);
 
         return proposals;
     }
 
-    public Map<String, Proposal> getProposals(String type, int userID) {
-        Map<String, Proposal> proposals = new HashMap<>();
-        //customer
+    public boolean hasSubmittedProposalForProperty(User user, Property property) {
+        boolean found = false;
 
-        //propertyowner
+        Iterator iter = ((Customer) user).getProposals().entrySet().iterator();
 
-        //salesperson
+        while (!found && iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
 
-        return proposals;
+            Proposal proposal = (Proposal) entry.getValue();
+            if (proposal.getProperty().getPropertyID().equals(property.getPropertyID())) {
+                found = true;
+            }
+        }
+
+        return found;
     }
 
-    public Map<String, Proposal> getActiveProposals(String type, int userID) {
-        Map<String, Proposal> proposals = new HashMap<>();
-
-        //customer
-
-        //propertyowner
-
-        //salesperson
-
-        return proposals;
-    }
-
-    public Map<String, Proposal> getPendingProposals(String type, int userID) {
-        Map<String, Proposal> proposals = new HashMap<>();
-
-        //customer
-
-        //propertyowner
-
-        //salesperson
-
-        return proposals;
-    }
-
-    public Map<String, Proposal> getInactiveProposals(String type, int userID) {
-        Map<String, Proposal> proposals = new HashMap<>();
-
-        //customer
-
-        //propertyowner
-
-        //salesperson
-
-        return proposals;
+    public void refreshProposals() {
+        allProposals = getProposals();
     }
 }

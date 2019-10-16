@@ -36,8 +36,11 @@ public class CustomerTest {
         buyer2 = new Buyer("Test 2", "test2@email.com");
         property = new SaleProperty("123 ABC Street", "Melbourne", null, null,
                 10000, propertyOwner);
-        proposal = new Offer(10000, property, buyer);
-        proposal2 = new Offer(15000, property, buyer);
+        proposal = new Offer(10000, property);
+        proposal.getApplicants().putIfAbsent(buyer.getUserID(), buyer);
+
+        proposal2 = new Offer(15000, property);
+        proposal2.getApplicants().putIfAbsent(buyer.getUserID(), buyer);
     }
 
     @Test
@@ -75,7 +78,8 @@ public class CustomerTest {
             e.printStackTrace();
         }
 
-        proposal = new Offer(12000, property, buyer);
+        proposal = new Offer(12000, property);
+        proposal.getApplicants().putIfAbsent(buyer.getUserID(), buyer);
 
         DeactivatedPropertyException ex = assertThrows(DeactivatedPropertyException.class, () ->
                 buyer.submitProposal(proposal));

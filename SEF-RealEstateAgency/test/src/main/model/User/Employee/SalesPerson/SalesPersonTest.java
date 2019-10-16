@@ -37,7 +37,8 @@ public class SalesPersonTest {
         property = new SaleProperty("123 A St", "Melbourne", null, null, 10000, propertyOwner);
         date = LocalDateTime.now(ZoneId.systemDefault()).minus(6, ChronoUnit.DAYS);
         salesPerson = new SalesConsultant("test", "test@test.com", date.toLocalDate(), 50040);
-        proposal = new Offer(10000, property, buyer);
+        proposal = new Offer(10000, property);
+        proposal.getApplicants().putIfAbsent(buyer.getUserID(), buyer);
     }
 
     @Test
@@ -55,7 +56,8 @@ public class SalesPersonTest {
 
     @Test
     public void itShouldThrowNotListedPropertyExceptionWhenAcceptingOfferForUnlistedProperty() {
-        proposal = new Offer(10000, property, buyer);
+        proposal = new Offer(10000, property);
+        proposal.getApplicants().putIfAbsent(buyer.getUserID(), buyer);
 
         try {
             buyer.submitProposal(proposal);

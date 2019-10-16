@@ -14,6 +14,7 @@ public class WorkingHoursDBModel {
 
     public WorkingHoursDBModel() {
         dbConnector = new DBConnector();
+        refreshWorkingHours();
     }
 
     public void setUserDBModel(UserDBModel userDBModel) {
@@ -71,5 +72,8 @@ public class WorkingHoursDBModel {
         Map<String, WorkingHour> workingHours = new HashMap<>();
 
         return workingHours;
+    }
+
+    public void refreshWorkingHours() {
     }
 }

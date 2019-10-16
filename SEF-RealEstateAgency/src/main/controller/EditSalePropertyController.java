@@ -1,4 +1,4 @@
-package main;
+package main.controller;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -11,12 +11,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
-import main.controller.PasswordPromptController;
 import main.model.DBModel.PropertyDBModel;
 import main.model.DBModel.UserDBModel;
 import main.model.DecimalFilter;
 import main.model.IntegerFilter;
 import main.model.Property.PropertyType;
+import main.model.User.User;
 
 import java.io.IOException;
 
@@ -55,6 +55,11 @@ public class EditSalePropertyController {
     private int baths, beds, cars, propertyID, userID;
     private PropertyType propertyType;
     private double price;
+    private User user;
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     private final BooleanProperty hasSaved = new SimpleBooleanProperty();
 
@@ -187,7 +192,7 @@ public class EditSalePropertyController {
             }
 
             PasswordPromptController passwordPromptController = loader.getController();
-            passwordPromptController.setUsername(username);
+            passwordPromptController.setUser(user);
             passwordPromptController.setUserDBModel(userDBModel);
             passwordPromptController.hasConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                 if (isConfirmed) {

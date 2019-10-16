@@ -6,6 +6,7 @@ import main.model.User.User;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public abstract class Employee extends User {
     private LocalDate hireDate;
@@ -48,5 +49,18 @@ public abstract class Employee extends User {
 
     public PartTimeEmployee getPartTimeEmployee() {
         return partTimeEmployee;
+    }
+
+    public String getStatus() {
+        String status = "";
+        if (partTimeEmployee == null)
+            status = "Full-time";
+        else
+            status = "Part-time";
+        return status;
+    }
+
+    public String getHireDateFormatted() {
+        return hireDate.format(DateTimeFormatter.ofPattern("MM/dd/yy"));
     }
 }

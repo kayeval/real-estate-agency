@@ -12,7 +12,6 @@ import javafx.stage.Stage;
 import main.model.DBModel.UserDBModel;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
 public class RegisterPropertyOwnerController {
 
@@ -101,13 +100,9 @@ public class RegisterPropertyOwnerController {
 
         if (canRegister) {
             //add to user db
-            try {
-                userDBModel.registerPropertyOwner(usernameField.getText(), emailField.getText(), passwordField.getText(),
-                        cmbType.getSelectionModel().getSelectedItem().equals("Selling"));
+            userDBModel.registerPropertyOwner(usernameField.getText(), emailField.getText(), passwordField.getText(),
+                    cmbType.getSelectionModel().getSelectedItem().equals("Selling"));
 
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
             btnBack.fire();
         }
     }
@@ -122,6 +117,7 @@ public class RegisterPropertyOwnerController {
         Scene nextScene = new Scene(nextPane);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        window.setTitle("Real Estate Agency");
         window.setScene(nextScene);
         window.show();
     }

@@ -45,6 +45,36 @@ LOCK TABLES `bankaccounts` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `customerproposals`
+--
+
+DROP TABLE IF EXISTS `customerproposals`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customerproposals`
+(
+    `proposalid` int(11) NOT NULL,
+    `userid`     int(11) NOT NULL,
+    PRIMARY KEY (`proposalid`, `userid`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `customerproposals`
+--
+
+LOCK TABLES `customerproposals` WRITE;
+/*!40000 ALTER TABLE `customerproposals`
+    DISABLE KEYS */;
+INSERT INTO `customerproposals`
+VALUES (1, 7);
+/*!40000 ALTER TABLE `customerproposals`
+    ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `customers`
 --
 
@@ -150,36 +180,6 @@ LOCK TABLES `inspections` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `maintenance`
---
-
-DROP TABLE IF EXISTS `maintenance`;
-/*!40101 SET @saved_cs_client = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `maintenance`
-(
-    `maintenanceid` int(11) NOT NULL,
-    `previous`      date    DEFAULT NULL,
-    `propertyid`    int(11) DEFAULT NULL,
-    `scheduled`     date    DEFAULT NULL,
-    PRIMARY KEY (`maintenanceid`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `maintenance`
---
-
-LOCK TABLES `maintenance` WRITE;
-/*!40000 ALTER TABLE `maintenance`
-    DISABLE KEYS */;
-/*!40000 ALTER TABLE `maintenance`
-    ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `preferredsuburbs`
 --
 
@@ -240,6 +240,8 @@ CREATE TABLE `properties`
     `rental`            tinyint(1)  DEFAULT NULL,
     `contractdurations` varchar(45) DEFAULT NULL,
     `inspected`         tinyint(1)  DEFAULT NULL,
+    `prevmaintenance`   date        DEFAULT NULL,
+    `nextmaintenance`   date        DEFAULT NULL,
     PRIMARY KEY (`propertyid`),
     UNIQUE KEY `propertyid_UNIQUE` (`propertyid`)
 ) ENGINE = InnoDB
@@ -256,10 +258,11 @@ LOCK TABLES `properties` WRITE;
 /*!40000 ALTER TABLE `properties`
     DISABLE KEYS */;
 INSERT INTO `properties`
-VALUES (1, 5000, '2019-10-13 16:39:31', 0, '123 B St', 'Melbourne', 2, 2, 1, 'House', 11, 18, 0, '', NULL),
-       (2, 444, '2019-10-13 16:46:38', 0, '10 A St', 'South Yarra', 0, 0, 0, 'Unit', 12, 17, 1, 'TWO_YEARS,ONE_YEAR',
-        NULL),
-       (5, 12, '2019-10-13 17:10:24', 0, '23 B Rd', 'Richmond', 0, 0, 0, 'House', 12, 17, 1, 'TWO_YEARS', NULL);
+VALUES (1, 5000, '2019-10-13 16:39:31', 1, '123 B St', 'Melbourne', 2, 2, 1, 'House', 11, 18, 0, '', 1, NULL, NULL),
+       (2, 444, '2019-10-13 16:46:38', 1, '10 A St', 'South Yarra', 0, 0, 0, 'Unit', 12, 17, 1, 'TWO_YEARS,ONE_YEAR', 1,
+        '2019-10-14', '2019-10-14'),
+       (5, 12, '2019-10-13 17:10:24', 1, '23 B Rd', 'Richmond', 0, 0, 0, 'House', 12, 17, 1, 'TWO_YEARS', 1,
+        '2019-10-14', '2019-10-14');
 /*!40000 ALTER TABLE `properties`
     ENABLE KEYS */;
 UNLOCK TABLES;
@@ -308,14 +311,15 @@ CREATE TABLE `proposals`
     `offerprice`       double     NOT NULL,
     `submissiondate`   timestamp  NOT NULL,
     `accepted`         tinyint(1) NOT NULL,
-    `userid`           int(11)    NOT NULL,
     `propertyid`       int(11)    NOT NULL,
     `contractduration` varchar(45) DEFAULT NULL,
     `paid`             tinyint(1)  DEFAULT NULL,
     `withdrawn`        tinyint(1)  DEFAULT NULL,
     `waitingforpay`    tinyint(1)  DEFAULT NULL,
+    `pending`          tinyint(1)  DEFAULT NULL,
     PRIMARY KEY (`proposalid`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 2
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -327,6 +331,8 @@ CREATE TABLE `proposals`
 LOCK TABLES `proposals` WRITE;
 /*!40000 ALTER TABLE `proposals`
     DISABLE KEYS */;
+INSERT INTO `proposals`
+VALUES (1, 21, '2019-10-16 16:11:52', 0, 1, '', 0, 0, 0, 1);
 /*!40000 ALTER TABLE `proposals`
     ENABLE KEYS */;
 UNLOCK TABLES;
@@ -360,16 +366,16 @@ LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users`
     DISABLE KEYS */;
 INSERT INTO `users`
-VALUES (5, 'hashed', 'a@a.co',
+VALUES (5, 'renter2', 'a@a.co',
         '80f6660c159f392d8a882fab6e8898934c23eb8374ba22db7fe7ac9c82867a330559fb81dae539668e9ad1fedb93d73333b94f54a3e0b9daa8dbe1ff97a28e43',
         NULL),
        (7, 'ab', 'a@a.com',
         '80f6660c159f392d8a882fab6e8898934c23eb8374ba22db7fe7ac9c82867a330559fb81dae539668e9ad1fedb93d73333b94f54a3e0b9daa8dbe1ff97a28e43',
-        '2019-10-13 14:33:12'),
+        '2019-10-16 17:11:41'),
        (8, 'aba', 'a@a.com',
         'f0c0c067d20ff53eb95d6f297ad32de52d52ae7884d9778ea824be6bccacabe74986edf8bd9dd738ad2c1e7e2816b192e26ff29d090fe01c9eba380de10d98d0',
         NULL),
-       (9, 'cust', 'a@a.com',
+       (9, 'renter', 'a@a.com',
         '80f6660c159f392d8a882fab6e8898934c23eb8374ba22db7fe7ac9c82867a330559fb81dae539668e9ad1fedb93d73333b94f54a3e0b9daa8dbe1ff97a28e43',
         '2019-10-15 11:58:25'),
        (10, 'aaa', 'a@a.com',
@@ -387,10 +393,10 @@ VALUES (5, 'hashed', 'a@a.co',
        (16, 'manager', 'a@a.com',
         '80f6660c159f392d8a882fab6e8898934c23eb8374ba22db7fe7ac9c82867a330559fb81dae539668e9ad1fedb93d73333b94f54a3e0b9daa8dbe1ff97a28e43',
         '2019-10-15 10:47:39'),
-       (17, 'pmanager', 'a@a.com',
+       (17, 'rentals', 'a@a.com',
         '80f6660c159f392d8a882fab6e8898934c23eb8374ba22db7fe7ac9c82867a330559fb81dae539668e9ad1fedb93d73333b94f54a3e0b9daa8dbe1ff97a28e43',
-        '2019-10-15 10:06:42'),
-       (18, 'salesconsultant', 'a@a.com',
+        '2019-10-16 15:59:19'),
+       (18, 'sales', 'a@a.com',
         '80f6660c159f392d8a882fab6e8898934c23eb8374ba22db7fe7ac9c82867a330559fb81dae539668e9ad1fedb93d73333b94f54a3e0b9daa8dbe1ff97a28e43',
         '2019-10-15 11:56:05');
 /*!40000 ALTER TABLE `users`
@@ -437,4 +443,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION = @OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES = @OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-15 23:23:27
+-- Dump completed on 2019-10-17  4:12:43

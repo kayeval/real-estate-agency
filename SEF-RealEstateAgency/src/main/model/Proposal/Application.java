@@ -2,13 +2,12 @@ package main.model.Proposal;
 
 import main.model.Property.Property;
 import main.model.Property.RentalProperty;
-import main.model.User.Customer.Customer;
 
 public class Application extends Proposal {
     private ContractDuration contractDuration;
 
-    public Application(double price, Property property, Customer customer, ContractDuration contractDuration) {
-        super(price, property, customer);
+    public Application(double price, Property property, ContractDuration contractDuration) {
+        super(price, property);
         setContractDuration(contractDuration);
     }
 
@@ -21,5 +20,9 @@ public class Application extends Proposal {
             throw new InvalidContractDurationException();
 
         return true;
+    }
+
+    public ContractDuration getContractDuration() {
+        return contractDuration;
     }
 }

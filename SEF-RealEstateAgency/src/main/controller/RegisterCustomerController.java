@@ -13,7 +13,6 @@ import main.model.DBModel.UserDBModel;
 import main.model.DecimalFilter;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Arrays;
 
 public class RegisterCustomerController {
@@ -61,6 +60,7 @@ public class RegisterCustomerController {
         Scene nextScene = new Scene(nextPane);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        window.setTitle("Real Estate Agency");
         window.setScene(nextScene);
         window.show();
     }
@@ -90,13 +90,9 @@ public class RegisterCustomerController {
 
         if (canRegister) {
             //add to user db
-            try {
-                userDBModel.registerCustomer(usernameField.getText(), emailField.getText(), passwordField.getText(),
-                        occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")));
+            userDBModel.registerCustomer(usernameField.getText(), emailField.getText(), passwordField.getText(),
+                    occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")));
 
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
             btnBack.fire();
         }
     }

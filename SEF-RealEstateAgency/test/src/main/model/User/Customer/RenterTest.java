@@ -41,7 +41,8 @@ public class RenterTest {
 
     @Test
     public void itShouldThrowInvalidContractDurationExceptionWhenSubmittingProposalWithUnacceptableContractDuration() {
-        proposal = new Application(11000, property, renter, ContractDuration.SIX_MONTHS);
+        proposal = new Application(11000, property, ContractDuration.SIX_MONTHS);
+        proposal.getApplicants().putIfAbsent(renter.getUserID(), renter);
 
         InvalidContractDurationException ex = assertThrows(InvalidContractDurationException.class, () ->
                 renter.submitProposal(proposal));
@@ -50,7 +51,8 @@ public class RenterTest {
 
     @Test
     public void submitApplicationTest() {
-        proposal = new Application(11000, property, renter, ContractDuration.ONE_YEAR);
+        proposal = new Application(11000, property, ContractDuration.ONE_YEAR);
+        proposal.getApplicants().putIfAbsent(renter.getUserID(), renter);
         try {
             renter.submitProposal(proposal);
         } catch (DeactivatedPropertyException | InvalidContractDurationException | SoldPropertyException | ProposalNotFoundException | PendingProposalException e) {

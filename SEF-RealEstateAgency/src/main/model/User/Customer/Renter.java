@@ -5,9 +5,17 @@ import main.model.Property.SoldPropertyException;
 import main.model.Proposal.*;
 import main.model.User.InvalidEmailException;
 
+import java.util.Set;
+
 public class Renter extends Customer {
     private double income;
     private String occupation;
+
+    public Renter(String username, String email, Set<String> preferredSuburbs, double income, String occupation) throws InvalidEmailException {
+        super(username, email, preferredSuburbs);
+        setIncome(income);
+        setOccupation(occupation);
+    }
 
     public Renter(String username, String email, double income, String occupation) throws InvalidEmailException {
         super(username, email);

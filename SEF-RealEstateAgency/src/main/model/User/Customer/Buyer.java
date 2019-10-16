@@ -8,7 +8,13 @@ import main.model.Proposal.Proposal;
 import main.model.Proposal.ProposalNotFoundException;
 import main.model.User.InvalidEmailException;
 
+import java.util.Set;
+
 public class Buyer extends Customer {
+    public Buyer(String username, String email, Set<String> preferredSuburbs) throws InvalidEmailException {
+        super(username, email, preferredSuburbs);
+    }
+
     public Buyer(String username, String email) throws InvalidEmailException {
         super(username, email);
     }

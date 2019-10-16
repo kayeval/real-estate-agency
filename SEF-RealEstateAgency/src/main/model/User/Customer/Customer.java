@@ -20,11 +20,22 @@ public abstract class Customer extends User {
     private Set<String> preferredSuburbs;
     private Map<String, Inspection> scheduledInspections;
 
+    public Customer(String username, String email, Set<String> preferredSuburbs) throws InvalidEmailException {
+        super(username, email);
+        proposals = new HashMap<>();
+        scheduledInspections = new HashMap<>();
+        setPreferredSuburbs(preferredSuburbs);
+    }
+
     public Customer(String username, String email) throws InvalidEmailException {
         super(username, email);
         proposals = new HashMap<>();
         scheduledInspections = new HashMap<>();
         preferredSuburbs = new HashSet<>();
+    }
+
+    public void setPreferredSuburbs(Set<String> preferredSuburbs) {
+        this.preferredSuburbs = preferredSuburbs;
     }
 
     public void addProposal(Proposal proposal) throws DeactivatedPropertyException {

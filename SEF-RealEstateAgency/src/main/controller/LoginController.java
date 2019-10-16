@@ -100,6 +100,7 @@ public class LoginController {
             Scene nextScene = new Scene(nextPane);
 
             Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            window.setTitle("Real Estate Agency");
             window.setScene(nextScene);
             window.show();
         }
@@ -116,6 +117,7 @@ public class LoginController {
         Scene nextScene = new Scene(nextPane);
 
         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        window.setTitle("Real Estate Agency");
         window.setScene(nextScene);
         window.show();
     }
@@ -123,6 +125,7 @@ public class LoginController {
     @FXML
     void registerAction(MouseEvent event) throws IOException {
         Stage promptRegistrationStage = new Stage();
+        promptRegistrationStage.setTitle("Register");
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/main/view/RegisterPrompt.fxml"));
         AnchorPane rootLayout = loader.load();
@@ -147,6 +150,7 @@ public class LoginController {
                 controller.setUserDBModel(userDBModel);
 
                 Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                window.setTitle("Register as Customer");
                 window.setScene(nextScene);
                 window.show();
             }
@@ -170,6 +174,7 @@ public class LoginController {
                 controller.setUserDBModel(userDBModel);
 
                 Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                window.setTitle("Register as Property Owner");
                 window.setScene(nextScene);
                 window.show();
             }

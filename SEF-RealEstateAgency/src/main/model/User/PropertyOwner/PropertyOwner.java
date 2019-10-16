@@ -5,7 +5,6 @@ import main.model.Property.Property;
 import main.model.User.InvalidEmailException;
 import main.model.User.User;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +34,8 @@ public abstract class PropertyOwner extends User {
         return false;
     }
 
-    public ArrayList<Property> getProperties() {
-        return new ArrayList<>(listedProperties.values());
+    public Map<String, Property> getListedProperties() {
+        return listedProperties;
     }
 
     public Property findProperty(Property property) {
@@ -48,5 +47,9 @@ public abstract class PropertyOwner extends User {
             throw new NotListedPropertyException();
 
         return true;
+    }
+
+    public void setListedProperties(Map<String, Property> listedProperties) {
+        this.listedProperties = listedProperties;
     }
 }

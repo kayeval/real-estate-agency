@@ -49,6 +49,8 @@
                                                      text="Min Price"/>
                                         <TableColumn fx:id="propertyStatusField" prefWidth="106.0" resizable="false"
                                                      text="Status"/>
+                                        <TableColumn fx:id="propertyAssignedField" prefWidth="106.0" resizable="false"
+                                                     text="Assigned"/>
                                     </columns>
                                 </TableView>
                             </children>

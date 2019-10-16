@@ -2,6 +2,7 @@ package main.model.Property;
 
 import main.model.Proposal.Proposal;
 import main.model.Proposal.ProposalNotFoundException;
+import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.PropertyOwner.PropertyOwner;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public abstract class Property {
     private Capacity capacity;
     private PropertyType propertyType;
     private PropertyOwner propertyOwner;
+    private SalesPerson salesPerson;
 
     public Property(String address, String suburb, Capacity capacity, PropertyType propertyType, double price, PropertyOwner propertyOwner) throws DeactivatedPropertyException {
         setPrice(price);
@@ -31,6 +33,10 @@ public abstract class Property {
         documentsInspected = false;
         isActive = true;
         propertyOwner.addProperty(this);
+    }
+
+    public void setDateListed(LocalDateTime dateListed) {
+        this.dateListed = dateListed;
     }
 
     public void setPropertyID(String propertyID) {
@@ -129,14 +135,25 @@ public abstract class Property {
     public String getStatus() {
         String status = "";
 
-        if (isActive)
+        if (isActive && areDocumentsInspected())
             status = "Active";
-        else if (!isActive && areDocumentsInspected())
-            status = "Inactive";
         else if (!areDocumentsInspected())
             status = "Pending";
+        else status = "Inactive";
 
         return status;
+    }
+
+    public void setSalesPerson(SalesPerson salesPerson) {
+        this.salesPerson = salesPerson;
+    }
+
+    public SalesPerson getSalesPerson() {
+        return salesPerson;
+    }
+
+    public boolean getHasBeenAssigned() {
+        return salesPerson != null;
     }
 
     public boolean areDocumentsInspected() {

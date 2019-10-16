@@ -16,6 +16,7 @@ public class InspectionDBModel {
 
     public InspectionDBModel() {
         dbConnector = new DBConnector();
+        refreshInspections();
     }
 
     public void addInspection(LocalDateTime date, String propertyID, int userID) {
@@ -144,5 +145,9 @@ public class InspectionDBModel {
         }
 
         return inspections;
+    }
+
+    public void refreshInspections() {
+        //todo
     }
 }
