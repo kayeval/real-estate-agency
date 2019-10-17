@@ -109,6 +109,13 @@ public class ViewApplicationController {
     public void setUser(User user) {
         this.user = user;
         applicantField.setText(user.getUsername());
+
+        if (user instanceof Customer) {
+            acceptBtn.setVisible(false);
+            rejectBtn.setVisible(false);
+        } else {
+            editOrSaveBtn.setVisible(false);
+        }
     }
 
     public void setRenters(Collection<User> renters) {
@@ -170,13 +177,6 @@ public class ViewApplicationController {
 
         TextFormatter formatter = new TextFormatter(new DecimalFilter());
         proposedPriceField.setTextFormatter(formatter);
-
-        if (user instanceof Customer) {
-            acceptBtn.setVisible(false);
-            rejectBtn.setVisible(false);
-        } else {
-            editOrSaveBtn.setVisible(false);
-        }
     }
 
     @FXML

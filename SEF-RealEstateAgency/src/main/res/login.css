@@ -11,6 +11,10 @@
     -fx-opacity: 0.3;
 }
 
+.time:disabled {
+    -fx-opacity: 0.3;
+}
+
 #background {
     -fx-background-color: skyblue, derive(skyblue, 25%);
     -fx-background-insets: -20, -10;

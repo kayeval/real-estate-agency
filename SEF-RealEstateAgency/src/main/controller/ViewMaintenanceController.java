@@ -10,6 +10,7 @@ import javafx.util.Callback;
 import main.model.Property.RentalProperty;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class ViewMaintenanceController {
@@ -31,7 +32,19 @@ public class ViewMaintenanceController {
     public void setProperty(RentalProperty property) {
         this.property = property;
 
-        System.out.println(property.getPropertyID());
+        if (property.getNextMaintenance().isAfter(property.getPreviousMaintenance()))
+            prevMaintenanceField.setText(property.getNextMaintenance().format(DateTimeFormatter.ofPattern("MM/dd/yy")));
+        else
+//        if (property.getDateListed().toLocalDate().isEqual(property.getPreviousMaintenance())) {
+            prevMaintenanceField.setPromptText("No previous maintenance record");
+//        }
+
+
+        //can't schedule next appointment yet if previous maintenance not done
+        if (property.getNextMaintenance().isAfter(LocalDate.now(ZoneId.systemDefault()))) {
+            scheduleBtn.setDisable(true);
+            nextMaintenanceDatePicker.setDisable(true);
+        }
     }
 
     private final BooleanProperty canSubmit = new SimpleBooleanProperty();
@@ -50,12 +63,9 @@ public class ViewMaintenanceController {
 
     @FXML
     void initialize() {
-        prevMaintenanceField.setEditable(false);
+        prevMaintenanceField.setDisable(true);
 
-        if (property.getDateListed().toLocalDate().isEqual(property.getPreviousMaintenance()))
-            prevMaintenanceField.setPromptText("No previous maintenance record exists");
-        else
-            prevMaintenanceField.setText(property.getPreviousMaintenance().format(DateTimeFormatter.ofPattern("MM/dd/yy HH:mm")));
+        nextMaintenanceDatePicker.setStyle("-fx-font-size: 16px;");
 
         final Callback<DatePicker, DateCell> dayCellFactory =
                 new Callback<>() {

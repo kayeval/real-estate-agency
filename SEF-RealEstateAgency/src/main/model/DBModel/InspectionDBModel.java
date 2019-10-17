@@ -150,4 +150,13 @@ public class InspectionDBModel {
     public void refreshInspections() {
         //todo
     }
+
+    //check for clash in timeslot
+    public boolean hasNoConflict(LocalDateTime tentative) {
+        boolean valid = true;
+
+
+
+        return valid;
+    }
 }

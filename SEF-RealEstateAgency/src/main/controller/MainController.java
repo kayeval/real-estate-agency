@@ -1,5 +1,8 @@
 package main.controller;
 
+//TODO FIX ERROR ON LOADING FXML FILES FOR VIEW OFFER/APPLICATION AND MAINTENANCE REPORT
+
+
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -19,9 +22,7 @@ import javafx.util.Duration;
 import main.model.DBModel.*;
 import main.model.Inspection;
 import main.model.Property.*;
-import main.model.Proposal.Application;
-import main.model.Proposal.Offer;
-import main.model.Proposal.Proposal;
+import main.model.Proposal.*;
 import main.model.User.Customer.Buyer;
 import main.model.User.Customer.Customer;
 import main.model.User.Customer.Renter;
@@ -350,6 +351,9 @@ public class MainController {
     }
 
     public void refreshProposalTable() {
+        //TODO table not refreshing right after update
+        System.out.println("PROPOSAL TABLE REFRESH");
+
         switch (proposalStateCmb.getSelectionModel().getSelectedItem()) {
             case "Accepted": {
                 proposals = FXCollections.observableArrayList(proposalDBModel.getAcceptedProposals(user).values());
@@ -504,7 +508,6 @@ public class MainController {
                     propertyDBModel.addProperty(addSalePropertyController.getAddress(), addSalePropertyController.getSuburb(), addSalePropertyController.getPropertyType(),
                             addSalePropertyController.getBaths(), addSalePropertyController.getCars(), addSalePropertyController.getBeds(), addSalePropertyController.getPrice(),
                             null, userID);
-                    refreshPropertyTable();
                     addListingStage.hide();
 
                     Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
@@ -513,6 +516,7 @@ public class MainController {
                     actionSuccess.setContentText("You have successfully added a new property listing.");
 
                     actionSuccess.showAndWait();
+                    refreshPropertyTable();
                 }
             });
         } else {
@@ -523,7 +527,7 @@ public class MainController {
                     propertyDBModel.addProperty(addRentalPropertyController.getAddress(), addRentalPropertyController.getSuburb(), addRentalPropertyController.getPropertyType(),
                             addRentalPropertyController.getBaths(), addRentalPropertyController.getCars(), addRentalPropertyController.getBeds(), addRentalPropertyController.getPrice(),
                             addRentalPropertyController.getContractDurations(), userID);
-                    refreshPropertyTable();
+
                     addListingStage.hide();
 
                     Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
@@ -532,6 +536,7 @@ public class MainController {
                     actionSuccess.setContentText("You have successfully added a new property listing.");
 
                     actionSuccess.showAndWait();
+                    refreshPropertyTable();
                 }
             });
         }
@@ -580,6 +585,7 @@ public class MainController {
                     actionSuccess.setContentText("You have successfully updated your details.");
 
                     actionSuccess.showAndWait();
+                    refreshEmployeeTable();
                 }
             });
             editCustomerController.setUser(user);
@@ -622,6 +628,7 @@ public class MainController {
                     actionSuccess.setContentText("You have successfully updated your details.");
 
                     actionSuccess.showAndWait();
+                    refreshEmployeeTable();
                 }
             });
             editUserController.setUserDBModel(userDBModel);
@@ -633,7 +640,6 @@ public class MainController {
             editUserStage.show();
         }
 
-        refreshEmployeeTable();
     }
 
     public void setRegisteredUserType(String registeredUserType) {
@@ -968,11 +974,11 @@ public class MainController {
                     actionSuccess.setContentText("You have successfully withdrawn your " + proposaltype + ".");
 
                     actionSuccess.showAndWait();
+                    refreshProposalTable();
                 }
             }
         }
 
-        refreshProposalTable();
     }
 
     public void showCancelledInspectionDialog(String action) {
@@ -1006,84 +1012,99 @@ public class MainController {
             try {
                 if (property.isActive()) {
                     if (user instanceof Customer) {
-//                        System.out.print("USER PROPOSAL SIZE = " + ((Customer) user).getProposals().size() + "\n");
-                        if (!proposalDBModel.hasSubmittedProposalForProperty(user, property)) {
-                            if (user instanceof Buyer) {
-                                Stage submitOfferStage = new Stage();
-                                submitOfferStage.setTitle("Submit Offer");
-                                // Load root layout from fxml file
-                                FXMLLoader loader = new FXMLLoader();
-                                loader.setLocation(getClass().getResource("/main/view/SubmitOffer.fxml"));
-                                AnchorPane rootLayout = loader.load();
+                        // cannot submit if there's already an accepted proposal for the property
+                        if (property.getProposal() == null) {
 
-                                SubmitOfferController controller = loader.getController();
-                                controller.setUser(user);
-                                controller.setProperty(property);
-                                controller.canSubmitProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
-                                    if (isConfirmed) {
-                                        submitOfferStage.hide();
-                                        try {
-                                            proposalDBModel.addProposal(controller.getProposedPrice(), Collections.singletonList(user),
-                                                    property.getPropertyID(), null);
-                                        } catch (SQLException e) {
-                                            e.printStackTrace();
+                            if (!proposalDBModel.hasSubmittedProposalForProperty(user, property)) {
+                                if (user instanceof Buyer) {
+                                    Stage submitOfferStage = new Stage();
+                                    submitOfferStage.setTitle("Submit Offer");
+                                    // Load root layout from fxml file
+                                    FXMLLoader loader = new FXMLLoader();
+                                    loader.setLocation(getClass().getResource("/main/view/SubmitOffer.fxml"));
+                                    AnchorPane rootLayout = loader.load();
+
+                                    SubmitOfferController controller = loader.getController();
+                                    controller.setUser(user);
+                                    controller.setProperty(property);
+                                    controller.canSubmitProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
+                                        if (isConfirmed) {
+                                            submitOfferStage.hide();
+                                            try {
+                                                proposalDBModel.addProposal(controller.getProposedPrice(), Collections.singletonList(user),
+                                                        property.getPropertyID(), null);
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                            }
+
+                                            Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
+                                            actionSuccess.setTitle("Submission successful");
+                                            actionSuccess.setHeaderText(null);
+                                            actionSuccess.setContentText("You have successfully submitted your " + proposaltype + ".");
+
+                                            actionSuccess.showAndWait();
+                                            refreshProposalTable();
                                         }
+                                    });
 
-                                        Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
-                                        actionSuccess.setTitle("Submission successful");
-                                        actionSuccess.setHeaderText(null);
-                                        actionSuccess.setContentText("You have successfully submitted your " + proposaltype + ".");
+                                    // Show the scene containing the root layout
+                                    Scene scene = new Scene(rootLayout);
+                                    submitOfferStage.setScene(scene);
+                                    submitOfferStage.show();
+                                } else {
+                                    Stage submitApplicationStage = new Stage();
+                                    submitApplicationStage.setTitle("Submit Application");
+                                    // Load root layout from fxml file
+                                    FXMLLoader loader = new FXMLLoader();
+                                    loader.setLocation(getClass().getResource("/main/view/SubmitApplication.fxml"));
+                                    AnchorPane rootLayout = loader.load();
 
-                                        actionSuccess.showAndWait();
-                                    }
-                                });
+                                    SubmitApplicationController submitApplicationController = loader.getController();
+                                    submitApplicationController.setUser(user);
+                                    submitApplicationController.setProperty(property);
+                                    submitApplicationController.setRenters(userDBModel.getRenters().values());
+                                    submitApplicationController.canSubmitProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
+                                        if (isConfirmed) {
+                                            submitApplicationStage.hide();
 
-                                // Show the scene containing the root layout
-                                Scene scene = new Scene(rootLayout);
-                                submitOfferStage.setScene(scene);
-                                submitOfferStage.show();
+                                            try {
+                                                int id = proposalDBModel.addProposal(submitApplicationController.getProposedPrice(), submitApplicationController.getApplicants(),
+                                                        property.getPropertyID(), submitApplicationController.getContractDuration());
+
+                                                ((Customer) user).submitProposal(proposalDBModel.getProposals().get(id + ""));
+                                            } catch (SQLException | SoldPropertyException | InvalidContractDurationException | ProposalNotFoundException | DeactivatedPropertyException | PendingProposalException e) {
+                                                e.printStackTrace();
+                                            }
+
+                                            Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
+                                            actionSuccess.setTitle("Submission successful");
+                                            actionSuccess.setHeaderText(null);
+                                            actionSuccess.setContentText("You have successfully submitted your " + proposaltype + ".");
+
+                                            actionSuccess.showAndWait();
+                                            refreshProposalTable();
+                                        }
+                                    });
+
+                                    // Show the scene containing the root layout
+                                    Scene scene = new Scene(rootLayout);
+                                    submitApplicationStage.setScene(scene);
+                                    submitApplicationStage.show();
+                                }
                             } else {
-                                Stage submitApplicationStage = new Stage();
-                                submitApplicationStage.setTitle("Submit Application");
-                                // Load root layout from fxml file
-                                FXMLLoader loader = new FXMLLoader();
-                                loader.setLocation(getClass().getResource("/main/view/SubmitApplication.fxml"));
-                                AnchorPane rootLayout = loader.load();
+                                Alert alert = new Alert(Alert.AlertType.ERROR);
+                                alert.setTitle("Error");
+                                alert.setHeaderText("Not allowed to submit this " + proposaltype);
+                                alert.setContentText("You have already submitted an " + proposaltype + " for this property.");
 
-                                SubmitApplicationController submitApplicationController = loader.getController();
-                                submitApplicationController.setUser(user);
-                                submitApplicationController.setProperty(property);
-                                submitApplicationController.setRenters(userDBModel.getRenters().values());
-                                submitApplicationController.canSubmitProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
-                                    if (isConfirmed) {
-                                        submitApplicationStage.hide();
-
-                                        try {
-                                            proposalDBModel.addProposal(submitApplicationController.getProposedPrice(), submitApplicationController.getApplicants(),
-                                                    property.getPropertyID(), submitApplicationController.getContractDuration());
-                                        } catch (SQLException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                        Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
-                                        actionSuccess.setTitle("Submission successful");
-                                        actionSuccess.setHeaderText(null);
-                                        actionSuccess.setContentText("You have successfully submitted your " + proposaltype + ".");
-
-                                        actionSuccess.showAndWait();
-                                    }
-                                });
-
-                                // Show the scene containing the root layout
-                                Scene scene = new Scene(rootLayout);
-                                submitApplicationStage.setScene(scene);
-                                submitApplicationStage.show();
+                                alert.showAndWait();
                             }
                         } else {
+
                             Alert alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Error");
-                            alert.setHeaderText("Not allowed to submit this " + proposaltype);
-                            alert.setContentText("You have already submitted an " + proposaltype + " for this property.");
+                            alert.setTitle("Submission unsuccessful");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Another " + proposaltype + " has already been submitted for this property.");
 
                             alert.showAndWait();
                         }
@@ -1094,8 +1115,6 @@ public class MainController {
                 e.printStackTrace();
             }
         }
-
-        refreshProposalTable();
     }
 
     private void viewProposal(ActionEvent actionEvent) {
@@ -1128,8 +1147,8 @@ public class MainController {
                             viewOfferStage.hide();
 
                             try {
-                                proposalDBModel.addProposal(controller.getProposedPrice(), Collections.singletonList(user),
-                                        proposal.getProperty().getPropertyID(), null);
+                                proposalDBModel.updateProposal(controller.getProposedPrice(), Collections.singletonList(user), null,
+                                        proposal.getProposalID());
                             } catch (SQLException e) {
                                 e.printStackTrace();
                             }
@@ -1139,6 +1158,7 @@ public class MainController {
                             actionSuccess.setHeaderText(null);
                             actionSuccess.setContentText("You have successfully changed your " + proposaltype + " details.");
 
+                            refreshProposalTable();
                             actionSuccess.showAndWait();
                         }
                     });
@@ -1154,6 +1174,7 @@ public class MainController {
                             actionSuccess.setContentText("You have successfully accepted this " + proposaltype + ".");
 
                             actionSuccess.showAndWait();
+                            refreshProposalTable();
                         } else {
                             viewOfferStage.hide();
                             proposalDBModel.withdrawProposal(proposal.getProposalID());
@@ -1164,6 +1185,7 @@ public class MainController {
                             actionSuccess.setContentText("You have successfully rejected this " + proposaltype + ".");
 
                             actionSuccess.showAndWait();
+                            refreshProposalTable();
                         }
                     });
 
@@ -1195,8 +1217,8 @@ public class MainController {
                             viewApplicationStage.hide();
 
                             try {
-                                proposalDBModel.addProposal(controller.getProposedPrice(), controller.getApplicants(),
-                                        proposal.getProperty().getPropertyID(), controller.getContractDuration());
+                                proposalDBModel.updateProposal(controller.getProposedPrice(), controller.getApplicants(), controller.getContractDuration(),
+                                        proposal.getProposalID());
                             } catch (SQLException e) {
                                 e.printStackTrace();
                             }
@@ -1207,6 +1229,7 @@ public class MainController {
                             actionSuccess.setContentText("You have successfully changed your " + proposaltype + " details.");
 
                             actionSuccess.showAndWait();
+                            refreshProposalTable();
                         }
                     });
 
@@ -1221,6 +1244,7 @@ public class MainController {
                             actionSuccess.setContentText("You have successfully accepted this " + proposaltype + ".");
 
                             actionSuccess.showAndWait();
+                            refreshProposalTable();
                         } else {
                             viewApplicationStage.hide();
                             proposalDBModel.withdrawProposal(proposal.getProposalID());
@@ -1231,6 +1255,7 @@ public class MainController {
                             actionSuccess.setContentText("You have successfully rejected this " + proposaltype + ".");
 
                             actionSuccess.showAndWait();
+                            refreshProposalTable();
                         }
                     });
 
@@ -1452,6 +1477,7 @@ public class MainController {
                             actionSuccess.setContentText("You have scheduled the next maintenance date.");
 
                             actionSuccess.showAndWait();
+                            refreshPropertyTable();
                         }
                     });
                     Scene scene = new Scene(rootLayout);
@@ -1465,7 +1491,6 @@ public class MainController {
             }
         }
 
-        refreshPropertyTable();
     }
 
     private void deactivateProperty(ActionEvent actionEvent) {
@@ -1490,14 +1515,13 @@ public class MainController {
                         actionSuccess.setContentText("Successfully deactivated property listing for " + property.getAddress() + ".");
 
                         actionSuccess.showAndWait();
+                        refreshPropertyTable();
                     }
                 }
             } catch (DeactivatedPropertyException e) {
                 showInactivePropertyDialog("Deactivate property");
             }
         }
-
-        refreshPropertyTable();
     }
 
     private void inspectDocuments(ActionEvent actionEvent) {
@@ -1528,11 +1552,10 @@ public class MainController {
                     actionSuccess.setContentText("Property listing for " + property.getAddress() + " is now active.");
 
                     actionSuccess.showAndWait();
+                    refreshPropertyTable();
                 }
             }
         }
-
-        refreshPropertyTable();
     }
 
     private void assignProperty(ActionEvent event) {
@@ -1580,6 +1603,7 @@ public class MainController {
                         actionSuccess.setContentText("You have successfully assigned a property to " + assignPropertyController.getSelectedUser().getUsername() + ".");
 
                         actionSuccess.showAndWait();
+                        refreshPropertyTable();
                     }
                 });
                 Scene scene = new Scene(rootLayout);
@@ -1618,6 +1642,7 @@ public class MainController {
                                 actionSuccess.setContentText("You have successfully updated the property listing.");
 
                                 actionSuccess.showAndWait();
+                                refreshPropertyTable();
                             }
                         });
                         controller.setUserDBModel(userDBModel);
@@ -1662,6 +1687,7 @@ public class MainController {
                                 actionSuccess.setContentText("You have successfully updated the property listing.");
 
                                 actionSuccess.showAndWait();
+                                refreshPropertyTable();
                             }
                         });
                         controller.setUserDBModel(userDBModel);
@@ -1689,10 +1715,7 @@ public class MainController {
                 showInactivePropertyDialog("Change property listing details");
             }
         }
-
-        refreshPropertyTable();
     }
-
 
     @FXML
     void addWorkingHours(ActionEvent event) {

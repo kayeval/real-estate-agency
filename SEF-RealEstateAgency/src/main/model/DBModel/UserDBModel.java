@@ -17,12 +17,14 @@ import main.model.User.User;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Date;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class UserDBModel {
@@ -78,11 +80,15 @@ public class UserDBModel {
 
                 User user;
                 if (rs.getBoolean("buyer")) {
-                    user = new Buyer(rs.getString("username"), rs.getString("email"));
-                    user.setUserID("buyer" + id);
+                    if (customers.get("buyer" + id) == null) {
+                        user = new Buyer(rs.getString("username"), rs.getString("email"));
+                        user.setUserID("buyer" + id);
+                    } else user = customers.get("buyer" + id);
                 } else {
-                    user = new Renter(rs.getString("username"), rs.getString("email"), rs.getDouble("income"), rs.getString("occupation"));
-                    user.setUserID("renter" + id);
+                    if (customers.get("renter" + id) == null) {
+                        user = new Renter(rs.getString("username"), rs.getString("email"), rs.getDouble("income"), rs.getString("occupation"));
+                        user.setUserID("renter" + id);
+                    } else user = customers.get("renter" + id);
                 }
                 ((Customer) user).getPreferredSuburbs().add(rs.getString("suburb"));
                 customers.putIfAbsent(user.getUserID(), user);
@@ -257,7 +263,7 @@ public class UserDBModel {
         return EMAIL_REGEX.matcher(email).matches();
     }
 
-    public void registerCustomer(String username, String email, String password, String occupation, String income, List<String> preferredSuburbs) {
+    public void registerCustomer(String username, String email, String password, String occupation, String income, Set<String> preferredSuburbs) {
         int id = 0;
 
         String sql = "INSERT INTO users (username, email, password) VALUES(?, ?, ?)";
@@ -297,14 +303,14 @@ public class UserDBModel {
         User u = null;
         if (income.equals("")) {
             try {
-                u = new Buyer(username, email, new HashSet<>(preferredSuburbs));
+                u = new Buyer(username, email, preferredSuburbs);
                 u.setUserID("buyer" + id);
             } catch (InvalidEmailException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                u = new Renter(username, email, new HashSet<>(preferredSuburbs), Double.parseDouble(income), occupation);
+                u = new Renter(username, email, preferredSuburbs, Double.parseDouble(income), occupation);
                 u.setUserID("renter" + id);
             } catch (InvalidEmailException e) {
                 e.printStackTrace();
@@ -315,7 +321,7 @@ public class UserDBModel {
         customers.putIfAbsent(u.getUserID(), u);
     }
 
-    private void updatePreferredSuburbs(int id, List<String> preferredSuburbs) throws SQLException {
+    private void updatePreferredSuburbs(int id, Set<String> preferredSuburbs) throws SQLException {
         String sql = "DELETE FROM preferredsuburbs WHERE userid=?";
         try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -339,7 +345,11 @@ public class UserDBModel {
             }
         }
 
-        ((Customer) getUser(id)).setPreferredSuburbs(new HashSet<>(preferredSuburbs));
+        if (getUser(id) == null)
+            loadUsersFromDB();
+        else {
+            ((Customer) getUser(id)).setPreferredSuburbs(preferredSuburbs);
+        }
     }
 
     //MUST CALL canLogin() BEFORE
@@ -416,7 +426,7 @@ public class UserDBModel {
         return username;
     }
 
-    public void updateCustomerDetails(String username, String email, String occupation, String income, List<String> preferredSuburbs, String oldUsername) throws SQLException {
+    public void updateCustomerDetails(User user, String username, String email, String occupation, String income, Set<String> preferredSuburbs, String oldUsername) throws SQLException {
         int id = updateUserDetails(username, email, oldUsername);
 
         String sql = "UPDATE customers SET occupation=?, income=? WHERE userid=?";
@@ -440,8 +450,10 @@ public class UserDBModel {
         } catch (InvalidEmailException e) {
             e.printStackTrace();
         }
-        ((Renter) getUser(id)).setOccupation(occupation);
-        ((Renter) getUser(id)).setIncome(Double.parseDouble(income));
+        if (user instanceof Renter) {
+            ((Renter) getUser(id)).setOccupation(occupation);
+            ((Renter) getUser(id)).setIncome(Double.parseDouble(income));
+        }
 
         updatePreferredSuburbs(id, preferredSuburbs);
     }

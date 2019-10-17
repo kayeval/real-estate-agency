@@ -76,6 +76,19 @@ public class ViewOfferController {
     public void setUser(User user) {
         this.user = user;
         applicantField.setText(user.getUsername());
+
+        if (user instanceof Customer) {
+            acceptBtn.setVisible(false);
+            rejectBtn.setVisible(false);
+        } else {
+            editOrSaveBtn.setVisible(false);
+            applicantField.setDisable(false);
+            applicantField.setEditable(false);
+            listedPriceField.setDisable(false);
+            listedPriceField.setEditable(false);
+            proposedPriceField.setDisable(false);
+            proposedPriceField.setEditable(false);
+        }
     }
 
     @FXML
@@ -97,21 +110,6 @@ public class ViewOfferController {
 
         TextFormatter formatter = new TextFormatter(new DecimalFilter());
         proposedPriceField.setTextFormatter(formatter);
-
-
-        if (user instanceof Customer) {
-            acceptBtn.setVisible(false);
-            rejectBtn.setVisible(false);
-        } else {
-            System.out.println(user.getUsername());
-            editOrSaveBtn.setVisible(false);
-            applicantField.setDisable(false);
-            applicantField.setEditable(false);
-            listedPriceField.setDisable(false);
-            listedPriceField.setEditable(false);
-            proposedPriceField.setDisable(false);
-            proposedPriceField.setEditable(false);
-        }
     }
 
     @FXML

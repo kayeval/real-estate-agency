@@ -20,6 +20,7 @@ import main.model.User.User;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class EditCustomerController {
 
@@ -180,8 +181,8 @@ public class EditCustomerController {
                     setSaved(true);
 
                     try {
-                        userDBModel.updateCustomerDetails(usernameField.getText(), emailField.getText(),
-                                occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")), username);
+                        userDBModel.updateCustomerDetails(user, usernameField.getText(), emailField.getText(),
+                                occupationField.getText(), incomeField.getText(), new HashSet<>(Arrays.asList(suburbsField.getText().split("\\s*,\\s*"))), username);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }

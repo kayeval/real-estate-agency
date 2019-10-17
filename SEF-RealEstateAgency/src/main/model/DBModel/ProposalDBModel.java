@@ -32,7 +32,7 @@ public class ProposalDBModel {
     public void setPropertyDBModel(PropertyDBModel propertyDBModel) {
         this.propertyDBModel = propertyDBModel;
 //        propertyDBModel.loadPropertiesFromDB();
-        refreshProposals();
+        loadProposalsFromDB();
     }
 
     public void setUserDBModel(UserDBModel userDBModel) {
@@ -65,7 +65,7 @@ public class ProposalDBModel {
         }
     }
 
-    public void addProposal(double price, Collection<User> customers, String propertyID, ContractDuration contractDuration) throws SQLException {
+    public int addProposal(double price, Collection<User> customers, String propertyID, ContractDuration contractDuration) throws SQLException {
         String sql = "INSERT INTO proposals (offerprice, submissiondate, accepted, " +
                 "propertyid, contractduration, paid, withdrawn, waitingforpay, pending) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -97,17 +97,24 @@ public class ProposalDBModel {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        loadProposalsFromDB();
+
+        return id;
     }
 
+    //restriction: can only accept if within 3 day timeframe from submission
     public void acceptProposal(String proposalID) {
-        String sql = "UPDATE proposals SET accepted=?, waitingforpay=?, pending=? WHERE proposalid=?";
+        String sql = "UPDATE proposals SET accepted=?, waitingforpay=?, pending=?, acceptdate=? WHERE proposalid=?";
+        LocalDateTime dateAccepted = LocalDateTime.now(ZoneId.systemDefault());
 
         try (Connection connection = dbConnector.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setBoolean(1, true);
             pstmt.setBoolean(2, true);
             pstmt.setBoolean(3, false);
-            pstmt.setInt(4, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
+            pstmt.setTimestamp(4, Timestamp.valueOf(dateAccepted));
+            pstmt.setInt(5, Integer.parseInt(proposalID.replaceAll("[^\\d.]", "")));
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -117,7 +124,7 @@ public class ProposalDBModel {
         allProposals.get(proposalID).setAccepted(true);
         allProposals.get(proposalID).setPending(false);
         allProposals.get(proposalID).setWaitingForPayment(true);
-
+        allProposals.get(proposalID).setAcceptDate(dateAccepted);
         allProposals.get(proposalID).getProperty().setProposal(allProposals.get(proposalID));
     }
 
@@ -209,7 +216,7 @@ public class ProposalDBModel {
     public Map<String, Proposal> getProposals() {
         allProposals = new HashMap<>();
 
-        String sql = "SELECT p.proposalid, offerprice, submissiondate, accepted, pending, propertyid, contractduration, paid, withdrawn, " +
+        String sql = "SELECT p.proposalid, offerprice, submissiondate, acceptdate, accepted, pending, propertyid, contractduration, paid, withdrawn, " +
                 "waitingforpay, c.userid FROM proposals p JOIN customerproposals c ON p.proposalid = c.proposalid";
         try (Connection conn = dbConnector.getConnection();
              Statement stmt = conn.createStatement();
@@ -240,10 +247,16 @@ public class ProposalDBModel {
                 p.setProposalID(rs.getInt("proposalid") + "");
                 p.setWithdrawn(withdrawn);
                 p.setAccepted(accepted);
+                if (accepted) {
+                    p.setAcceptDate(rs.getTimestamp("acceptdate").toLocalDateTime());
+                }
                 p.setSubmissionDate(submissionDate);
                 p.setPaid(paid);
                 p.setPending(pending);
                 p.setWaitingForPayment(waitingforpay);
+
+                //set property proposal to this
+                p.getProperty().setProposal(p);
 
                 User applicant = userDBModel.getUser(rs.getInt("userid"));
                 ((Customer) applicant).getProposals().putIfAbsent(p.getProposalID(), p);
@@ -328,7 +341,7 @@ public class ProposalDBModel {
         return found;
     }
 
-    public void refreshProposals() {
+    public void loadProposalsFromDB() {
         allProposals = getProposals();
     }
 }

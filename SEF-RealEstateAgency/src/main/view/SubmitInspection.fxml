@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="183.0" prefWidth="344.0" stylesheets="@../res/login.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controller.ViewMaintenanceController">
+<AnchorPane prefHeight="183.0" prefWidth="344.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controller.SubmitInspectionController">
     <children>
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0c2940f2" height="301.0" layoutX="-1.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="345.0" />
         <Label fx:id="error" layoutX="41.0" layoutY="5.0" textFill="#ff4e2beb">
@@ -22,7 +22,7 @@
                 <Font size="16.0" />
             </font>
         </Label>
-        <Text fill="WHITE" layoutX="39.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Current maintenance">
+        <Text fill="WHITE" layoutX="39.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Inspection date">
             <font>
                 <Font name="Courier" size="20.0" />
             </font>
@@ -32,12 +32,12 @@
                 <Font size="16.0" />
             </font>
         </TextField>
-        <Text fill="WHITE" layoutX="39.0" layoutY="149.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Next maintenance">
+        <Text fill="WHITE" layoutX="39.0" layoutY="149.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Inspection time">
             <font>
                 <Font name="Courier" size="20.0" />
             </font>
         </Text>
-        <DatePicker fx:id="nextMaintenanceDatePicker" layoutX="38.0" layoutY="157.0" opacity="0.9" prefHeight="37.0" prefWidth="272.0" style="-fx-background-color: white; -fx-background-radius: 5;" styleClass="time" />
+        <DatePicker fx:id="nextMaintenanceDatePicker" layoutX="38.0" layoutY="157.0" opacity="0.9" prefHeight="37.0" prefWidth="272.0" style="-fx-background-color: white; -fx-background-radius: 5;" />
         <Button fx:id="scheduleBtn" layoutX="102.0" layoutY="227.0" mnemonicParsing="false" onAction="#scheduleAction" prefHeight="39.0" prefWidth="140.0" style="-fx-background-color: white; -fx-background-radius: 5;" text="Schedule">
             <cursor>
                 <Cursor fx:constant="HAND" />

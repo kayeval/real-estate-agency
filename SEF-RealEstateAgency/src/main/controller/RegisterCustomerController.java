@@ -14,6 +14,7 @@ import main.model.DecimalFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class RegisterCustomerController {
 
@@ -91,7 +92,7 @@ public class RegisterCustomerController {
         if (canRegister) {
             //add to user db
             userDBModel.registerCustomer(usernameField.getText(), emailField.getText(), passwordField.getText(),
-                    occupationField.getText(), incomeField.getText(), Arrays.asList(suburbsField.getText().split("\\s*,\\s*")));
+                    occupationField.getText(), incomeField.getText(), new HashSet<>(Arrays.asList(suburbsField.getText().split("\\s*,\\s*"))));
 
             btnBack.fire();
         }

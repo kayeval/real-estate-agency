@@ -20,6 +20,7 @@ public abstract class Proposal {
     private boolean withdrawn;
     private boolean paid;
     private boolean pending;
+    private LocalDateTime acceptDate;
 
     public Proposal(double price, Property property) {
         this.submissionDate = LocalDateTime.now(ZoneId.systemDefault());
@@ -31,6 +32,14 @@ public abstract class Proposal {
         this.withdrawn = false;
         this.pending = true;
         applicants = new HashMap<>();
+    }
+
+    public LocalDateTime getAcceptDate() {
+        return acceptDate;
+    }
+
+    public void setAcceptDate(LocalDateTime acceptDate) {
+        this.acceptDate = acceptDate;
     }
 
     public String getSubmissionDateFormatted() {
