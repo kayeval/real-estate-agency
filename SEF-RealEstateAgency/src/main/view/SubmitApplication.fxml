@@ -16,13 +16,13 @@
                 <Font size="16.0"/>
             </font>
         </Label>
-        <Text fill="WHITE" layoutX="39.0" layoutY="54.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Applicant/s">
+        <Text fill="WHITE" layoutX="41.0" layoutY="54.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Applicant/s">
             <font>
                 <Font name="Courier" size="20.0"/>
             </font>
         </Text>
-        <TextField fx:id="applicantField" layoutX="37.0" layoutY="63.0" opacity="0.8" prefHeight="37.0"
-                   prefWidth="242.0" style="-fx-background-radius: 5; -fx-background-color: white;"
+        <TextField fx:id="applicantField" layoutX="41.0" layoutY="63.0" opacity="0.8" prefHeight="37.0"
+                   prefWidth="238.0" style="-fx-background-radius: 5; -fx-background-color: white;"
                    stylesheets="@../res/login.css">
             <font>
                 <Font size="16.0"/>

@@ -10,6 +10,7 @@ import main.model.User.Customer.Customer;
 import main.model.User.Employee.Employee;
 import main.model.User.InvalidEmailException;
 import main.model.User.PropertyOwner.NotListedPropertyException;
+import main.model.User.User;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -20,26 +21,28 @@ import java.util.Map;
 
 public abstract class SalesPerson extends Employee {
     private Map<String, Property> assignedProperties;
-    private Map<String, Inspection> scheduledInspections;
 
     public SalesPerson(String username, String email, LocalDate hireDate, double salary) throws InvalidEmailException {
         super(username, email, hireDate, salary);
         assignedProperties = new HashMap<>();
-        scheduledInspections = new HashMap<>();
     }
 
     public Map<String, Property> getAssignedProperties() {
         return assignedProperties;
     }
 
-
     public void assignProperty(Property property) {
         assignedProperties.put(property.getPropertyID(), property);
     }
 
-    public boolean scheduleInspection(Property property, Customer person) {
-        //logic if either property or person does not exist
-        return false;
+    public void scheduleInspection(Inspection i, Property property, User person) {
+        i.setProperty(property);
+        i.setCustomer(person);
+        ((Customer) person).addInspection(i);
+    }
+
+    public void rescheduleInspection(Inspection i, LocalDateTime dueDate) {
+        i.setDueDate(dueDate);
     }
 
     public void deactivateListing(Property property) {

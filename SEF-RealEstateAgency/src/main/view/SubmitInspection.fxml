@@ -1,49 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.*?>
-
-<AnchorPane prefHeight="183.0" prefWidth="344.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controller.SubmitInspectionController">
+<?import main.view.custom.DateTimePicker?>
+<AnchorPane prefHeight="183.0" prefWidth="344.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="main.controller.SubmitInspectionController">
     <children>
-        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0c2940f2" height="301.0" layoutX="-1.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="345.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0c2940f2" height="303.0" layoutX="-1.0" stroke="BLACK"
+                   strokeType="INSIDE" strokeWidth="0.0" width="345.0"/>
         <Label fx:id="error" layoutX="41.0" layoutY="5.0" textFill="#ff4e2beb">
             <font>
-                <Font size="16.0" />
+                <Font size="16.0"/>
             </font>
         </Label>
-        <Text fill="WHITE" layoutX="39.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Inspection date">
+        <Text fill="WHITE" layoutX="39.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Schedule for">
             <font>
-                <Font name="Courier" size="20.0" />
+                <Font name="Courier" size="20.0"/>
             </font>
         </Text>
-        <TextField fx:id="prevMaintenanceField" layoutX="38.0" layoutY="65.0" opacity="0.8" prefHeight="39.0" prefWidth="272.0" style="-fx-background-color: white; -fx-background-radius: 5;">
+        <ComboBox fx:id="cmbCustomer" layoutX="36.0" layoutY="80.0" opacity="0.9" prefHeight="37.0" prefWidth="272.0"
+                  style="-fx-background-radius: 5; -fx-background-color: white;" stylesheets="@../res/combobox.css"/>
+        <Text fill="WHITE" layoutX="39.0" layoutY="152.0" strokeType="OUTSIDE" strokeWidth="0.0"
+              text="Inspection date and time">
             <font>
-                <Font size="16.0" />
-            </font>
-        </TextField>
-        <Text fill="WHITE" layoutX="39.0" layoutY="149.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Inspection time">
-            <font>
-                <Font name="Courier" size="20.0" />
+                <Font name="Courier" size="20.0"/>
             </font>
         </Text>
-        <DatePicker fx:id="nextMaintenanceDatePicker" layoutX="38.0" layoutY="157.0" opacity="0.9" prefHeight="37.0" prefWidth="272.0" style="-fx-background-color: white; -fx-background-radius: 5;" />
-        <Button fx:id="scheduleBtn" layoutX="102.0" layoutY="227.0" mnemonicParsing="false" onAction="#scheduleAction" prefHeight="39.0" prefWidth="140.0" style="-fx-background-color: white; -fx-background-radius: 5;" text="Schedule">
+        <DateTimePicker fx:id="datePicker" layoutX="36.0" layoutY="165.0" opacity="0.9" prefHeight="37.0"
+                        prefWidth="272.0" style="-fx-background-color: white; -fx-background-radius: 5;"/>
+        <Button fx:id="scheduleBtn" layoutX="102.0" layoutY="229.0" mnemonicParsing="false" onAction="#scheduleAction"
+                prefHeight="39.0" prefWidth="140.0" style="-fx-background-color: white; -fx-background-radius: 5;"
+                text="Schedule">
             <cursor>
-                <Cursor fx:constant="HAND" />
+                <Cursor fx:constant="HAND"/>
             </cursor>
             <font>
-                <Font name="System Bold" size="16.0" />
+                <Font name="System Bold" size="16.0"/>
             </font>
         </Button>
     </children>

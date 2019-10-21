@@ -31,7 +31,6 @@ public class ProposalDBModel {
 
     public void setPropertyDBModel(PropertyDBModel propertyDBModel) {
         this.propertyDBModel = propertyDBModel;
-//        propertyDBModel.loadPropertiesFromDB();
         loadProposalsFromDB();
     }
 
@@ -191,7 +190,7 @@ public class ProposalDBModel {
             ((Application) allProposals.get(proposalID)).setContractDuration(contractDuration);
     }
 
-    //also for reject?
+    //also for reject
     public void withdrawProposal(String proposalID) {
         String sql = "UPDATE proposals SET pending=?, withdrawn=?, waitingforpay=? WHERE proposalid=?";
 
@@ -210,7 +209,6 @@ public class ProposalDBModel {
         allProposals.get(proposalID).setWithdrawn(true);
         allProposals.get(proposalID).setWaitingForPayment(false);
         allProposals.get(proposalID).setPending(false);
-
     }
 
     public Map<String, Proposal> getProposals() {

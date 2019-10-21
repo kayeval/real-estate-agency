@@ -12,7 +12,6 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Popup;
 import main.model.DecimalFilter;
 import main.model.Property.Property;
-import main.model.Property.RentalProperty;
 import main.model.Proposal.ContractDuration;
 import main.model.User.User;
 
@@ -72,12 +71,12 @@ public class SubmitApplicationController {
         this.property = property;
         listedPriceField.setText("" + property.getPrice());
 
-        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.SIX_MONTHS))
-            radio6Mos.setDisable(false);
-        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.ONE_YEAR))
-            radio1Yr.setDisable(false);
-        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.TWO_YEARS))
-            radio2Yrs.setDisable(false);
+//        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.SIX_MONTHS))
+//            radio6Mos.setDisable(false);
+//        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.ONE_YEAR))
+//            radio1Yr.setDisable(false);
+//        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.TWO_YEARS))
+//            radio2Yrs.setDisable(false);
     }
 
     public void setUser(User user) {
@@ -125,9 +124,9 @@ public class SubmitApplicationController {
         radio1Yr.setToggleGroup(group);
         radio2Yrs.setToggleGroup(group);
 
-        radio6Mos.setDisable(true);
-        radio1Yr.setDisable(true);
-        radio2Yrs.setDisable(true);
+//        radio6Mos.setDisable(true);
+//        radio1Yr.setDisable(true);
+//        radio2Yrs.setDisable(true);
 
         proposedPriceField.textProperty().addListener((observable) -> {
             error.setText("");

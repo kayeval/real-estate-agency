@@ -96,7 +96,6 @@ public class PropertyDBModel {
                     if (assignedTo != 0) {
                         p.setSalesPerson((SalesPerson) userDBModel.getUser(assignedTo));
                         p.getSalesPerson().getAssignedProperties().putIfAbsent(p.getPropertyID(), p);
-                        System.out.println(p.getSalesPerson().getAssignedProperties().size());
                     }
 
                     allProperties.putIfAbsent(p.getPropertyID(), p);
@@ -434,5 +433,18 @@ public class PropertyDBModel {
 
         ((RentalProperty) allProperties.get(property.getPropertyID())).setPreviousMaintenance(((RentalProperty) property).getNextMaintenance());
         ((RentalProperty) allProperties.get(property.getPropertyID())).setNextMaintenance(nextMaintenance);
+    }
+
+    public Property getProperty(int id) {
+        Property property = null;
+
+        for (Map.Entry<String, Property> e : allProperties.entrySet()) {
+            if (e.getKey().contains(id + "")) {
+                //add to my result list
+                property = e.getValue();
+            }
+        }
+
+        return property;
     }
 }

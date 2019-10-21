@@ -40,6 +40,16 @@ public class UserDBModel {
         loadUsersFromDB();
     }
 
+    public Map<String, User> getBuyers() {
+        Map<String, User> users = new HashMap<>();
+
+        for (User u : customers.values())
+            if (u instanceof Buyer)
+                users.putIfAbsent(u.getUserID(), u);
+
+        return users;
+    }
+
     public Map<String, User> getRenters() {
         Map<String, User> users = new HashMap<>();
 

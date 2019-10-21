@@ -1,8 +1,5 @@
 package main.controller;
 
-//TODO FIX ERROR ON LOADING FXML FILES FOR VIEW OFFER/APPLICATION AND MAINTENANCE REPORT
-
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -31,6 +28,7 @@ import main.model.User.Employee.Employee;
 import main.model.User.Employee.PartTimeEmployee;
 import main.model.User.Employee.SalesPerson.SalesPerson;
 import main.model.User.User;
+import main.view.custom.DateTimePicker;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -106,6 +104,9 @@ public class MainController {
     private ComboBox<String> inspectionStateCmb;
 
     @FXML
+    private TableColumn<Inspection, String> inspectionCustomerField;
+
+    @FXML
     private Button btnAddListing;
 
     @FXML
@@ -152,12 +153,6 @@ public class MainController {
 
     @FXML
     private TableColumn<Inspection, LocalTime> inspectionTimeField;
-
-    @FXML
-    private Button btnScheduleInspection;
-
-    @FXML
-    private Button notifBtn;
 
     @FXML
     private TableColumn<Proposal, String> proposalDateField;
@@ -228,11 +223,6 @@ public class MainController {
 
     private ContextMenu propertyContextMenu, inspectionContextMenu, proposalContextMenu, employeeContextMenu, workingHoursContextMenu;
 
-    private Property selectedProperty;
-    private Inspection selectedInspection;
-    private Proposal selectedProposal;
-    private User selectedEmployee;
-
     private MenuItem cancelInspectionMenuItem, rescheduleInspectionMenuItem,
             contactCustomerMenuItem, viewPropertyManagementFeeOrCommissionMenuItem,
             contactPropertyOwnerMenuItem, organizeLegalDocumentsMenuItem,
@@ -241,7 +231,7 @@ public class MainController {
             viewMaintenanceReportMenuItem,
             viewAssignedPropertiesMenuItem,
             assignPropertyToEmployeeMenuItem,
-            inspectPropertyDocumentsMenuItem;
+            inspectPropertyDocumentsMenuItem, scheduleInspectionMenuItem;
 
     @FXML
     void initialize() {
@@ -249,7 +239,7 @@ public class MainController {
 
         initClock();
 
-        //TODO set graphic for notification button
+        //TODO notification popup
 
 
         //setup controllers
@@ -273,6 +263,8 @@ public class MainController {
         workingHoursDBModel.setUserDBModel(userDBModel);
 
         inspectionDBModel = new InspectionDBModel();
+        inspectionDBModel.setUserDBModel(userDBModel);
+        inspectionDBModel.setPropertyDBModel(propertyDBModel);
 //        inspectionDBModel.refreshInspections();
 
         bankAccountDBModel = new BankAccountDBModel();
@@ -352,7 +344,6 @@ public class MainController {
 
     public void refreshProposalTable() {
         //TODO table not refreshing right after update
-        System.out.println("PROPOSAL TABLE REFRESH");
 
         switch (proposalStateCmb.getSelectionModel().getSelectedItem()) {
             case "Accepted": {
@@ -383,26 +374,34 @@ public class MainController {
     }
 
     public void refreshInspectionTable() {
-        //TODO
-
         switch (inspectionStateCmb.getSelectionModel().getSelectedItem()) {
             case "Scheduled": {
+                inspections = FXCollections.observableArrayList(inspectionDBModel.getScheduledInspections(user).values());
                 break;
             }
             case "Completed": {
+                inspections = FXCollections.observableArrayList(inspectionDBModel.getCompletedInspections(user).values());
                 break;
             }
             case "Cancelled": {
+                inspections = FXCollections.observableArrayList(inspectionDBModel.getCancelledInspections(user).values());
                 break;
             }
             default:
-
+                inspections = FXCollections.observableArrayList(inspectionDBModel.getInspections(user).values());
         }
+        inspectionCustomerField.setCellValueFactory(new PropertyValueFactory<>("customerName"));
+        inspectionPropertyField.setCellValueFactory(new PropertyValueFactory<>("propertyAddress"));
+        inspectionDateField.setCellValueFactory(new PropertyValueFactory<>("dueDateFormatted"));
+        inspectionTimeField.setCellValueFactory(new PropertyValueFactory<>("dueTimeFormatted"));
+        inspectionStatusField.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        inspectionTableView.setItems(inspections);
+        inspectionTableView.setContextMenu(inspectionContextMenu);
     }
 
     public void refreshWorkingHoursTable() {
         //TODO
-
         switch (workingHoursStateCmb.getSelectionModel().getSelectedItem()) {
             case "Approved": {
                 break;
@@ -659,7 +658,6 @@ public class MainController {
                 minPriceField.setText("Listed Price");
 
                 btnAddListing.setVisible(false);
-                btnScheduleInspection.setVisible(false);
 
                 propertyStateCmb.setVisible(false);
 
@@ -684,7 +682,6 @@ public class MainController {
                 inspectionContextMenu.getItems().add(cancelInspectionMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
-                btnScheduleInspection.setVisible(false);
                 break;
             } //buyer
 
@@ -697,7 +694,6 @@ public class MainController {
                 minPriceField.setText("Weekly Rental");
 
                 btnAddListing.setVisible(false);
-                btnScheduleInspection.setVisible(false);
 
                 propertyStateCmb.setVisible(false);
 
@@ -718,7 +714,6 @@ public class MainController {
                 inspectionContextMenu.getItems().add(cancelInspectionMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
-                btnScheduleInspection.setVisible(false);
                 break;
             } //renter
 
@@ -727,19 +722,13 @@ public class MainController {
                 proposalTableView.setPlaceholder(new Label("You have not received any offers yet."));
                 inspectionTableView.setPlaceholder(new Label("You have no scheduled inspections."));
 
-                btnScheduleInspection.setVisible(false);
-
                 editPropertyMenuItem = new MenuItem("Edit");
                 editPropertyMenuItem.setOnAction(this::updateProperty);
-
-//                MenuItem item2 = new MenuItem("Deactivate");
-//                item2.setOnAction(this::deactivateProperty);
 
                 viewProposalMenuItem = new MenuItem("View offer");
                 viewProposalMenuItem.setOnAction(this::viewProposal);
 
                 propertyContextMenu.getItems().add(editPropertyMenuItem);
-//                propertyContextMenu.getItems().add(item2);
                 proposalContextMenu.getItems().add(viewProposalMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
@@ -750,19 +739,13 @@ public class MainController {
                 proposalTableView.setPlaceholder(new Label("You have not received any applications yet."));
                 inspectionTableView.setPlaceholder(new Label("You have no scheduled inspections."));
 
-                btnScheduleInspection.setVisible(false);
-
                 editPropertyMenuItem = new MenuItem("Edit");
                 editPropertyMenuItem.setOnAction(this::updateProperty);
-
-//                MenuItem item2 = new MenuItem("Deactivate");
-//                item2.setOnAction(this::deactivateProperty);
 
                 viewProposalMenuItem = new MenuItem("View application");
                 viewProposalMenuItem.setOnAction(this::viewProposal);
 
                 propertyContextMenu.getItems().add(editPropertyMenuItem);
-//                propertyContextMenu.getItems().add(item2);
                 proposalContextMenu.getItems().add(viewProposalMenuItem);
 
                 tabPane.getTabs().remove(employeeTab);
@@ -781,10 +764,8 @@ public class MainController {
                 deactivateListingMenuItem.setOnAction(this::deactivateProperty);
 
                 advertisePropertyMenuItem = new MenuItem("Advertise property");
-//                item1.setOnAction(this::advertiseListing);
 
                 organizeLegalDocumentsMenuItem = new MenuItem("Organize legal documents");
-//                item2.setOnAction(this::organizeDocuments);
 
                 contactPropertyOwnerMenuItem = new MenuItem("Contact property owner");
                 contactPropertyOwnerMenuItem.setOnAction(this::contactPropertyOwner);
@@ -792,14 +773,23 @@ public class MainController {
                 viewPropertyManagementFeeOrCommissionMenuItem = new MenuItem("View commission");
                 viewPropertyManagementFeeOrCommissionMenuItem.setOnAction(this::viewCommissionManagementFee);
 
+                scheduleInspectionMenuItem = new MenuItem("Schedule inspection");
+                scheduleInspectionMenuItem.setOnAction(this::scheduleInspection);
+
                 propertyContextMenu.getItems().add(deactivateListingMenuItem);
                 propertyContextMenu.getItems().add(advertisePropertyMenuItem);
                 propertyContextMenu.getItems().add(organizeLegalDocumentsMenuItem);
                 propertyContextMenu.getItems().add(contactPropertyOwnerMenuItem);
                 propertyContextMenu.getItems().add(viewPropertyManagementFeeOrCommissionMenuItem);
+                propertyContextMenu.getItems().add(scheduleInspectionMenuItem);
 
                 contactCustomerMenuItem = new MenuItem("Contact buyer");
                 contactCustomerMenuItem.setOnAction(this::contactCustomer);
+
+                viewProposalMenuItem = new MenuItem("View offer");
+                viewProposalMenuItem.setOnAction(this::viewProposal);
+
+                proposalContextMenu.getItems().add(viewProposalMenuItem);
                 proposalContextMenu.getItems().add(contactCustomerMenuItem);
 
                 rescheduleInspectionMenuItem = new MenuItem("Reschedule");
@@ -834,13 +824,21 @@ public class MainController {
                 viewPropertyManagementFeeOrCommissionMenuItem = new MenuItem("View management fee");
                 viewPropertyManagementFeeOrCommissionMenuItem.setOnAction(this::viewCommissionManagementFee);
 
+                scheduleInspectionMenuItem = new MenuItem("Schedule inspection");
+                scheduleInspectionMenuItem.setOnAction(this::scheduleInspection);
+
                 propertyContextMenu.getItems().add(deactivateListingMenuItem);
                 propertyContextMenu.getItems().add(viewMaintenanceReportMenuItem);
                 propertyContextMenu.getItems().add(contactPropertyOwnerMenuItem);
                 propertyContextMenu.getItems().add(viewPropertyManagementFeeOrCommissionMenuItem);
+                propertyContextMenu.getItems().add(scheduleInspectionMenuItem);
 
                 contactCustomerMenuItem = new MenuItem("Contact renter/s");
                 contactCustomerMenuItem.setOnAction(this::contactCustomer);
+                viewProposalMenuItem = new MenuItem("View application");
+                viewProposalMenuItem.setOnAction(this::viewProposal);
+
+                proposalContextMenu.getItems().add(viewProposalMenuItem);
                 proposalContextMenu.getItems().add(contactCustomerMenuItem);
 
                 rescheduleInspectionMenuItem = new MenuItem("Reschedule");
@@ -942,6 +940,10 @@ public class MainController {
     }
 
     private void withdrawProposal(ActionEvent actionEvent) {
+        //TODO if not accepted or rejected yet, can withdraw
+        // if accepted but not paid yet, can withdraw
+
+
         Proposal proposal = proposalTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
         String proposaltype;
 
@@ -979,6 +981,15 @@ public class MainController {
             }
         }
 
+    }
+
+    public void showCompletedInspectionDialog(String action) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(action + "unsuccessful");
+        alert.setHeaderText(null);
+        alert.setContentText("This inspection has already been completed.");
+
+        alert.showAndWait();
     }
 
     public void showCancelledInspectionDialog(String action) {
@@ -1165,29 +1176,34 @@ public class MainController {
 
                     controller.isAcceptedProperty().addListener((observableValue, wasAccepted, isAccepted) -> {
                         if (isAccepted) {
-                            viewOfferStage.hide();
                             proposalDBModel.acceptProposal(proposal.getProposalID());
+                            viewOfferStage.hide();
 
                             Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
                             actionSuccess.setTitle("Accept successful");
                             actionSuccess.setHeaderText(null);
                             actionSuccess.setContentText("You have successfully accepted this " + proposaltype + ".");
 
-                            actionSuccess.showAndWait();
                             refreshProposalTable();
-                        } else {
-                            viewOfferStage.hide();
+                            actionSuccess.showAndWait();
+                        }
+                    });
+
+                    controller.isRejectedProperty().addListener(((observableValue, wasRejected, isRejected) -> {
+                        if (isRejected) {
                             proposalDBModel.withdrawProposal(proposal.getProposalID());
+                            viewOfferStage.hide();
 
                             Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
                             actionSuccess.setTitle("Reject successful");
                             actionSuccess.setHeaderText(null);
                             actionSuccess.setContentText("You have successfully rejected this " + proposaltype + ".");
 
-                            actionSuccess.showAndWait();
                             refreshProposalTable();
+                            actionSuccess.showAndWait();
+
                         }
-                    });
+                    }));
 
                     // Show the scene containing the root layout
                     Scene scene = new Scene(rootLayout);
@@ -1245,7 +1261,11 @@ public class MainController {
 
                             actionSuccess.showAndWait();
                             refreshProposalTable();
-                        } else {
+                        }
+                    });
+
+                    controller.isRejectedProperty().addListener(((observableValue, wasRejected, isRejected) -> {
+                        if (isRejected) {
                             viewApplicationStage.hide();
                             proposalDBModel.withdrawProposal(proposal.getProposalID());
 
@@ -1257,7 +1277,7 @@ public class MainController {
                             actionSuccess.showAndWait();
                             refreshProposalTable();
                         }
-                    });
+                    }));
 
                     // Show the scene containing the root layout
                     Scene scene = new Scene(rootLayout);
@@ -1267,8 +1287,6 @@ public class MainController {
             } else {
                 //show in read only format
                 if (proposal instanceof Application) {
-                    proposaltype = "application";
-
                     Stage viewApplicationStage = new Stage();
                     viewApplicationStage.setTitle("View application");
 
@@ -1295,8 +1313,6 @@ public class MainController {
                     viewApplicationStage.setScene(scene);
                     viewApplicationStage.show();
                 } else {
-                    proposaltype = "offer";
-
                     Stage viewOfferStage = new Stage();
                     viewOfferStage.setTitle("View offer");
 
@@ -1356,13 +1372,57 @@ public class MainController {
 
     @FXML
     void scheduleInspection(ActionEvent event) {
-        Inspection inspection = inspectionTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
+        //todo check if property is accepting inspections first
+        Property property = propertyTableView.getSelectionModel().getTableView().getSelectionModel().getSelectedItem();
 
-        if (inspection != null) {
-            //todo
+        if (property != null) {
+            try {
+                if (property.isActive()) {
+                    Stage scheduleInspectionStage = new Stage();
+                    scheduleInspectionStage.setTitle("Schedule inspection");
+
+                    FXMLLoader loader = new FXMLLoader();
+                    loader.setLocation(getClass().getResource("/main/view/SubmitInspection.fxml"));
+                    AnchorPane rootLayout = null;
+                    try {
+                        rootLayout = loader.load();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    SubmitInspectionController controller = loader.getController();
+                    loader.setClassLoader(DateTimePicker.class.getClassLoader());
+                    controller.setProperty(property);
+                    controller.setInspectionDBModel(inspectionDBModel);
+                    if (property instanceof SaleProperty)
+                        controller.setCustomers(userDBModel.getBuyers().values());
+                    else controller.setCustomers(userDBModel.getRenters().values());
+
+                    controller.isConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
+                        if (isConfirmed) {
+                            scheduleInspectionStage.hide();
+
+                            Inspection i = inspectionDBModel.addInspection(controller.getDate(), property, controller.getSelectedUser());
+                            ((SalesPerson) user).scheduleInspection(i, property, controller.getSelectedUser());
+
+                            Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
+                            actionSuccess.setTitle("Schedule inspection successful");
+                            actionSuccess.setHeaderText(null);
+                            actionSuccess.setContentText("You have successfully scheduled a new inspection.");
+
+                            refreshInspectionTable();
+                            actionSuccess.showAndWait();
+                        }
+                    });
+
+                    // Show the scene containing the root layout
+                    Scene scene = new Scene(rootLayout);
+                    scheduleInspectionStage.setScene(scene);
+                    scheduleInspectionStage.show();
+                }
+            } catch (DeactivatedPropertyException ex) {
+                showInactivePropertyDialog("Schedule inspection");
+            }
         }
-
-        refreshInspectionTable();
     }
 
     private void rescheduleInspection(ActionEvent actionEvent) {
@@ -1371,12 +1431,55 @@ public class MainController {
         if (inspection != null) {
             if (inspection.isCancelled()) {
                 showCancelledInspectionDialog("Reschedule inspection");
+            } else if (inspection.getStatus().equals("Completed")) {
+                showCompletedInspectionDialog("Reschedule inspection");
             } else {
-                //todo
+                Stage scheduleInspectionStage = new Stage();
+                scheduleInspectionStage.setTitle("Reschedule inspection");
+
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(getClass().getResource("/main/view/SubmitInspection.fxml"));
+                AnchorPane rootLayout = null;
+                try {
+                    rootLayout = loader.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                SubmitInspectionController controller = loader.getController();
+                controller.setProperty(inspection.getProperty());
+                controller.setInspectionDBModel(inspectionDBModel);
+                controller.setDueDateTime(inspection.getDueDate());
+                controller.setSelectedCustomer(inspection.getCustomer());
+
+                if (inspection.getProperty() instanceof SaleProperty)
+                    controller.setCustomers(userDBModel.getBuyers().values());
+                else controller.setCustomers(userDBModel.getRenters().values());
+
+                controller.isConfirmedProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
+                    if (isConfirmed) {
+                        scheduleInspectionStage.hide();
+
+                        inspectionDBModel.rescheduleInspection(controller.getDate(), inspection);
+                        ((SalesPerson) user).rescheduleInspection(inspection, controller.getDate());
+
+                        Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
+                        actionSuccess.setTitle("Schedule inspection successful");
+                        actionSuccess.setHeaderText(null);
+                        actionSuccess.setContentText("You have successfully rescheduled the inspection.");
+
+                        actionSuccess.showAndWait();
+
+                        refreshInspectionTable();
+                    }
+                });
+
+                // Show the scene containing the root layout
+                Scene scene = new Scene(rootLayout);
+                scheduleInspectionStage.setScene(scene);
+                scheduleInspectionStage.show();
             }
         }
-
-        refreshInspectionTable();
     }
 
     private void cancelInspection(ActionEvent actionEvent) {
@@ -1385,13 +1488,29 @@ public class MainController {
         if (inspection != null) {
             if (inspection.isCancelled()) {
                 showCancelledInspectionDialog("Cancel inspection");
+            } else if (inspection.getStatus().equals("Completed")) {
+                showCompletedInspectionDialog("Cancel inspection");
             } else {
-                //todo
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Cancel inspection");
+                alert.setHeaderText(null);
+                alert.setContentText("Are you sure you want to proceed?");
 
+                Optional<ButtonType> result = alert.showAndWait();
+
+                if (result.get() == ButtonType.OK) {
+                    inspectionDBModel.cancelInspection(inspection);
+
+                    Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
+                    actionSuccess.setTitle("Cancel inspection successful");
+                    actionSuccess.setHeaderText(null);
+                    actionSuccess.setContentText("Successfully cancelled inspection for " + inspection.getPropertyAddress() + ".");
+
+                    actionSuccess.showAndWait();
+                    refreshInspectionTable();
+                }
             }
         }
-
-        refreshInspectionTable();
     }
 
     private void viewAssignedProperties(ActionEvent actionEvent) {
@@ -1407,12 +1526,15 @@ public class MainController {
                 alert.showAndWait();
             } else {
                 //todo
+                //table view
+
             }
         }
     }
 
     private void viewCommissionManagementFee(ActionEvent actionEvent) {
         //todo
+
     }
 
     //get property owner from property
@@ -1444,9 +1566,6 @@ public class MainController {
                     Stage viewMaintenanceStage = new Stage();
                     viewMaintenanceStage.setTitle("View Maintenance Report");
                     FXMLLoader loader = new FXMLLoader();
-//                    loader.setLocation(getClass().getResource("/main/view/ViewMaintenanceReport.fxml"));
-//                    AnchorPane rootLayout = loader.load();
-
                     loader.setLocation(getClass().getResource("/main/view/ViewMaintenance.fxml"));
                     AnchorPane rootLayout = null;
                     try {
@@ -1454,13 +1573,6 @@ public class MainController {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
-//                    AnchorPane root = null;
-//                    try {
-//                        root = FXMLLoader.load(getClass().getResource("/main/view/ViewMaintenanceReport.fxml"));
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
 
                     ViewMaintenanceController controller = loader.getController();
                     controller.setProperty((RentalProperty) property);

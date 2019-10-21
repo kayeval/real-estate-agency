@@ -51,6 +51,20 @@ public class ViewOfferController {
         isAcceptedProperty().set(accepted);
     }
 
+    private final BooleanProperty isRejected = new SimpleBooleanProperty();
+
+    public BooleanProperty isRejectedProperty() {
+        return isRejected;
+    }
+
+    public final boolean isRejected() {
+        return isRejectedProperty().get();
+    }
+
+    public final void setRejected(boolean rejected) {
+        isRejectedProperty().set(rejected);
+    }
+
     private final BooleanProperty canSubmit = new SimpleBooleanProperty();
 
     public BooleanProperty canSubmitProperty() {
@@ -135,7 +149,7 @@ public class ViewOfferController {
 
     @FXML
     void rejectAction(ActionEvent event) {
-        setAccepted(false);
+        setRejected(true);
     }
 
     @FXML
