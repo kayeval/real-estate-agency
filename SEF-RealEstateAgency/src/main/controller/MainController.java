@@ -1,6 +1,6 @@
 package main.controller;
 
-//todo search, notifications, proposal acceptance / auto reject, inspection scheduling checks, payment checks
+//todo notifications, proposal acceptance / auto reject, inspection scheduling checks, payment checks
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -39,10 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class MainController {
 
@@ -249,26 +246,25 @@ public class MainController {
         userDBModel = new UserDBModel();
         userDBModel.loadUsersFromDB();
         propertyDBModel = new PropertyDBModel();
-//        propertyDBModel.refreshProperties();
 
         userDBModel.setPropertyDBModel(propertyDBModel);
         propertyDBModel.setUserDBModel(userDBModel);
 
         proposalDBModel = new ProposalDBModel();
-//        proposalDBModel.refreshProposals();
 
         proposalDBModel.setUserDBModel(userDBModel);
         proposalDBModel.setPropertyDBModel(propertyDBModel);
 
         workingHoursDBModel = new WorkingHoursDBModel();
-//        workingHoursDBModel.refreshWorkingHours();
 
         workingHoursDBModel.setUserDBModel(userDBModel);
 
         inspectionDBModel = new InspectionDBModel();
         inspectionDBModel.setUserDBModel(userDBModel);
         inspectionDBModel.setPropertyDBModel(propertyDBModel);
-//        inspectionDBModel.refreshInspections();
+
+        propertyDBModel.setInspectionDBModel(inspectionDBModel);
+        propertyDBModel.setProposalDBModel(proposalDBModel);
 
         bankAccountDBModel = new BankAccountDBModel();
 
@@ -1091,10 +1087,9 @@ public class MainController {
                                             try {
                                                 int id = proposalDBModel.addProposal(submitApplicationController.getProposedPrice(), submitApplicationController.getApplicants(),
                                                         property.getPropertyID(), submitApplicationController.getContractDuration());
-
                                                 ((Customer) user).submitProposal(proposalDBModel.getProposals().get(id + ""));
-                                            } catch (SQLException | SoldPropertyException | InvalidContractDurationException | ProposalNotFoundException | DeactivatedPropertyException | PendingProposalException e) {
-                                                e.printStackTrace();
+
+                                            } catch (SQLException | SoldPropertyException | InvalidContractDurationException | ProposalNotFoundException | DeactivatedPropertyException | PendingProposalException ignored) {
                                             }
 
                                             Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
@@ -1174,6 +1169,12 @@ public class MainController {
                                 e.printStackTrace();
                             }
 
+                            Map<String, User> applicantMap = new HashMap<>();
+                            applicantMap.put(user.getUserID(), user);
+
+                            proposal.setPrice(controller.getProposedPrice());
+                            proposal.setApplicants(applicantMap);
+
                             Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
                             actionSuccess.setTitle("Update successful");
                             actionSuccess.setHeaderText(null);
@@ -1236,8 +1237,10 @@ public class MainController {
 
                     ViewApplicationController controller = loader.getController();
                     controller.setUser(user);
+                    controller.setProposal(proposal);
                     controller.setProperty(proposal.getProperty());
                     controller.setRenters(userDBModel.getRenters().values());
+                    controller.setContractDuration(((Application)proposal).getContractDuration());
                     controller.canSubmitProperty().addListener((obs, wasConfirmed, isConfirmed) -> {
                         if (isConfirmed) {
                             viewApplicationStage.hide();
@@ -1248,6 +1251,14 @@ public class MainController {
                             } catch (SQLException e) {
                                 e.printStackTrace();
                             }
+                            Map<String, User> applicantMap = new HashMap<String, User>();
+                            for (User u : controller.getApplicants()) {
+                                applicantMap.put(u.getUserID(), u);
+                            }
+
+                            proposal.setPrice(controller.getProposedPrice());
+                            proposal.setApplicants(applicantMap);
+                            ((Application) proposal).setContractDuration(controller.getContractDuration());
 
                             Alert actionSuccess = new Alert(Alert.AlertType.INFORMATION);
                             actionSuccess.setTitle("Update successful");
@@ -1337,6 +1348,7 @@ public class MainController {
 
                     ViewOfferController controller = loader.getController();
                     controller.setUser(user);
+                    controller.setProposal(proposal);
                     controller.setProperty(proposal.getProperty());
 
                     controller.getAcceptBtn().setVisible(false);

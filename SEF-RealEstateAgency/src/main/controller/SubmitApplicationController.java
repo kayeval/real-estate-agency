@@ -15,6 +15,8 @@ import main.model.Property.Property;
 import main.model.Proposal.ContractDuration;
 import main.model.User.User;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class SubmitApplicationController {
@@ -174,8 +176,18 @@ public class SubmitApplicationController {
     }
 
     public Collection<User> getApplicants() {
-        selected.getItems().add(user);
-        return selected.getItems();
+        Collection<User> applicants = new ArrayList<>();
+
+        for (String s : applicantField.getText().split(",")) {
+            for (User u : renters) {
+                if (u.getUsername().equals(s.trim()))
+                    applicants.add(u);
+            }
+        }
+
+        applicants.add(user);
+
+        return applicants;
     }
 
     public Double getProposedPrice() {

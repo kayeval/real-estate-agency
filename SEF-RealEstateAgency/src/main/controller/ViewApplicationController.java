@@ -12,11 +12,12 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Popup;
 import main.model.DecimalFilter;
 import main.model.Property.Property;
-import main.model.Property.RentalProperty;
 import main.model.Proposal.ContractDuration;
+import main.model.Proposal.Proposal;
 import main.model.User.Customer.Customer;
 import main.model.User.User;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class ViewApplicationController {
@@ -103,21 +104,21 @@ public class ViewApplicationController {
     private ListView<User> selected = new ListView<>();
     private final Popup popup = new Popup();
     private final ListView listView = new ListView();
+    private Proposal p;
 
     public void setProperty(Property property) {
         this.property = property;
         listedPriceField.setText("" + property.getPrice());
 
-        enableRadioButtons();
+        radio6Mos.setDisable(true);
+        radio1Yr.setDisable(true);
+        radio2Yrs.setDisable(true);
     }
 
     public void enableRadioButtons() {
-        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.SIX_MONTHS))
-            radio6Mos.setDisable(false);
-        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.ONE_YEAR))
-            radio1Yr.setDisable(false);
-        if (((RentalProperty) property).getAcceptedDurations().contains(ContractDuration.TWO_YEARS))
-            radio2Yrs.setDisable(false);
+        radio6Mos.setDisable(false);
+        radio1Yr.setDisable(false);
+        radio2Yrs.setDisable(false);
     }
 
     public void setUser(User user) {
@@ -261,8 +262,18 @@ public class ViewApplicationController {
 
 
     public Collection<User> getApplicants() {
-        selected.getItems().add(user);
-        return selected.getItems();
+        Collection<User> applicants = new ArrayList<>();
+
+        for (String s : applicantField.getText().split(",")) {
+            for (User u : renters) {
+                if (u.getUsername().equals(s.trim()))
+                    applicants.add(u);
+            }
+        }
+
+        applicants.add(user);
+
+        return applicants;
     }
 
     public Double getProposedPrice() {
@@ -280,5 +291,25 @@ public class ViewApplicationController {
             contractDuration = ContractDuration.TWO_YEARS;
 
         return contractDuration;
+    }
+
+    public void setContractDuration(ContractDuration contractDuration) {
+        if (contractDuration == ContractDuration.ONE_YEAR)
+            radio1Yr.setSelected(true);
+        else if (contractDuration == ContractDuration.TWO_YEARS)
+            radio2Yrs.setSelected(true);
+        else radio6Mos.setSelected(true);
+    }
+
+    public void setProposal(Proposal p) {
+        this.p = p;
+
+        Collection<String> usernameList = new ArrayList<>();
+
+        for (User u : p.getApplicants().values())
+            usernameList.add(u.getUsername());
+
+        applicantField.setText(String.join(", ", usernameList));
+        proposedPriceField.setText(p.getPrice() + "");
     }
 }

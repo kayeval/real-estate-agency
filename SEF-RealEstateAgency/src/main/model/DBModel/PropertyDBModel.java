@@ -16,6 +16,8 @@ public class PropertyDBModel {
     private DBConnector dbConnector;
     private UserDBModel userDBModel;
     private Map<String, Property> allProperties;
+    private InspectionDBModel inspectionDBModel;
+    private ProposalDBModel proposalDBModel;
 
     public PropertyDBModel() {
         dbConnector = new DBConnector();
@@ -23,6 +25,14 @@ public class PropertyDBModel {
 
     public void loadPropertiesFromDB() {
         allProperties = getAllProperties();
+    }
+
+    public void setProposalDBModel(ProposalDBModel proposalDBModel) {
+        this.proposalDBModel = proposalDBModel;
+    }
+
+    public void setInspectionDBModel(InspectionDBModel inspectionDBModel) {
+        this.inspectionDBModel = inspectionDBModel;
     }
 
     public Map<String, Property> getAllProperties() {
@@ -255,6 +265,11 @@ public class PropertyDBModel {
         }
 
         allProperties.get(property.getPropertyID()).deactivate();
+
+        if (property.getProposal() != null)
+            proposalDBModel.withdrawProposal(property.getProposal().getProposalID());
+
+        inspectionDBModel.cancelInspectionsForProperty(property);
     }
 
     public void assignProperty(String propertyID, String userID) {

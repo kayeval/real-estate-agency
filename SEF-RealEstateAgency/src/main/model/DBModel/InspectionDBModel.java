@@ -27,6 +27,12 @@ public class InspectionDBModel {
         allInspections = getInspections();
     }
 
+    public void cancelInspectionsForProperty(Property property) {
+        for (Inspection i : allInspections.values())
+            if (i.getProperty().getPropertyID().equals(property.getPropertyID()))
+                i.setCancelled(true);
+    }
+
     public Inspection addInspection(LocalDateTime dueDate, Property property, User user) {
         String sql = "INSERT INTO inspections (submissiondate, propertyid, cancelled, " +
                 "userid, duedate) VALUES(?, ?, ?, ?, ?)";
@@ -50,7 +56,7 @@ public class InspectionDBModel {
                 inspection.setProperty(property);
                 inspection.setInspectionID(id + "");
                 inspection.setCustomer(user);
-                
+
                 allInspections.putIfAbsent(inspection.getInspectionID(), inspection);
             }
         } catch (SQLException e) {

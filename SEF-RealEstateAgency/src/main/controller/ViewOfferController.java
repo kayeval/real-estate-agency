@@ -11,6 +11,7 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
 import main.model.DecimalFilter;
 import main.model.Property.Property;
+import main.model.Proposal.Proposal;
 import main.model.User.Customer.Customer;
 import main.model.User.User;
 
@@ -81,6 +82,7 @@ public class ViewOfferController {
 
     private Property property;
     private User user;
+    private Proposal p;
 
     public void setProperty(Property property) {
         this.property = property;
@@ -145,6 +147,11 @@ public class ViewOfferController {
             if (valid)
                 setCanSubmit(true);
         }
+    }
+
+    public void setProposal(Proposal p) {
+        this.p = p;
+        proposedPriceField.setText(p.getPrice() + "");
     }
 
     @FXML
