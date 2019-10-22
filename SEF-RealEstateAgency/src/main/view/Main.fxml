@@ -24,7 +24,7 @@
                                 <Button fx:id="btnAddListing" layoutX="689.0" layoutY="10.0" mnemonicParsing="false" onAction="#addListing" prefHeight="29.0" prefWidth="132.0" text="Add Listing" />
                                 <ComboBox fx:id="propertyStateCmb" layoutX="834.0" layoutY="10.0" prefHeight="29.0" prefWidth="96.0" promptText="Status " />
                                 <Label layoutX="15.0" layoutY="12.0" prefHeight="27.0" prefWidth="96.0" text="Search Suburbs:" />
-                                <TextField fx:id="propertySearchField" layoutX="116.0" layoutY="11.0" onAction="#searchSuburbs" prefHeight="29.0" prefWidth="177.0" promptText="Type suburb..." />
+                                <TextField fx:id="propertySearchField" layoutX="116.0" layoutY="11.0" prefHeight="29.0" prefWidth="177.0" promptText="Type suburb..." />
                                 <TableView fx:id="propertyTableView" layoutY="49.0" prefHeight="495.0" prefWidth="941.0">
                                     <columns>
                                         <TableColumn fx:id="boolSR" prefWidth="98.0" text="For Sale/Rent" />

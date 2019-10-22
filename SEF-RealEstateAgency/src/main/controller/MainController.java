@@ -1,5 +1,7 @@
 package main.controller;
 
+//todo search, notifications, proposal acceptance / auto reject, inspection scheduling checks, payment checks
+
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -14,6 +16,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import main.model.DBModel.*;
@@ -315,7 +318,7 @@ public class MainController {
         workingHoursStateCmb.getSelectionModel().selectedIndexProperty().addListener((options, oldValue, newValue) -> {
             refreshWorkingHoursTable();
         });
-    }
+    } //initialize
 
     public void refreshEmployeeTable() {
         switch (employeeStateCmb.getSelectionModel().getSelectedItem()) {
@@ -467,10 +470,11 @@ public class MainController {
 
                 TableRow<Property> currentRow = getTableRow();
                 if (!isEmpty() && user instanceof BranchManager) {
+                    currentRow.setTextFill(Color.BLACK);
                     if (item)
-                        currentRow.setStyle("-fx-background-color:transparent");
+                        currentRow.setStyle("-fx-background-color:transparent;");
                     else
-                        currentRow.setStyle("-fx-background-color:pink");
+                        currentRow.setStyle("-fx-background-color:pink;");
                 }
             }
         });
@@ -486,6 +490,17 @@ public class MainController {
 
         propertyTableView.setItems(properties);
         propertyTableView.setContextMenu(propertyContextMenu);
+
+        FilteredList<Property> filteredData = new FilteredList<>(properties, p -> true);
+        propertySearchField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(property -> {
+            // If filter text is empty, display all entries
+            if (newValue == null || newValue.isEmpty())
+                return true;
+
+            return property.getSuburb().toLowerCase().contains(newValue.toLowerCase());
+        }));
+
+        propertyTableView.setItems(filteredData);
     }
 
     @FXML
@@ -557,11 +572,6 @@ public class MainController {
         Stage window = (Stage) userActions.getScene().getWindow();
         window.setScene(nextScene);
         window.show();
-    }
-
-    @FXML
-    void searchSuburbs(ActionEvent event) {
-        //TODO
     }
 
     @FXML

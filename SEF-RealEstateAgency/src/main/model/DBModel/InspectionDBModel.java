@@ -159,6 +159,8 @@ public class InspectionDBModel {
             inspections = getInspections((PropertyOwner) user);
         } else if (user instanceof SalesPerson) {
             inspections = getInspections((SalesPerson) user);
+        } else {
+            inspections = allInspections;
         }
 
         return inspections;
